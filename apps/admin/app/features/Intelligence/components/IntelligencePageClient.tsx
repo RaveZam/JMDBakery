@@ -5,6 +5,10 @@ import { IntelligenceActionCard } from "./IntelligenceActionCard";
 import { IntelligenceAgentForecast } from "./IntelligenceAgentForecast";
 import { IntelligenceForecastChart } from "./IntelligenceForecastChart";
 import { IntelligenceProductForecast } from "./IntelligenceProductForecast";
+import { IntelligenceSellThroughChart } from "./IntelligenceSellThroughChart";
+import { IntelligenceStockAllocation } from "./IntelligenceStockAllocation";
+import { IntelligenceRouteHotspot } from "./IntelligenceRouteHotspot";
+import { IntelligenceVarianceTracker } from "./IntelligenceVarianceTracker";
 import { computeAverageSalesOnThatDay } from "../helpers/computeAverageSalesOnThatDay";
 import { computeMovingAverageAndDayAverage } from "../helpers/computeMovingAverageAndDayAverage";
 import { computeBORateThisMonth } from "../helpers/computeBORateThisMonth";
@@ -178,6 +182,20 @@ export function IntelligencePageClient({
               yearData={yearData}
               allTimeData={allTimeData}
             />
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-lg font-semibold">
+              Morning inventory insights
+            </h2>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <IntelligenceSellThroughChart />
+              <IntelligenceRouteHotspot />
+            </div>
+            <div className="mt-4 space-y-4">
+              <IntelligenceStockAllocation />
+              <IntelligenceVarianceTracker />
+            </div>
           </section>
 
           {/* <section>

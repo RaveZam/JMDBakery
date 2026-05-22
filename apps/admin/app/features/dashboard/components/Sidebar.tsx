@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentType, ReactElement, ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -121,10 +122,15 @@ function SidebarNavSection({
 export function Sidebar(): ReactElement {
   return (
     <aside className="flex h-dvh w-[280px] shrink-0 flex-col border-r bg-card px-4 py-5">
-      <div className="mb-4 flex items-center gap-2 px-2">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-700 text-white">
-          <LayoutGrid className="h-4 w-4" />
-        </div>
+      <div className="mb-4 flex items-center gap-3 px-2">
+        <Image
+          src="/images/Logo-removebg-preview.png"
+          alt="JMD Bakery"
+          width={64}
+          height={64}
+          className="shrink-0"
+          priority
+        />
         <div className="leading-tight">
           <p className="text-sm font-semibold">JMD Bakery</p>
           <p className="text-xs text-muted-foreground">RouteLedger</p>

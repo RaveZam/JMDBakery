@@ -19,6 +19,11 @@ export default function useLogin(email: string, password: string) {
         Alert.alert("Sign in failed", res.error.message);
         return;
       }
+      if (res.data.user?.user_metadata?.role !== "agent") {
+        await supabase.auth.signOut();
+        Alert.alert("Access denied", "This account is not an agent.");
+        return;
+      }
       // on success navigate to main index
       router.replace("/");
     } catch (error: unknown) {
