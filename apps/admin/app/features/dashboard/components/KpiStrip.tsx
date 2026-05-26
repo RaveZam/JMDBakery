@@ -1,3 +1,4 @@
+import { Banknote, Percent, PackageX, ShoppingBag, Store } from "lucide-react";
 import { KpiCard } from "./KpiCard";
 import { useComputeSalesKPI } from "../hooks/useComputeSalesKPI";
 import { FilterRange } from "../types";
@@ -17,9 +18,10 @@ export function KpiStrip({ data, filter }: { data: any; filter: FilterRange }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
       <KpiCard
-        title={`Total Sales ${label}`}
+        title={`Total Sales · ${label}`}
         primary={"₱" + totalSales.toLocaleString()}
-        tone="primary"
+        tone="hero"
+        icon={Banknote}
       />
       <KpiCard
         title="Avg Sales per Store"
@@ -30,17 +32,27 @@ export function KpiStrip({ data, filter }: { data: any; filter: FilterRange }) {
             maximumFractionDigits: 2,
           })
         }
+        accent="green"
+        icon={Store}
       />
       <KpiCard
-        title={`Total Sold ${label}`}
-        primary={totalSold.toLocaleString() + "pcs"}
+        title={`Total Sold · ${label}`}
+        primary={totalSold.toLocaleString() + " pcs"}
+        accent="gold"
+        icon={ShoppingBag}
       />
       <KpiCard
-        title={`Total BO ${label}`}
-        primary={Number(totalBO).toLocaleString() + "pcs"}
-        // secondary="₱0"
+        title={`Total BO · ${label}`}
+        primary={Number(totalBO).toLocaleString() + " pcs"}
+        accent="amber"
+        icon={PackageX}
       />
-      <KpiCard title="BO Rate" primary={finalBboRate.toFixed(2) + "%"} />
+      <KpiCard
+        title="BO Rate"
+        primary={finalBboRate.toFixed(2) + "%"}
+        accent="red"
+        icon={Percent}
+      />
     </div>
   );
 }

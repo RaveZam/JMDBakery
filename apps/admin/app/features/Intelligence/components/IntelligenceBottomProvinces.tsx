@@ -2,10 +2,10 @@
 
 import type { ReactElement } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPinned } from "lucide-react";
+import { TrendingDown } from "lucide-react";
 import { RankedRevenueList } from "./RankedRevenueList";
 
-export function IntelligenceRouteHotspot({
+export function IntelligenceBottomProvinces({
   provinces,
 }: {
   provinces: { province: string; revenue: number }[];
@@ -14,13 +14,14 @@ export function IntelligenceRouteHotspot({
     <Card className="shadow-soft">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <MapPinned className="h-4 w-4 text-orange-500" />
-          Top provinces by revenue
+          <TrendingDown className="h-4 w-4 text-red-500" />
+          Lowest provinces by revenue
         </CardTitle>
         <p className="mt-1 text-xs text-muted-foreground">Past 6 months</p>
       </CardHeader>
       <CardContent>
         <RankedRevenueList
+          variant="bottom"
           rows={provinces.map((p) => ({
             key: p.province,
             title: p.province,

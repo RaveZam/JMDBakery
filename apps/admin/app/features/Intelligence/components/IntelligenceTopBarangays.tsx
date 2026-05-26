@@ -2,31 +2,33 @@
 
 import type { ReactElement } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPinned } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { RankedRevenueList } from "./RankedRevenueList";
+import type { GeoRevenueRow } from "../../dashboard/services/revenueGeoService";
 
-export function IntelligenceRouteHotspot({
-  provinces,
+export function IntelligenceTopBarangays({
+  barangays,
 }: {
-  provinces: { province: string; revenue: number }[];
+  barangays: GeoRevenueRow[];
 }): ReactElement {
   return (
     <Card className="shadow-soft">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <MapPinned className="h-4 w-4 text-orange-500" />
-          Top provinces by revenue
+          <MapPin className="h-4 w-4 text-amber-500" />
+          Top barangays by revenue
         </CardTitle>
         <p className="mt-1 text-xs text-muted-foreground">Past 6 months</p>
       </CardHeader>
       <CardContent>
         <RankedRevenueList
-          rows={provinces.map((p) => ({
-            key: p.province,
-            title: p.province,
-            revenue: p.revenue,
+          rows={barangays.map((b) => ({
+            key: `${b.province}|${b.barangay}`,
+            title: b.barangay,
+            caption: b.province || null,
+            revenue: b.revenue,
           }))}
-          emptyLabel="No province revenue recorded in the last 6 months."
+          emptyLabel="No barangay revenue recorded in the last 6 months."
         />
       </CardContent>
     </Card>

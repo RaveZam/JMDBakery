@@ -51,10 +51,11 @@ function CustomTooltip({
     <div
       style={{
         fontSize: 12,
-        borderRadius: 6,
-        border: "1px solid #e5e7eb",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        background: "#fff",
+        borderRadius: 10,
+        border: "1px solid hsl(var(--border))",
+        boxShadow: "0 10px 30px rgba(15,23,42,0.10)",
+        background: "hsl(var(--card))",
+        color: "hsl(var(--foreground))",
         padding: "8px 12px",
         minWidth: 140,
       }}
@@ -82,7 +83,7 @@ export function ProductSoldVsBoChart({
   const chartData = computeProductTotals(data);
 
   return (
-    <Card className="shadow-soft">
+    <Card className="border-border/70 shadow-soft dark:shadow-soft-dark">
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Sold vs. BO by Product</CardTitle>
       </CardHeader>
@@ -99,21 +100,25 @@ export function ProductSoldVsBoChart({
               barCategoryGap="30%"
               barGap={3}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(var(--border))"
+                vertical={false}
+              />
               <XAxis
                 dataKey="product"
-                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip
                 content={<CustomTooltip />}
-                cursor={{ fill: "#f8fafc" }}
+                cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }}
               />
               <Legend
                 iconType="circle"
@@ -123,16 +128,16 @@ export function ProductSoldVsBoChart({
               <Bar
                 dataKey="sold"
                 name="Sold"
-                fill="#10b981"
-                radius={[3, 3, 0, 0]}
-                barSize={25}
+                fill="#1f7a44"
+                radius={[4, 4, 0, 0]}
+                barSize={24}
               />
               <Bar
                 dataKey="bo"
                 name="BO"
-                fill="#f87171"
-                radius={[3, 3, 0, 0]}
-                barSize={25}
+                fill="#d98b3f"
+                radius={[4, 4, 0, 0]}
+                barSize={24}
               />
             </BarChart>
           </ResponsiveContainer>

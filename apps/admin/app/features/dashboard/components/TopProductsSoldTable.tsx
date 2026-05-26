@@ -4,7 +4,7 @@ import { type ReactElement, useEffect, useState } from "react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const COLORS = ["#10b981", "#34d399", "#6ee7b7", "#a7f3d0", "#d1fae5"];
+const COLORS = ["#1f7a44", "#2f9e5e", "#c79a3a", "#dec06a", "#86a06b"];
 
 function formatCurrencyPHP(value: number): string {
   return `₱${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
@@ -43,7 +43,7 @@ export function TopProductsSoldTable({ data }: { data: Record[] }) {
   const totalQty = topProducts.reduce((sum, d) => sum + d.qty, 0);
 
   return (
-    <Card className="shadow-soft">
+    <Card className="border-border/70 shadow-soft dark:shadow-soft-dark">
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Top 5 Products Sold</CardTitle>
       </CardHeader>
@@ -79,9 +79,11 @@ export function TopProductsSoldTable({ data }: { data: Record[] }) {
                     ]}
                     contentStyle={{
                       fontSize: 12,
-                      borderRadius: 6,
-                      border: "1px solid #e5e7eb",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                      borderRadius: 10,
+                      border: "1px solid hsl(var(--border))",
+                      background: "hsl(var(--card))",
+                      color: "hsl(var(--foreground))",
+                      boxShadow: "0 10px 30px rgba(15,23,42,0.10)",
                     }}
                   />
                 </PieChart>

@@ -5,7 +5,9 @@ import { IntelligenceActionCard } from "./IntelligenceActionCard";
 import { IntelligenceAgentForecast } from "./IntelligenceAgentForecast";
 import { IntelligenceForecastChart } from "./IntelligenceForecastChart";
 import { IntelligenceProductForecast } from "./IntelligenceProductForecast";
-import { IntelligenceSellThroughChart } from "./IntelligenceSellThroughChart";
+import { IntelligenceTopBarangays } from "./IntelligenceTopBarangays";
+import { IntelligenceBottomProvinces } from "./IntelligenceBottomProvinces";
+import { IntelligenceBottomBarangays } from "./IntelligenceBottomBarangays";
 import { IntelligenceStockAllocation } from "./IntelligenceStockAllocation";
 import { IntelligenceRouteHotspot } from "./IntelligenceRouteHotspot";
 import { IntelligenceVarianceTracker } from "./IntelligenceVarianceTracker";
@@ -22,15 +24,24 @@ import {
   AlertTriangle,
   ShieldAlert,
 } from "lucide-react";
+import type { GeoRevenueRow } from "../../dashboard/services/revenueGeoService";
 
 export function IntelligencePageClient({
   data,
   yearData,
   allTimeData,
+  topProvinces,
+  topBarangays,
+  bottomProvinces,
+  bottomBarangays,
 }: {
   data: any;
   yearData: any;
   allTimeData: any;
+  topProvinces: { province: string; revenue: number }[];
+  topBarangays: GeoRevenueRow[];
+  bottomProvinces: { province: string; revenue: number }[];
+  bottomBarangays: GeoRevenueRow[];
 }) {
   computeMovingAverageAndDayAverage(data);
   const { totalSalesToday, totalSalesYesterday, percentageDiff } =
@@ -189,8 +200,8 @@ export function IntelligencePageClient({
               Morning inventory insights
             </h2>
             <div className="grid gap-4 lg:grid-cols-2">
-              <IntelligenceSellThroughChart />
-              <IntelligenceRouteHotspot />
+              <IntelligenceRouteHotspot provinces={topProvinces} />
+              <IntelligenceTopBarangays barangays={topBarangays} />
             </div>
             <div className="mt-4 space-y-4">
               <IntelligenceStockAllocation />

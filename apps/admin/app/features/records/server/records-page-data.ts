@@ -16,6 +16,7 @@ function filterRecords(
   records: LedgerRecord[],
   filters: RecordsFilters,
 ): LedgerRecord[] {
+
   return records.filter((r) => {
     if (filters.agent !== ALL_AGENTS && r.agent !== filters.agent) return false;
     if (filters.sessionId !== ALL_SESSIONS && r.sessionId !== filters.sessionId)

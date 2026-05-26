@@ -34,7 +34,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-dvh bg-background font-sans text-foreground antialiased`}
       >
         <ThemeProvider>
-          <main className="h-dvh w-full bg-slate-50/60 dark:bg-background">
+          <main className="h-dvh w-full bg-background">
             {children}
           </main>
         </ThemeProvider>

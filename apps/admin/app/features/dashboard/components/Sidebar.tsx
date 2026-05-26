@@ -72,17 +72,22 @@ function SidebarNavItem({
       <Link
         href={item.href}
         className={cn(
-          "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
+          "group relative flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
           isActive
-            ? "bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300"
+            ? "bg-accent font-medium text-accent-foreground"
             : "text-muted-foreground hover:bg-muted hover:text-foreground",
         )}
       >
-        <span className="flex items-center gap-2">
+        {isActive && (
+          <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+        )}
+        <span className="flex items-center gap-2.5">
           <Icon
             className={cn(
-              "h-4 w-4",
-              isActive ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground",
+              "h-[18px] w-[18px] transition-colors",
+              isActive
+                ? "text-primary"
+                : "text-muted-foreground group-hover:text-foreground",
             )}
           />
           {item.label}
@@ -103,7 +108,7 @@ function SidebarNavSection({
   const pathname = usePathname();
   return (
     <div>
-      <p className="px-3 pb-2 text-[11px] font-medium tracking-wider text-muted-foreground">
+      <p className="px-3 pb-2 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
         {title}
       </p>
       <ul className="space-y-1">
@@ -121,21 +126,27 @@ function SidebarNavSection({
 
 export function Sidebar(): ReactElement {
   return (
-    <aside className="flex h-dvh w-[280px] shrink-0 flex-col border-r bg-card px-4 py-5">
-      <div className="mb-4 flex items-center gap-3 px-2">
-        <Image
-          src="/images/Logo-removebg-preview.png"
-          alt="JMD Bakery"
-          width={64}
-          height={64}
-          className="shrink-0"
-          priority
-        />
+    <aside className="flex h-dvh w-[280px] shrink-0 flex-col border-r border-border/70 bg-card px-4 py-5">
+      <div className="mb-5 flex items-center gap-3 px-2">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent">
+          <Image
+            src="/images/Logo-removebg-preview.png"
+            alt="JMD Bakery"
+            width={40}
+            height={40}
+            className="shrink-0"
+            priority
+          />
+        </span>
         <div className="leading-tight">
-          <p className="text-sm font-semibold">JMD Bakery</p>
-          <p className="text-xs text-muted-foreground">RouteLedger</p>
+          <p className="text-sm font-semibold tracking-tight">JMD Bakery</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            RouteLedger · Est. 2011
+          </p>
         </div>
       </div>
+
+      <div className="-mx-1 mb-4 h-px bg-border/70" />
 
       <div className="flex-1 space-y-6 overflow-auto pb-2">
         {navGroups.map((group) => (
@@ -147,7 +158,7 @@ export function Sidebar(): ReactElement {
         ))}
       </div>
 
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2 border-t border-border/70 pt-4">
         <div className="flex-1">
           <AccountCard />
         </div>

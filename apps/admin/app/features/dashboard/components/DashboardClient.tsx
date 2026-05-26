@@ -36,26 +36,29 @@ export function DashboardClient({ data }: { data: any }) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b bg-slate-50/80 px-6 py-5 backdrop-blur dark:bg-background/80">
+      <header className="sticky top-0 z-20 border-b border-border/70 bg-background/85 px-6 py-5 backdrop-blur">
         <div className="mx-auto w-full max-w-300">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight">
-                Dashboard
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Monitor your field operations.
+              <div className="flex items-center gap-2.5">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h1 className="text-3xl font-semibold tracking-tight">
+                  Dashboard
+                </h1>
+              </div>
+              <p className="mt-1.5 pl-3.5 text-sm text-muted-foreground">
+                Monitor your field operations across every store.
               </p>
             </div>
-            <div className="flex items-center gap-1 rounded-lg border bg-white p-1 dark:bg-background">
+            <div className="flex items-center gap-1 rounded-xl border border-border/70 bg-card p-1 shadow-soft dark:shadow-soft-dark">
               {FILTERS.map(({ label, value }) => (
                 <button
                   key={value}
                   onClick={() => onFilterChange(value)}
-                  className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+                  className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
                     filter === value
-                      ? "bg-emerald-800 text-white"
-                      : "text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   {label}

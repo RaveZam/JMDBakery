@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const BAR_COLORS = ["#10b981", "#34d399", "#6ee7b7", "#a7f3d0", "#d1fae5"];
+const BAR_COLORS = ["#1f7a44", "#2f9e5e", "#c79a3a", "#dec06a", "#86a06b"];
 
 type SaleRecord = {
   agent: string;
@@ -51,10 +51,11 @@ function CustomTooltip({
     <div
       style={{
         fontSize: 12,
-        borderRadius: 6,
-        border: "1px solid #e5e7eb",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        background: "#fff",
+        borderRadius: 10,
+        border: "1px solid hsl(var(--border))",
+        boxShadow: "0 10px 30px rgba(15,23,42,0.10)",
+        background: "hsl(var(--card))",
+        color: "hsl(var(--foreground))",
         padding: "6px 10px",
       }}
     >
@@ -73,7 +74,7 @@ export function TopAgentsChart({ data }: { data: SaleRecord[] }): ReactElement {
   const chartData = computeTopAgents(data);
 
   return (
-    <Card className="shadow-soft">
+    <Card className="border-border/70 shadow-soft dark:shadow-soft-dark">
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Top Performing Agents</CardTitle>
       </CardHeader>
@@ -90,7 +91,7 @@ export function TopAgentsChart({ data }: { data: SaleRecord[] }): ReactElement {
               <XAxis
                 type="number"
                 tickFormatter={formatCurrencyPHP}
-                tick={{ fontSize: 11, fill: "#94a3b8" }}
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -98,11 +99,14 @@ export function TopAgentsChart({ data }: { data: SaleRecord[] }): ReactElement {
                 type="category"
                 dataKey="agent"
                 width={52}
-                tick={{ fontSize: 12, fill: "#64748b" }}
+                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f1f5f9" }} />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }}
+              />
               <Bar dataKey="revenue" radius={[0, 4, 4, 0]} barSize={26}>
                 {chartData.map((_, i) => (
                   <Cell key={i} fill={BAR_COLORS[i] ?? "#10b981"} />

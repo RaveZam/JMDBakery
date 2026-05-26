@@ -1,48 +1,33 @@
-"use client";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { type LucideIcon } from "lucide-react";
 
-const toneStyles: Record<
-  string,
-  { card: string; label: string; sub: string; icon: string }
-> = {
-  primary: {
-    card: "border-transparent bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 text-white",
-    label: "text-emerald-50/90",
-    sub: "text-emerald-50/80",
-    icon: "text-emerald-50/70",
-  },
-  healthy: {
-    card: "border-transparent bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 text-white",
-    label: "text-emerald-50/90",
-    sub: "text-emerald-50/80",
-    icon: "text-emerald-50/70",
-  },
-  medium: {
-    card: "border-transparent bg-gradient-to-br from-amber-700 via-amber-600 to-amber-500 text-white",
-    label: "text-amber-50/90",
-    sub: "text-amber-50/80",
-    icon: "text-amber-50/70",
-  },
-  warning: {
-    card: "border-transparent bg-gradient-to-br from-orange-800 via-orange-700 to-orange-600 text-white",
-    label: "text-orange-50/90",
-    sub: "text-orange-50/80",
-    icon: "text-orange-50/70",
-  },
-  critical: {
-    card: "border-transparent bg-gradient-to-br from-red-900 via-red-800 to-red-700 text-white",
-    label: "text-red-50/90",
-    sub: "text-red-50/80",
-    icon: "text-red-50/70",
-  },
-  neutral: {
-    card: "",
-    label: "text-muted-foreground",
-    sub: "text-muted-foreground",
-    icon: "text-muted-foreground",
-  },
+type Tone =
+  | "neutral"
+  | "hero"
+  | "primary"
+  | "healthy"
+  | "medium"
+  | "warning"
+  | "critical";
+type Accent = "green" | "gold" | "amber" | "red" | "slate";
+
+const accentChip: Record<Accent, string> = {
+  green: "bg-primary/10 text-primary",
+  gold: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+  amber:
+    "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
+  red: "bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400",
+  slate: "bg-muted text-muted-foreground",
+};
+
+const solidTone: Partial<Record<Tone, string>> = {
+  hero: "bg-primary",
+  primary: "bg-primary",
+  healthy: "bg-primary",
+  medium: "bg-amber-600",
+  warning: "bg-amber-600",
+  critical: "bg-red-600",
 };
 
 export function KpiCard({
@@ -50,27 +35,57 @@ export function KpiCard({
   primary,
   secondary,
   tone = "neutral",
+  accent = "green",
   icon: Icon,
 }: {
   title: string;
   primary: string;
   secondary?: string;
-  tone?: "neutral" | "primary" | "healthy" | "medium" | "warning" | "critical";
+  tone?: Tone;
+  accent?: Accent;
   icon?: LucideIcon;
 }) {
-  const styles = toneStyles[tone] ?? toneStyles.neutral;
+  const solid = solidTone[tone];
   return (
-    <Card className={cn("shadow-soft", styles.card)}>
+    <Card
+      className={cn(
+        "border-border/70 shadow-soft dark:shadow-soft-dark",
+        solid && `border-transparent text-white ${solid}`,
+      )}
+    >
       <CardContent className="p-5">
-        <div className="flex items-start justify-between">
-          <p className={cn("text-sm font-medium", styles.label)}>{title}</p>
-          {Icon && <Icon className={cn("h-5 w-5 shrink-0", styles.icon)} />}
+        <div className="flex items-start justify-between gap-3">
+          <p
+            className={cn(
+              "text-[13px] font-medium",
+              solid ? "text-white/80" : "text-muted-foreground",
+            )}
+          >
+            {title}
+          </p>
+          {Icon && (
+            <span
+              className={cn(
+                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                solid ? "bg-white/15 text-white" : accentChip[accent],
+              )}
+            >
+              <Icon className="h-[18px] w-[18px]" />
+            </span>
+          )}
         </div>
-        <p className="mt-2 text-3xl font-semibold leading-none tracking-tight">
+        <p className="mt-3 text-[28px] font-semibold leading-none tracking-tight tabular-nums">
           {primary}
         </p>
         {secondary ? (
-          <p className={cn("mt-3 text-xs", styles.sub)}>{secondary}</p>
+          <p
+            className={cn(
+              "mt-2.5 text-xs",
+              solid ? "text-white/70" : "text-muted-foreground",
+            )}
+          >
+            {secondary}
+          </p>
         ) : null}
       </CardContent>
     </Card>
