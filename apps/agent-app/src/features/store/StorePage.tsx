@@ -43,6 +43,7 @@ export default function StorePage() {
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
   const modalVisible = showSoldAdder || editIndex !== null;
+  
   const editData =
     editIndex !== null
       ? {

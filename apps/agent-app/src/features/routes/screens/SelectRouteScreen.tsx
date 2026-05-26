@@ -64,15 +64,11 @@ export default function SelectRouteScreen() {
             <View style={{ flexDirection: "row", gap: 4 }}>
               <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() =>
-                  router.push({
-                    pathname: "/main/routes/store/[storeId]",
-                    params: { storeId: "store_kapitolyo" },
-                  })
-                }
+                onPress={() => router.push("/main/routes/history" as any)}
                 style={styles.settingsButton}
+                testID="open-history"
               >
-                <Ionicons name="storefront-outline" size={22} color="#FFFFFF" />
+                <Ionicons name="time-outline" size={22} color="#FFFFFF" />
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={0.8}

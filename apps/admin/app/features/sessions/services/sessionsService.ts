@@ -38,7 +38,7 @@ export async function getSessions(): Promise<SessionRow[]> {
     .select(
       "id, route_name, session_date, conducted_by, status, created_at, session_stores(visited)",
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }).limit(100);
 
   if (error) throw new Error(error.message);
 

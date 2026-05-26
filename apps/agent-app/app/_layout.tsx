@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useState } from "react";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { useAppReady } from "@/hooks/useAppReady";
 import "react-native-get-random-values";
@@ -33,7 +34,13 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack
-          screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}
+          screenOptions={{
+            headerShown: false,
+            animation: "fade_from_bottom",
+            contentStyle: {
+              backgroundColor: Colors[colorScheme ?? "light"].background,
+            },
+          }}
         >
           <Stack.Screen name="index" />
           <Stack.Screen name="auth/sign-in" />

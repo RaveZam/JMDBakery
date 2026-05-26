@@ -17,6 +17,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "RouteLedger",
   description: "JMD Bakery Dashboard",
+  icons: {
+    icon: "/images/Logo.png",
+    apple: "/images/Logo-removebg-preview.png",
+  },
 };
 
 export default function RootLayout({

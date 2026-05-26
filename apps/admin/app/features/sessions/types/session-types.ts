@@ -29,3 +29,11 @@ export type SessionStoreSaleRow = {
   boReason: string | null;
   total: number;
 };
+
+export type SessionInventoryRow = {
+  id: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  createdAt: string;
+};

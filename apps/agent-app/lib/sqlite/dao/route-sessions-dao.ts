@@ -45,6 +45,17 @@ const RouteSessionsDao = {
     }>(`SELECT * FROM route_sessions WHERE status = 'ongoing' `);
   },
 
+  getAll() {
+    return db.getAllSync<{
+      id: string;
+      route_name: string;
+      session_date: string;
+      conducted_by: string;
+      status: string;
+      created_at: string;
+    }>(`SELECT * FROM route_sessions ORDER BY created_at DESC`);
+  },
+
   getById(id: string) {
     return db.getFirstSync<{
       id: string;

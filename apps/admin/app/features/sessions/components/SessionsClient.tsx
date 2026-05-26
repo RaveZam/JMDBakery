@@ -1,11 +1,12 @@
 "use client";
 
 import type { ReactElement } from "react";
-import { useState } from "react";
-import { CalendarDays } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
-import type { SessionRow, SessionStoreRow } from "../types/session-types";
+import type { SessionInventoryRow, SessionRow, SessionStoreRow } from "../types/session-types";
 import { getSessionStores } from "../services/sessionsService";
+import { getSessionInventory } from "../services/inventoryServices";
 import { SessionCard } from "./SessionCard";
 import { SessionStoreList } from "./SessionStoreList";
 
@@ -17,6 +18,15 @@ export function SessionsClient({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [stores, setStores] = useState<SessionStoreRow[]>([]);
   const [storesLoading, setStoresLoading] = useState(false);
+  const [inventory, setInventory] = useState<SessionInventoryRow[]>([]);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const totalPages = Math.ceil(sessions.length / pageSize);
+  const paginated = sessions.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => { setPage(1); }, [sessions]);
 
   async function handleSelect(id: string) {
     if (selectedId === id) {
@@ -25,11 +35,17 @@ export function SessionsClient({
     }
     setSelectedId(id);
     setStoresLoading(true);
+    setInventoryLoading(true);
     try {
-      const result = await getSessionStores(id);
-      setStores(result);
+      const [storesResult, inventoryResult] = await Promise.all([
+        getSessionStores(id),
+        getSessionInventory(id),
+      ]);
+      setStores(storesResult);
+      setInventory(inventoryResult);
     } finally {
       setStoresLoading(false);
+      setInventoryLoading(false);
     }
   }
 
@@ -62,7 +78,7 @@ export function SessionsClient({
                 <p className="text-xs font-medium tracking-wider text-muted-foreground">
                   ALL SESSIONS ({sessions.length})
                 </p>
-                {sessions.map((session) => (
+                {paginated.map((session) => (
                   <SessionCard
                     key={session.id}
                     session={session}
@@ -70,6 +86,27 @@ export function SessionsClient({
                     onClick={() => handleSelect(session.id)}
                   />
                 ))}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-2">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="flex items-center gap-1 text-sm disabled:opacity-40"
+                    >
+                      <ChevronLeft className="h-4 w-4" /> Previous
+                    </button>
+                    <span className="text-xs text-muted-foreground">
+                      Page {page} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="flex items-center gap-1 text-sm disabled:opacity-40"
+                    >
+                      Next <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="xl:sticky xl:top-6 xl:self-start">
@@ -78,6 +115,8 @@ export function SessionsClient({
                     session={selected}
                     stores={stores}
                     loading={storesLoading}
+                    inventory={inventory}
+                    inventoryLoading={inventoryLoading}
                   />
                 ) : (
                   <div className="hidden items-center justify-center rounded-2xl border border-dashed py-20 text-sm text-muted-foreground xl:flex">
