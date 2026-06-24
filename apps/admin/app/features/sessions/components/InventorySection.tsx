@@ -5,6 +5,7 @@ import type { ReactElement } from "react";
 import { ChevronDown, ChevronRight, Loader2, Package } from "lucide-react";
 
 import type { SessionInventoryRow } from "../types/session-types";
+import { computeInventoryVariance } from "../helpers/sessionHelpers";
 
 export function InventorySection({
   inventory,
@@ -16,6 +17,7 @@ export function InventorySection({
   loading: boolean;
 }): ReactElement {
   const [open, setOpen] = useState(false);
+  const { rows, totals } = computeInventoryVariance(inventory, soldByProduct);
 
   return (
     <div className="rounded-xl border bg-background">
@@ -59,45 +61,30 @@ export function InventorySection({
                 </tr>
               </thead>
               <tbody>
-                {inventory.map((item) => {
-                  const sold = soldByProduct[item.productId] ?? 0;
-                  const remaining = item.quantity - sold;
-                  return (
-                    <tr key={item.id} className="border-t border-border/50">
-                      <td className="py-1 pr-2">{item.productName}</td>
-                      <td className="py-1 text-right">{item.quantity}</td>
-                      <td className="py-1 text-right">{sold}</td>
-                      <td
-                        className={
-                          remaining < 0
-                            ? "py-1 text-right font-medium text-destructive"
-                            : "py-1 text-right font-medium"
-                        }
-                      >
-                        {remaining}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {rows.map((item) => (
+                  <tr key={item.id} className="border-t border-border/50">
+                    <td className="py-1 pr-2">{item.productName}</td>
+                    <td className="py-1 text-right">{item.quantity}</td>
+                    <td className="py-1 text-right">{item.sold}</td>
+                    <td
+                      className={
+                        item.remaining < 0
+                          ? "py-1 text-right font-medium text-destructive"
+                          : "py-1 text-right font-medium"
+                      }
+                    >
+                      {item.remaining}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
               <tfoot>
                 <tr className="border-t border-border/50">
                   <td className="py-1 font-medium">Total</td>
+                  <td className="py-1 text-right font-medium">{totals.morning}</td>
+                  <td className="py-1 text-right font-medium">{totals.sold}</td>
                   <td className="py-1 text-right font-medium">
-                    {inventory.reduce((sum, i) => sum + i.quantity, 0)}
-                  </td>
-                  <td className="py-1 text-right font-medium">
-                    {inventory.reduce(
-                      (sum, i) => sum + (soldByProduct[i.productId] ?? 0),
-                      0,
-                    )}
-                  </td>
-                  <td className="py-1 text-right font-medium">
-                    {inventory.reduce(
-                      (sum, i) =>
-                        sum + i.quantity - (soldByProduct[i.productId] ?? 0),
-                      0,
-                    )}
+                    {totals.remaining}
                   </td>
                 </tr>
               </tfoot>

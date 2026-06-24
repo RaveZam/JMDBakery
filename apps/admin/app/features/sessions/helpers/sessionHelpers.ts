@@ -1,4 +1,34 @@
-import type { SessionStoreRow } from "../types/session-types";
+import type {
+  SessionInventoryRow,
+  SessionStoreRow,
+} from "../types/session-types";
+
+export type InventoryVarianceRow = SessionInventoryRow & {
+  sold: number;
+  remaining: number;
+};
+
+export function computeInventoryVariance(
+  inventory: SessionInventoryRow[],
+  soldByProduct: Record<string, number>,
+): {
+  rows: InventoryVarianceRow[];
+  totals: { morning: number; sold: number; remaining: number };
+} {
+  const rows = inventory.map((item) => {
+    const sold = soldByProduct[item.productId] ?? 0;
+    return { ...item, sold, remaining: item.quantity - sold };
+  });
+  const totals = rows.reduce(
+    (t, r) => ({
+      morning: t.morning + r.quantity,
+      sold: t.sold + r.sold,
+      remaining: t.remaining + r.remaining,
+    }),
+    { morning: 0, sold: 0, remaining: 0 },
+  );
+  return { rows, totals };
+}
 
 export function formatSessionDate(dateStr: string): string {
   const d = new Date(`${dateStr}T00:00:00`);

@@ -49,6 +49,11 @@ export function SessionsClient({
       setStores(storesResult);
       setInventory(inventoryResult);
       setSoldByProduct(soldResult);
+    } catch (err) {
+      console.error(`Failed to load session ${id} details`, err);
+      setStores([]);
+      setInventory([]);
+      setSoldByProduct({});
     } finally {
       setStoresLoading(false);
       setInventoryLoading(false);

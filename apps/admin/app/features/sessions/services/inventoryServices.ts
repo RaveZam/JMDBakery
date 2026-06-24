@@ -30,17 +30,19 @@ export async function getSessionSoldByProduct(
 ): Promise<Record<string, number>> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("sales")
-    .select("product_id, quantity_sold, session_stores!inner(route_session_id)")
-    .eq("session_stores.route_session_id", sessionId);
+  const { data, error } = await supabase.rpc("session_sold_by_product", {
+    p_session_id: sessionId,
+  });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new Error(
+      `Failed to load sold-by-product for session ${sessionId}: ${error.message}`,
+    );
+  }
 
   const sold: Record<string, number> = {};
   for (const row of data ?? []) {
-    const r = row as any;
-    sold[r.product_id] = (sold[r.product_id] ?? 0) + (r.quantity_sold ?? 0);
+    sold[row.product_id] = row.quantity_sold;
   }
   return sold;
 }
