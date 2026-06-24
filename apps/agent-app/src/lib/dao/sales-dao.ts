@@ -1,11 +1,11 @@
-import { db } from "../db-migration";
-import { logTable } from "../log-table";
-import { v4 as uuidv4 } from "uuid";
+import { getDb } from "@/src/lib/db";
+import { generateUUID } from "@/src/lib/uuid";
+import { logTable } from "@/src/lib/log-table";
 import type { LoggedItem } from "@/src/features/store/hooks/useDistributionLog";
 
 const SalesDao = {
   getBySessionStoreId(sessionStoreId: string): LoggedItem[] {
-    const rows = db.getAllSync<{
+    const rows = getDb().getAllSync<{
       id: string;
       product_id: string;
       snapshot_name: string;
@@ -33,6 +33,7 @@ const SalesDao = {
   },
 
   insertSale(
+    id: string,
     sessionStoreId: string,
     productId: string,
     snapshotName: string,
@@ -41,8 +42,7 @@ const SalesDao = {
     quantityBo: number,
     boReason: string,
   ) {
-    const id = uuidv4();
-    db.runSync(
+    getDb().runSync(
       `INSERT INTO sales (id, session_store_id, product_id, snapshot_name, snapshot_price, quantity_sold, quantity_bo, bo_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
@@ -67,18 +67,26 @@ const SalesDao = {
     quantityBo: number,
     boReason: string,
   ) {
-    db.runSync(
+    getDb().runSync(
       `UPDATE sales SET product_id = ?, snapshot_name = ?, snapshot_price = ?, quantity_sold = ?, quantity_bo = ?, bo_reason = ? WHERE id = ?`,
-      [productId, snapshotName, snapshotPrice, quantitySold, quantityBo, boReason, saleId],
+      [
+        productId,
+        snapshotName,
+        snapshotPrice,
+        quantitySold,
+        quantityBo,
+        boReason,
+        saleId,
+      ],
     );
   },
 
   deleteSale(saleId: string) {
-    db.runSync(`DELETE FROM sales WHERE id = ?`, [saleId]);
+    getDb().runSync(`DELETE FROM sales WHERE id = ?`, [saleId]);
   },
 
   logAll() {
-    const rows = db.getAllSync<{
+    const rows = getDb().getAllSync<{
       id: string;
       session_store_id: string;
       product_id: string;

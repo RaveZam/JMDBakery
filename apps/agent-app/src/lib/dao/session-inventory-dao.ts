@@ -1,11 +1,11 @@
-import { db } from "../db-migration";
-import { logTable } from "../log-table";
-import { v4 as uuidv4 } from "uuid";
+import { getDb } from "@/src/lib/db";
+import { generateUUID } from "@/src/lib/uuid";
+import { logTable } from "@/src/lib/log-table";
 import type { InventoryItem } from "@/src/features/store/hooks/useMorningInventory";
 
 const SessionInventoryDao = {
   getBySessionId(sessionId: string): InventoryItem[] {
-    const rows = db.getAllSync<{
+    const rows = getDb().getAllSync<{
       id: string;
       product_id: string;
       snapshot_product_name: string;
@@ -26,7 +26,7 @@ const SessionInventoryDao = {
   },
 
   getRemainingBySessionStoreId(sessionStoreId: string): Record<string, number> {
-    const rows = db.getAllSync<{ product_id: string; remaining: number }>(
+    const rows = getDb().getAllSync<{ product_id: string; remaining: number }>(
       `SELECT si.product_id,
               si.quantity - COALESCE((
                 SELECT SUM(s.quantity_sold + s.quantity_bo)
@@ -51,9 +51,9 @@ const SessionInventoryDao = {
     productId: string,
     snapshotName: string,
     quantity: number,
+    id: string = generateUUID(),
   ) {
-    const id = uuidv4();
-    db.runSync(
+    getDb().runSync(
       `INSERT INTO session_inventory (id, route_session_id, product_id, snapshot_product_name, quantity) VALUES (?, ?, ?, ?, ?)`,
       [id, sessionId, productId, snapshotName, quantity],
     );
@@ -61,18 +61,18 @@ const SessionInventoryDao = {
   },
 
   updateQuantity(id: string, quantity: number) {
-    db.runSync(`UPDATE session_inventory SET quantity = ? WHERE id = ?`, [
+    getDb().runSync(`UPDATE session_inventory SET quantity = ? WHERE id = ?`, [
       quantity,
       id,
     ]);
   },
 
   delete(id: string) {
-    db.runSync(`DELETE FROM session_inventory WHERE id = ?`, [id]);
+    getDb().runSync(`DELETE FROM session_inventory WHERE id = ?`, [id]);
   },
 
   logAll() {
-    const rows = db.getAllSync<{
+    const rows = getDb().getAllSync<{
       id: string;
       route_session_id: string;
       product_id: string;

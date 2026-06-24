@@ -1,11 +1,10 @@
-import { db } from "../db-migration";
-import { v4 as uuidv4 } from "uuid";
-import { logTable } from "../log-table";
+import { getDb } from "@/src/lib/db";
+import { generateUUID } from "@/src/lib/uuid";
+import { logTable } from "@/src/lib/log-table";
 
 const SessionStoresDao = {
-  insert(routeSessionId: string, storeId: string): string {
-    const id = uuidv4();
-    db.runSync(
+  insert(routeSessionId: string, storeId: string, id: string = generateUUID()): string {
+    getDb().runSync(
       `INSERT INTO session_stores (id, route_session_id, store_id) VALUES (?, ?, ?)`,
       [id, routeSessionId, storeId],
     );
@@ -13,7 +12,7 @@ const SessionStoresDao = {
   },
 
   getBySessionId(sessionId: string) {
-    return db.getAllSync<{
+    return getDb().getAllSync<{
       id: string;
       route_session_id: string;
       store_id: string;
@@ -38,13 +37,13 @@ const SessionStoresDao = {
   },
 
   markVisited(sessionStoreId: string) {
-    db.runSync(`UPDATE session_stores SET visited = 1 WHERE id = ?`, [
+    getDb().runSync(`UPDATE session_stores SET visited = 1 WHERE id = ?`, [
       sessionStoreId,
     ]);
   },
 
   logAll() {
-    const rows = db.getAllSync<{
+    const rows = getDb().getAllSync<{
       id: string;
       route_session_id: string;
       store_id: string;

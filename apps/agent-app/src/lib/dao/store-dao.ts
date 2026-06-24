@@ -1,6 +1,17 @@
-import { db } from "@/lib/sqlite/db-migration";
-import { v4 as uuidv4 } from "uuid";
-import { logTable } from "@/lib/sqlite/log-table";
+import { getDb } from "@/src/lib/db";
+import { generateUUID } from "@/src/lib/uuid";
+import { logTable } from "@/src/lib/log-table";
+
+type StoreRow = {
+  id: string;
+  name: string;
+  province_id: string;
+  province: string;
+  city: string;
+  barangay: string;
+  contact_number: string;
+  contact_name: string;
+};
 
 type InsertStoreInput = {
   provinceId: string;
@@ -14,16 +25,7 @@ type InsertStoreInput = {
 
 const StoresDao = {
   getStoresForRoute(routeId: string) {
-    return db.getAllSync<{
-      id: string;
-      name: string;
-      province_id: string;
-      province: string;
-      city: string;
-      barangay: string;
-      contact_number: string;
-      contact_name: string;
-    }>(
+    return getDb().getAllSync<StoreRow>(
       `SELECT s.* FROM stores s
        INNER JOIN provinces p ON s.province_id = p.id
        WHERE p.route_id = ?`,
@@ -32,24 +34,18 @@ const StoresDao = {
   },
 
   getStoresForProvince(provinceId: string) {
-    return db.getAllSync<{
-      id: string;
-      name: string;
-      province_id: string;
-      province: string;
-      city: string;
-      barangay: string;
-      contact_number: string;
-      contact_name: string;
-    }>(`SELECT * FROM stores WHERE province_id = ?`, [provinceId]);
+    return getDb().getAllSync<StoreRow>(
+      `SELECT * FROM stores WHERE province_id = ?`,
+      [provinceId],
+    );
   },
 
   deleteStore(id: string) {
-    db.runSync(`DELETE FROM stores WHERE id = ?`, [id]);
+    getDb().runSync(`DELETE FROM stores WHERE id = ?`, [id]);
   },
 
   updateStore(id: string, input: Omit<InsertStoreInput, "provinceId">) {
-    db.runSync(
+    getDb().runSync(
       `UPDATE stores SET name = ?, province = ?, city = ?, barangay = ?, contact_number = ?, contact_name = ? WHERE id = ?`,
       [
         input.name,
@@ -63,23 +59,9 @@ const StoresDao = {
     );
   },
 
-  logAll() {
-    const rows = db.getAllSync<{
-      id: string;
-      name: string;
-      province_id: string;
-      province: string;
-      city: string;
-      barangay: string;
-      contact_number: string;
-      contact_name: string;
-    }>(`SELECT * FROM stores`);
-    logTable("stores", rows as Record<string, unknown>[]);
-  },
-
   insertStore(input: InsertStoreInput) {
-    const id = uuidv4();
-    db.runSync(
+    const id = generateUUID();
+    getDb().runSync(
       `INSERT INTO stores
        (id, province_id, name, province, city, barangay, contact_number, contact_name)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -95,6 +77,11 @@ const StoresDao = {
       ],
     );
     return id;
+  },
+
+  logAll() {
+    const rows = getDb().getAllSync<StoreRow>(`SELECT * FROM stores`);
+    logTable("stores", rows as Record<string, unknown>[]);
   },
 };
 export default StoresDao;
