@@ -90,6 +90,10 @@ npm run deploy                                      # Deploy to production (work
   - Memoization when appropriate (useMemo, useCallback)
   - Error boundaries for better error handling
 
+### Custom Hooks
+
+- **No required arguments**: A custom hook should derive everything it needs internally and expose state + handlers — it must not accept props/arguments. Needing a caller to pass data in (e.g. a `loadRoutes` callback) defeats the purpose of a hook, which is to hide complexity, not relay it back to the caller. If a hook seems to need an input, either move that responsibility into the hook or have the consuming component own it and react to the hook's return value instead.
+
 ### Navigation & Routing
 
 - Use **Expo Router** for all navigation
