@@ -5,7 +5,7 @@ import { ThemedView } from "@/src/shared/components/ThemedView";
 import { Colors } from "@/src/shared/constants/Colors";
 
 import { RouteList } from "../components/routes-screen-components/RouteList";
-import { RoutesProvider } from "../context/RoutesContext";
+
 import { Header } from "@/src/shared/components/ui/header";
 import { HeaderIconButton } from "@/src/shared/components/ui/header-icon-button";
 
@@ -31,9 +31,7 @@ export default function RoutesScreen() {
           }
         />
 
-        <RoutesProvider>
-          <RouteList />
-        </RoutesProvider>
+        <RouteList />
       </ThemedView>
     </SafeAreaView>
   );

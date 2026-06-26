@@ -9,20 +9,34 @@ import {
 } from "react-native";
 import { ThemedText } from "@/src/shared/components/ThemedText";
 import { Colors } from "@/src/shared/constants/Colors";
-import { useRoutesContext } from "../../context/useRoutesContext";
 
-export function CreateRouteModal() {
-  const { createModal } = useRoutesContext();
+export function CreateRouteModal({
+  visible,
+  onCreate,
+  onClose,
+}: {
+  visible: boolean;
+  onCreate: (name: string) => void;
+  onClose: () => void;
+}) {
   const [routeName, setRouteName] = useState("");
 
   const handleCancel = () => {
     setRouteName("");
-    createModal.close();
+    onClose();
+  };
+
+  const handleCreate = () => {
+    if (routeName.trim()) {
+      onCreate(routeName);
+      setRouteName("");
+      onClose();
+    }
   };
 
   return (
     <Modal
-      visible={createModal.isOpen}
+      visible={visible}
       animationType="fade"
       transparent={true}
       statusBarTranslucent={true}
@@ -59,7 +73,7 @@ export function CreateRouteModal() {
                 !routeName.trim() && styles.modalPrimaryButtonDisabled,
               ]}
               disabled={!routeName.trim()}
-              onPress={() => createModal.submit(routeName)}
+              onPress={handleCreate}
             >
               <Text style={styles.modalPrimaryButtonText}>
                 Create New Route

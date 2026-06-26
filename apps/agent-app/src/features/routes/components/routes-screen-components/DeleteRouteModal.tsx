@@ -2,17 +2,21 @@ import { Modal, View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Route } from "../../types/routes-type";
 import { modalStyles as m } from "@/src/shared/styles/modalStyles";
-import { useRoutesContext } from "../../context/useRoutesContext";
 
-export function DeleteRouteModal() {
-  const { deleteModal } = useRoutesContext();
+type Props = {
+  route: Route | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+};
+
+export function DeleteRouteModal({ route, onCancel, onConfirm }: Props) {
   return (
     <Modal
-      visible={!!deleteModal.pending}
+      visible={!!route}
       transparent
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={deleteModal.cancel}
+      onRequestClose={onCancel}
     >
       <View style={m.backdrop}>
         <View style={m.content}>
@@ -22,20 +26,14 @@ export function DeleteRouteModal() {
           <Text style={m.title}>Delete Route</Text>
           <Text style={m.body}>
             Are you sure you want to delete{" "}
-            <Text style={m.highlight}>{deleteModal.pending?.name}</Text>?{"\n"}
+            <Text style={m.highlight}>{route?.name}</Text>?{"\n"}
             All provinces and stores will be removed.
           </Text>
           <View style={m.buttons}>
-            <TouchableOpacity
-              style={m.cancelButton}
-              onPress={deleteModal.cancel}
-            >
+            <TouchableOpacity style={m.cancelButton} onPress={onCancel}>
               <Text style={m.cancelText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={m.deleteButton}
-              onPress={deleteModal.confirm}
-            >
+            <TouchableOpacity style={m.deleteButton} onPress={onConfirm}>
               <Text style={m.deleteText}>Delete</Text>
             </TouchableOpacity>
           </View>

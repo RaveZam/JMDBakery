@@ -2,26 +2,22 @@ import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Swipeable } from "react-native-gesture-handler";
 import { Route } from "../../types/routes-type";
-import { useRoutesContext } from "../../context/useRoutesContext";
 import { useRouter } from "expo-router";
 
 type Props = {
   route: Route;
+  onRequestDelete: (route: Route) => void;
 };
 
-export function RouteCard({ route }: Props) {
+export function RouteCard({ route, onRequestDelete }: Props) {
   const router = useRouter();
-  const { swipe } = useRoutesContext();
   return (
     <Swipeable
-      ref={(ref) => {
-        swipe.registerRef(route.id, ref);
-      }}
       renderRightActions={() => (
         <TouchableOpacity
           style={styles.deleteAction}
           activeOpacity={0.8}
-          onPress={() => swipe.requestDelete(route)}
+          onPress={() => onRequestDelete(route)}
         >
           <Ionicons name="trash-outline" size={22} color="#FFFFFF" />
           <Text style={styles.deleteActionText}>Delete</Text>

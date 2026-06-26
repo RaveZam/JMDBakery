@@ -1,14 +1,14 @@
 import { StyleSheet, View, ScrollView, Text } from "react-native";
-import { router } from "expo-router";
-import { useRoutesContext } from "../../context/useRoutesContext";
+
 import { CreateRouteModal } from "./CreateRouteModal";
 import { RouteCard } from "./RouteCard";
 import { EmptyRoutes } from "./EmptyRoutes";
 import { CreateRouteFab } from "./CreateRouteFab";
 import { DeleteRouteModal } from "./DeleteRouteModal";
+import useRoute from "../../hooks/useRoute";
 
 export function RouteList() {
-  const { routes } = useRoutesContext();
+  const { routes, create, del } = useRoute();
 
   return (
     <>
@@ -27,14 +27,28 @@ export function RouteList() {
           {routes.length === 0 ? (
             <EmptyRoutes />
           ) : (
-            routes.map((route) => <RouteCard key={route.id} route={route} />)
+            routes.map((route) => (
+              <RouteCard
+                key={route.id}
+                route={route}
+                onRequestDelete={del.requestDelete}
+              />
+            ))
           )}
         </ScrollView>
       </View>
 
-      <CreateRouteFab />
-      <CreateRouteModal />
-      <DeleteRouteModal />
+      <CreateRouteFab onPress={create.openModal} />
+      <CreateRouteModal
+        visible={create.isModalOpen}
+        onCreate={create.addRoute}
+        onClose={create.closeModal}
+      />
+      <DeleteRouteModal
+        route={del.routeToDelete}
+        onCancel={del.cancelDelete}
+        onConfirm={del.confirmDelete}
+      />
     </>
   );
 }

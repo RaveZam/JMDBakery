@@ -1,16 +1,10 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRoutesContext } from "../../context/useRoutesContext";
 
-export function CreateRouteFab() {
-  const { createModal } = useRoutesContext();
+export function CreateRouteFab({ onPress }: { onPress: () => void }) {
   return (
-    <TouchableOpacity
-      style={styles.fab}
-      activeOpacity={0.9}
-      onPress={createModal.open}
-    >
+    <TouchableOpacity style={styles.fab} activeOpacity={0.9} onPress={onPress}>
       <LinearGradient
         colors={["#1b6e40", "#0b4c29"]}
         start={{ x: 0, y: 0 }}
