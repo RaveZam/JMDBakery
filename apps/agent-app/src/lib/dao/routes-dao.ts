@@ -21,14 +21,12 @@ const RoutesDao = {
 
   deleteRoute(id: string) {
     const db = getDb();
-    db.withTransactionSync(() => {
-      db.runSync(
-        `DELETE FROM stores WHERE province_id IN (SELECT id FROM provinces WHERE route_id = ?)`,
-        [id],
-      );
-      db.runSync(`DELETE FROM provinces WHERE route_id = ?`, [id]);
-      db.runSync(`DELETE FROM routes WHERE id = ?`, [id]);
-    });
+    db.runSync(
+      `DELETE FROM stores WHERE province_id IN (SELECT id FROM provinces WHERE route_id = ?)`,
+      [id],
+    );
+    db.runSync(`DELETE FROM provinces WHERE route_id = ?`, [id]);
+    db.runSync(`DELETE FROM routes WHERE id = ?`, [id]);
   },
 
   logAll() {

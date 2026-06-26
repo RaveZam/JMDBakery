@@ -11,6 +11,7 @@ export type OutboxOperation = "create" | "update" | "delete";
  * dispatch is generic per table — only the operation differs.
  */
 const ENTITY_TABLE: Record<string, string> = {
+  route: "routes",
   store: "stores",
   planned_route: "planned_routes",
   route_session: "route_sessions",

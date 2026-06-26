@@ -1,82 +1,53 @@
 import { getDb } from "@/src/lib/db";
+import { enqueueOutbox } from "@/src/lib/sync/outbox";
 import RoutesDao from "@/src/lib/dao/routes-dao";
-import ProvincesDao from "@/src/lib/dao/province-dao";
-import StoresDao from "@/src/lib/dao/store-dao";
-import type { CreateRouteDraft } from "../types/routes-type";
 
-export const routeSaveService = {
-  createRouteFromDraft(draft: CreateRouteDraft) {
-    const trimmedRouteName = draft.name.trim();
+export function getRoutes() {
+  return RoutesDao.getAllRoutes();
+}
 
-    if (!trimmedRouteName) {
-      throw new Error("Route name is required.");
-    }
-
-    if (draft.provinces.length === 0) {
-      throw new Error("Add at least one province.");
-    }
-
-    getDb().withTransactionSync(() => {
-      const routeId = RoutesDao.insertRoute(trimmedRouteName);
-
-      draft.provinces.forEach((province) => {
-        const provinceName = province.name.trim();
-
-        if (!provinceName) return;
-
-        const provinceId = ProvincesDao.insertProvince(routeId, provinceName);
-
-        province.stores.forEach((store) => {
-          const storeName = store.name.trim();
-
-          if (!storeName) return;
-
-          StoresDao.insertStore({
-            provinceId: provinceId,
-            name: storeName,
-            province: store.province?.trim() ?? "",
-            city: store.city?.trim() ?? "",
-            barangay: store.barangay?.trim() ?? "",
-            contactName: store.contactName?.trim() ?? "",
-            contactPhone: store.contactPhone?.trim() ?? "",
-          });
-        });
-      });
+export function createRoute(name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    throw new Error("Route name is required.");
+  }
+  let id = "";
+  getDb().withTransactionSync(() => {
+    id = RoutesDao.insertRoute(trimmed);
+    enqueueOutbox({
+      entityType: "route",
+      entityId: id,
+      operation: "create",
+      payload: { id, name: trimmed },
     });
+  });
+  return id;
+}
 
-    return RoutesDao.getAllRoutes();
-  },
-
-  // Route-building entities (routes/provinces/stores added here) are local-only:
-  // createRouteFromDraft never enqueues, so these mutations stay off the outbox
-  // to match. If routes/provinces ever need to sync, wire create + these together.
-  createRoute(name: string) {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    RoutesDao.insertRoute(trimmed);
-  },
-
-  renameRoute(id: string, name: string) {
-    const trimmed = name.trim();
-    if (!trimmed) return;
+export function updateRouteName(id: string, name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    throw new Error("Route name is required.");
+  }
+  getDb().withTransactionSync(() => {
     RoutesDao.renameRoute(id, trimmed);
-  },
+    enqueueOutbox({
+      entityType: "route",
+      entityId: id,
+      operation: "update",
+      payload: { name: trimmed },
+    });
+  });
+}
 
-  deleteRoute(id: string) {
+export function deleteRoute(id: string) {
+  getDb().withTransactionSync(() => {
     RoutesDao.deleteRoute(id);
-  },
-
-  addProvince(routeId: string, name: string) {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    ProvincesDao.insertProvince(routeId, trimmed);
-  },
-
-  deleteProvince(id: string) {
-    ProvincesDao.deleteProvince(id);
-  },
-
-  deleteStore(id: string) {
-    StoresDao.deleteStore(id);
-  },
-};
+    enqueueOutbox({
+      entityType: "route",
+      entityId: id,
+      operation: "delete",
+      payload: { id },
+    });
+  });
+}
