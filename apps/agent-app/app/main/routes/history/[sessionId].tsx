@@ -1,1 +1,1 @@
-export { default } from "../../../../src/features/history/screens/HistorySessionScreen";
+export { default } from "@/src/features/history/screens/HistorySessionScreen";

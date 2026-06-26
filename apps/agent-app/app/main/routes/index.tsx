@@ -1,1 +1,1 @@
-export { default } from "../../../src/features/routes/screens/RoutesScreen";
+export { default } from "@/src/features/routes/screens/RoutesScreen";

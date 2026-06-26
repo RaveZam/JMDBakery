@@ -35,7 +35,7 @@ export function RouteCard({ route }: Props) {
         style={styles.routeCard}
         onPress={() =>
           router.push({
-            pathname: "/main/routes/list",
+            pathname: "/main/routes/detail",
             params: { routeId: route.id, routeName: route.name },
           })
         }

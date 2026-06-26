@@ -126,8 +126,8 @@ File-based routing under `app/`. Key routes:
 
 - `app/index.tsx` → re-exports `/main/routes/index` (home)
 - `app/auth/sign-in.tsx` → sign-in screen
-- `app/main/routes/index.tsx` → SelectRouteScreen
-- `app/main/routes/list.tsx` → ListRouteScreen
+- `app/main/routes/index.tsx` → RoutesScreen
+- `app/main/routes/detail.tsx` → RouteDetailScreen
 - `app/main/routes/store/[storeId].tsx` → dynamic store detail
 - `app/main/settings/index.tsx` → settings
 
@@ -138,7 +138,7 @@ File-based routing under `app/`. Key routes:
 const params = useLocalSearchParams<{ routeId?: string; routeName?: string }>();
 
 // Navigate with params
-router.push({ pathname: "/main/routes/list", params: { routeId, routeName } });
+router.push({ pathname: "/main/routes/detail", params: { routeId, routeName } });
 
 // Auth redirect (prevent back nav)
 router.replace("/auth/sign-in");
