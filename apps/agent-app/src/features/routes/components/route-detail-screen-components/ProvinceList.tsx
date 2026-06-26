@@ -1,44 +1,72 @@
-import { StyleSheet, View, Text, ScrollView } from "react-native";
+import { StyleSheet, View, ScrollView, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ProvincePanel } from "./ProvincePanel";
-import { useRouteDetail } from "../../context/useRouteDetail";
 
-export function ProvinceList() {
-  const { provinces, storesByProvince } = useRouteDetail();
+import { ProvinceCard } from "./ProvinceCard";
+import { useProvinces } from "../../hooks/useProvinces";
+
+type Props = {
+  routeId: string;
+  onSelectStore: (storeId: string) => void;
+};
+
+export function ProvinceList({ routeId, onSelectStore }: Props) {
+  const { provinces } = useProvinces(routeId);
 
   return (
-    <ScrollView
-      style={styles.scrollArea}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      {provinces.length === 0 && (
-        <View style={styles.emptyState}>
-          <Ionicons name="location-outline" size={32} color="#CBD5E1" />
-          <Text style={styles.emptyStateText}>
-            No provinces yet.{"\n"}Add one below to get started.
-          </Text>
-        </View>
+    <View style={styles.content}>
+      {provinces.length > 0 && (
+        <Text style={styles.sectionLabel}>
+          {provinces.length} {provinces.length === 1 ? "province" : "provinces"}{" "}
+          available
+        </Text>
       )}
 
-      {provinces.map((province) => (
-        <ProvincePanel
-          key={province.id}
-          province={province}
-          stores={storesByProvince[province.id] ?? []}
-        />
-      ))}
-    </ScrollView>
+      <ScrollView
+        style={styles.scrollArea}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {provinces.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="location-outline" size={32} color="#CBD5E1" />
+            <Text style={styles.emptyStateText}>
+              No provinces yet.{"\n"}Add one to get started.
+            </Text>
+          </View>
+        ) : (
+          provinces.map((province) => (
+            <ProvinceCard
+              key={province.id}
+              province={province}
+              onSelectStore={onSelectStore}
+            />
+          ))
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    gap: 8,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#94A3B8",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
   scrollArea: {
     flex: 1,
   },
   scrollContent: {
-    gap: 12,
-    paddingBottom: 24,
+    gap: 10,
+    paddingBottom: 100,
   },
   emptyState: {
     alignItems: "center",

@@ -1,14 +1,30 @@
 import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ThemedText } from "@/src/shared/components/ThemedText";
+import { router, useLocalSearchParams } from "expo-router";
 import { ThemedView } from "@/src/shared/components/ThemedView";
+import { Colors } from "@/src/shared/constants/Colors";
+
+import { ProvinceList } from "../components/route-detail-screen-components/ProvinceList";
+import { ViewStoreModal } from "../components/route-detail-screen-components/ViewStoreModal";
+import { useStoreDetail } from "../hooks/useStoreDetail";
+
+import { Header } from "@/src/shared/components/ui/header";
 
 export default function RouteDetailScreen() {
+  const { routeId, routeName } = useLocalSearchParams<{
+    routeId?: string;
+    routeName?: string;
+  }>();
+  const { store, openStore, closeStore } = useStoreDetail();
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
       <ThemedView style={styles.container}>
-        <ThemedText>Route Detail (placeholder)</ThemedText>
+        <Header title={routeName ?? "Route"} onBack={() => router.back()} />
+        <ProvinceList routeId={routeId ?? ""} onSelectStore={openStore} />
       </ThemedView>
+
+      <ViewStoreModal store={store} onClose={closeStore} />
     </SafeAreaView>
   );
 }
@@ -16,12 +32,10 @@ export default function RouteDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F0F0EB",
+    backgroundColor: Colors.light.background,
   },
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F0F0EB",
+    backgroundColor: Colors.light.background,
   },
 });
