@@ -15,7 +15,7 @@ export function useProvinces(routeId: string) {
     loadProvinces();
   }, [loadProvinces]);
 
-  return { provinces };
+  return { provinces, loadProvinces };
 }
 
 export default useProvinces;

@@ -41,10 +41,9 @@ const StoresDao = {
   },
 
   getStoreById(id: string) {
-    return getDb().getFirstSync<StoreRow>(
-      `SELECT * FROM stores WHERE id = ?`,
-      [id],
-    );
+    return getDb().getFirstSync<StoreRow>(`SELECT * FROM stores WHERE id = ?`, [
+      id,
+    ]);
   },
 
   deleteStore(id: string) {

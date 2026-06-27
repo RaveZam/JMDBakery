@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ProvinceRow } from "../../types/db-rows";
@@ -7,18 +8,32 @@ import { StoreListRow } from "./StoreListRow";
 type Props = {
   province: ProvinceRow;
   onSelectStore: (storeId: string) => void;
+  refreshKey?: number;
 };
 
-export function ProvinceCard({ province, onSelectStore }: Props) {
-  const { stores } = useStores(province.id);
+export function ProvinceCard({ province, onSelectStore, refreshKey }: Props) {
+  const { stores, loadStores } = useStores(province.id);
+
+  // Reload when the screen signals a store changed (the hook already loads on mount).
+  useEffect(() => {
+    if (refreshKey) loadStores();
+  }, [refreshKey, loadStores]);
 
   return (
     <View style={styles.provincePanel} testID={`province-item-${province.id}`}>
       <View style={styles.provinceHeader}>
         <View style={styles.provinceIconWrap}>
-          <Ionicons name="map-outline" size={16} color="#1b6e40" />
+          <Ionicons name="map-outline" size={15} color="#3F7355" />
         </View>
-        <Text style={styles.provinceName}>{province.name}</Text>
+        <Text style={styles.provinceName} numberOfLines={1}>
+          {province.name}
+        </Text>
+        <View style={styles.countBadge}>
+          <Text style={styles.countBadgeText}>{stores.length}</Text>
+          <Text style={styles.countBadgeLabel}>
+            {stores.length === 1 ? "store" : "stores"}
+          </Text>
+        </View>
       </View>
 
       {stores.length === 0 ? (
@@ -63,9 +78,29 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   provinceName: {
+    flex: 1,
     fontSize: 14,
+    fontWeight: "600",
+    color: "#1E293B",
+  },
+  countBadge: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 3,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "#F6EEDD",
+  },
+  countBadgeText: {
+    fontSize: 13,
     fontWeight: "700",
-    color: "#0F172A",
+    color: "#9A6B12",
+  },
+  countBadgeLabel: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#B8923F",
   },
   noStoresText: {
     fontSize: 13,

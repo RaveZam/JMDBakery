@@ -2,25 +2,17 @@ import { StyleSheet, View, ScrollView, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { ProvinceCard } from "./ProvinceCard";
-import { useProvinces } from "../../hooks/useProvinces";
+import { ProvinceRow } from "../../types/db-rows";
 
 type Props = {
-  routeId: string;
+  provinces: ProvinceRow[];
   onSelectStore: (storeId: string) => void;
+  refreshKey?: number;
 };
 
-export function ProvinceList({ routeId, onSelectStore }: Props) {
-  const { provinces } = useProvinces(routeId);
-
+export function ProvinceList({ provinces, onSelectStore, refreshKey }: Props) {
   return (
     <View style={styles.content}>
-      {provinces.length > 0 && (
-        <Text style={styles.sectionLabel}>
-          {provinces.length} {provinces.length === 1 ? "province" : "provinces"}{" "}
-          available
-        </Text>
-      )}
-
       <ScrollView
         style={styles.scrollArea}
         contentContainerStyle={styles.scrollContent}
@@ -39,6 +31,7 @@ export function ProvinceList({ routeId, onSelectStore }: Props) {
               key={province.id}
               province={province}
               onSelectStore={onSelectStore}
+              refreshKey={refreshKey}
             />
           ))
         )}
@@ -53,13 +46,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     gap: 8,
-  },
-  sectionLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#94A3B8",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
   },
   scrollArea: {
     flex: 1,

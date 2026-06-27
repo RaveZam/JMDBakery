@@ -6,46 +6,49 @@ import {
   Text,
   Modal,
 } from "react-native";
+import { useState } from "react";
 import { ThemedText } from "@/src/shared/components/ThemedText";
 import { Colors } from "@/src/shared/constants/Colors";
-import { routeSaveService } from "../../services/route-save-service";
-import { useAddProvinceForm } from "../../hooks/useAddProvinceForm";
+import { modalStyles as m } from "@/src/shared/styles/modalStyles";
+import { createProvince } from "../../services/province-save-service";
 
-interface AddProvinceModalProps {
+type AddProvinceModalProps = {
   routeId: string;
+  visible: boolean;
   onClose: () => void;
   onAdded: () => void;
-}
+};
 
 export function AddProvinceModal({
   routeId,
+  visible,
   onClose,
   onAdded,
 }: AddProvinceModalProps) {
-  const { provinceName, setProvinceName, canSubmit, reset } =
-    useAddProvinceForm();
+  const [provinceName, setProvinceName] = useState("");
+  const canSubmit = provinceName.trim().length > 0;
 
   const handleCancel = () => {
-    reset();
+    setProvinceName("");
     onClose();
   };
 
   const handleAdd = () => {
     if (!canSubmit) return;
-    routeSaveService.addProvince(routeId, provinceName);
-    reset();
+    createProvince(routeId, provinceName);
+    setProvinceName("");
     onAdded();
   };
 
   return (
     <Modal
-      visible={true}
+      visible={visible}
       animationType="fade"
-      transparent={true}
-      statusBarTranslucent={true}
+      transparent
+      statusBarTranslucent
       onRequestClose={handleCancel}
     >
-      <View style={styles.modalBackdrop}>
+      <View style={m.backdrop}>
         <View style={styles.modalContent}>
           <ThemedText type="defaultSemiBold" style={styles.modalTitle}>
             Add Province/Municipality
@@ -59,7 +62,7 @@ export function AddProvinceModal({
               placeholder="e.g. Makati, Quezon City"
               placeholderTextColor="#94A3B8"
               style={styles.modalInput}
-              autoFocus={true}
+              autoFocus
             />
           </View>
 
@@ -88,14 +91,6 @@ export function AddProvinceModal({
 }
 
 const styles = StyleSheet.create({
-  modalBackdrop: {
-    flex: 1,
-    width: "100%",
-    backgroundColor: "rgba(15, 23, 42, 0.45)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 16,
-  },
   modalContent: {
     width: "100%",
     maxWidth: 420,
