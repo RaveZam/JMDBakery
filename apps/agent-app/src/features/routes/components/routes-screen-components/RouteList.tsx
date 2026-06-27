@@ -1,24 +1,30 @@
-import { StyleSheet, View, ScrollView, Text } from "react-native";
+import { StyleSheet, View, ScrollView } from "react-native";
 
 import { CreateRouteModal } from "./CreateRouteModal";
 import { RouteCard } from "./RouteCard";
 import { EmptyRoutes } from "./EmptyRoutes";
 import { CreateRouteFab } from "./CreateRouteFab";
 import { DeleteRouteModal } from "./DeleteRouteModal";
+import { RoutesBanner } from "./RoutesBanner";
 import useRoute from "../../hooks/useRoute";
 
-export function RouteList() {
+type Props = {
+  onOpenHistory: () => void;
+  onOpenSettings: () => void;
+};
+
+export function RouteList({ onOpenHistory, onOpenSettings }: Props) {
   const { routes, create, del } = useRoute();
 
   return (
     <>
-      <View style={styles.content}>
-        {routes.length > 0 && (
-          <Text style={styles.sectionLabel}>
-            {routes.length} {routes.length === 1 ? "route" : "routes"} available
-          </Text>
-        )}
+      <RoutesBanner
+        routeCount={routes.length}
+        onOpenHistory={onOpenHistory}
+        onOpenSettings={onOpenSettings}
+      />
 
+      <View style={styles.content}>
         <ScrollView
           style={styles.scrollArea}
           contentContainerStyle={styles.scrollContent}
@@ -58,14 +64,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 16,
-    gap: 8,
-  },
-  sectionLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#94A3B8",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
   },
   scrollArea: {
     flex: 1,
