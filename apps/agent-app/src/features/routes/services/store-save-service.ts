@@ -64,7 +64,7 @@ export function updateStore(
       payload: {
         id,
         province_id: provinceId,
-        name,
+        store_name: name,
         province: fields.province,
         city: fields.city,
         barangay: fields.barangay,
