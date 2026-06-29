@@ -8,15 +8,15 @@ import { Colors } from "@/src/shared/constants/Colors";
 import { ProvinceList } from "../components/route-detail-screen-components/ProvinceList";
 import { AddProvinceModal } from "../components/route-detail-screen-components/AddProvinceModal";
 import { EditProvinceModal } from "../components/route-detail-screen-components/EditProvinceModal";
+import { RenameRouteModal } from "../components/route-detail-screen-components/RenameRouteModal";
 import { RouteDetailBanner } from "../components/route-detail-screen-components/RouteDetailBanner";
 import { useProvinces } from "../hooks/useProvinces";
+import { useRouteName } from "../hooks/useRouteName";
 import { ProvinceRow } from "../types/db-rows";
 
 export default function RouteDetailScreen() {
-  const { routeId, routeName } = useLocalSearchParams<{
-    routeId?: string;
-    routeName?: string;
-  }>();
+  const { routeId } = useLocalSearchParams<{ routeId?: string }>();
+  const { name, rename } = useRouteName();
   const { provinces, loadProvinces } = useProvinces();
 
   const [showAddProvince, setShowAddProvince] = useState(false);
@@ -26,15 +26,13 @@ export default function RouteDetailScreen() {
     <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
       <ThemedView style={styles.container}>
         <RouteDetailBanner
-          routeName={routeName ?? "Route"}
+          routeName={name}
           provinceCount={provinces.length}
           onBack={() => router.back()}
           onAddLocation={() => setShowAddProvince(true)}
+          onRename={rename.openModal}
         />
-        <ProvinceList
-          provinces={provinces}
-          onEditProvince={setEditProvince}
-        />
+        <ProvinceList provinces={provinces} onEditProvince={setEditProvince} />
       </ThemedView>
 
       <AddProvinceModal
@@ -51,6 +49,13 @@ export default function RouteDetailScreen() {
         province={editProvince}
         onClose={() => setEditProvince(null)}
         onChanged={loadProvinces}
+      />
+
+      <RenameRouteModal
+        visible={rename.isModalOpen}
+        currentName={name}
+        onSubmit={rename.submit}
+        onClose={rename.closeModal}
       />
     </SafeAreaView>
   );

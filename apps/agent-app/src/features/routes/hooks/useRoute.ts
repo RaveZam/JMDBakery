@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "expo-router";
 
 import {
   getRoutes,
@@ -16,9 +17,11 @@ export function useRoute() {
     setRoutes(getRoutes());
   }, []);
 
-  useEffect(() => {
-    loadRoutes();
-  }, [loadRoutes]);
+  useFocusEffect(
+    useCallback(() => {
+      loadRoutes();
+    }, [loadRoutes]),
+  );
 
   const addRoute = useCallback(
     (name: string) => {

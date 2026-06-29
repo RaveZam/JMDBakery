@@ -8,6 +8,7 @@ type Props = {
   provinceCount: number;
   onBack: () => void;
   onAddLocation: () => void;
+  onRename: () => void;
 };
 
 export function RouteDetailBanner({
@@ -15,6 +16,7 @@ export function RouteDetailBanner({
   provinceCount,
   onBack,
   onAddLocation,
+  onRename,
 }: Props) {
   const insets = useSafeAreaInsets();
 
@@ -60,9 +62,20 @@ export function RouteDetailBanner({
           </Text>
         </View>
 
-        <Text style={styles.routeName} numberOfLines={1}>
-          {routeName}
-        </Text>
+        <View style={styles.nameRow}>
+          <Text style={styles.routeName} numberOfLines={1}>
+            {routeName}
+          </Text>
+          <TouchableOpacity
+            style={styles.renameButton}
+            activeOpacity={0.7}
+            onPress={onRename}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Rename route"
+          >
+            <Ionicons name="create-outline" size={18} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
     </LinearGradient>
   );
@@ -132,12 +145,26 @@ const styles = StyleSheet.create({
     borderRadius: 1.5,
     backgroundColor: "#9FC2AC",
   },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   routeName: {
+    flexShrink: 1,
     fontSize: 22,
     fontWeight: "800",
     color: "#FFFFFF",
     letterSpacing: -0.4,
     lineHeight: 26,
+  },
+  renameButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.12)",
   },
   metaText: {
     fontSize: 12,
