@@ -64,17 +64,6 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <ThemedView style={styles.container}>
         <View style={styles.headerRow}>
-          <TouchableOpacity
-            style={styles.backButton}
-            activeOpacity={0.8}
-            onPress={() => router.back()}
-          >
-            <Ionicons
-              name="arrow-back-outline"
-              size={20}
-              color={Colors.light.text}
-            />
-          </TouchableOpacity>
           <ThemedText
             type="defaultSemiBold"
             style={styles.title}
@@ -188,10 +177,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     marginBottom: 12,
-  },
-  backButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
   },
   title: {
     fontSize: 20,

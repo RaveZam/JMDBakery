@@ -8,21 +8,12 @@ import { DeleteRouteModal } from "./DeleteRouteModal";
 import { RoutesBanner } from "./RoutesBanner";
 import useRoute from "../../hooks/useRoute";
 
-type Props = {
-  onOpenHistory: () => void;
-  onOpenSettings: () => void;
-};
-
-export function RouteList({ onOpenHistory, onOpenSettings }: Props) {
+export function RouteList() {
   const { routes, create, del } = useRoute();
 
   return (
     <>
-      <RoutesBanner
-        routeCount={routes.length}
-        onOpenHistory={onOpenHistory}
-        onOpenSettings={onOpenSettings}
-      />
+      <RoutesBanner routeCount={routes.length} />
 
       <View style={styles.content}>
         <ScrollView
@@ -43,7 +34,6 @@ export function RouteList({ onOpenHistory, onOpenSettings }: Props) {
           )}
         </ScrollView>
       </View>
-
       <CreateRouteFab onPress={create.openModal} />
       <CreateRouteModal
         visible={create.isModalOpen}

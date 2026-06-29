@@ -10,7 +10,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { router, useFocusEffect, Stack } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemedView } from "@/src/shared/components/ThemedView";
 import RouteSessionsDao from "@/src/lib/dao/route-sessions-dao";
@@ -42,20 +42,10 @@ export default function HistoryScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
-      <Stack.Screen options={{ animation: "slide_from_right" }} />
+    <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
       <ThemedView style={styles.container}>
         <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-          <View style={styles.headerTopRow}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              hitSlop={10}
-              style={styles.backBtn}
-            >
-              <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
-            </TouchableOpacity>
-            <Text style={styles.headerLabel}>SESSION HISTORY</Text>
-          </View>
+          <Text style={styles.headerLabel}>SESSION HISTORY</Text>
           <Text style={styles.headerTitle}>Past Sessions</Text>
           <Text style={styles.headerSub}>
             {sessions.length} {sessions.length === 1 ? "session" : "sessions"}{" "}
@@ -83,7 +73,7 @@ export default function HistoryScreen() {
                   activeOpacity={0.7}
                   onPress={() =>
                     router.push({
-                      pathname: "/main/routes/history/[sessionId]" as any,
+                      pathname: "/main/history/[sessionId]" as any,
                       params: { sessionId: s.id, routeName: s.route_name },
                     })
                   }
@@ -139,13 +129,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
-  headerTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 8,
-  },
-  backBtn: { marginLeft: -4 },
   headerLabel: {
     fontSize: 11,
     fontWeight: "600",

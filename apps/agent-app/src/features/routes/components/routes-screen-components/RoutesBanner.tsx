@@ -1,19 +1,12 @@
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 
 type Props = {
   routeCount: number;
-  onOpenHistory: () => void;
-  onOpenSettings: () => void;
 };
 
-export function RoutesBanner({
-  routeCount,
-  onOpenHistory,
-  onOpenSettings,
-}: Props) {
+export function RoutesBanner({ routeCount }: Props) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -23,28 +16,6 @@ export function RoutesBanner({
       end={{ x: 1, y: 1 }}
       style={[styles.header, { paddingTop: insets.top + 12 }]}
     >
-      <View style={styles.controlRow}>
-        <TouchableOpacity
-          style={styles.iconButton}
-          activeOpacity={0.7}
-          onPress={onOpenHistory}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          testID="open-history"
-        >
-          <Ionicons name="time-outline" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.iconButton}
-          activeOpacity={0.7}
-          onPress={onOpenSettings}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          testID="open-settings"
-        >
-          <Ionicons name="settings-outline" size={20} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
-
       <View style={styles.titleBlock}>
         <View style={styles.eyebrowRow}>
           <View style={styles.eyebrowTick} />
@@ -71,21 +42,6 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-  },
-  controlRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 8,
-    minHeight: 36,
-  },
-  iconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.10)",
   },
   titleBlock: {
     marginTop: 12,

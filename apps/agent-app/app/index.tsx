@@ -1,1 +1,5 @@
-export { default } from "./main/routes/index";
+import { Redirect } from "expo-router";
+
+export default function Index() {
+  return <Redirect href="/main/routes" />;
+}
