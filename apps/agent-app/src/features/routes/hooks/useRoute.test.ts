@@ -48,10 +48,8 @@ test("loads the routes on focus (mount)", () => {
 
 test("addRoute creates the route then reloads the list", () => {
   const { result } = renderHook(() => useRoute());
-
   mockGet.mockReturnValue([NORTH]); // the list after the create
   act(() => result.current.create.addRoute("North"));
-
   expect(mockCreate).toHaveBeenCalledWith("North");
   expect(result.current.routes).toEqual([NORTH]);
 });
@@ -59,13 +57,10 @@ test("addRoute creates the route then reloads the list", () => {
 test("confirmDelete deletes the pending route, clears it, and reloads", () => {
   mockGet.mockReturnValue([NORTH]);
   const { result } = renderHook(() => useRoute());
-
   act(() => result.current.del.requestDelete(NORTH));
   expect(result.current.del.routeToDelete).toEqual(NORTH);
-
   mockGet.mockReturnValue([]); // the list after the delete
   act(() => result.current.del.confirmDelete());
-
   expect(mockDelete).toHaveBeenCalledWith("r1");
   expect(result.current.del.routeToDelete).toBeNull();
   expect(result.current.routes).toEqual([]);
@@ -73,18 +68,14 @@ test("confirmDelete deletes the pending route, clears it, and reloads", () => {
 
 test("confirmDelete is a no-op when no route is pending", () => {
   const { result } = renderHook(() => useRoute());
-
   act(() => result.current.del.confirmDelete());
-
   expect(mockDelete).not.toHaveBeenCalled();
 });
 
 test("cancelDelete clears the pending route without deleting", () => {
   const { result } = renderHook(() => useRoute());
-
   act(() => result.current.del.requestDelete(NORTH));
   act(() => result.current.del.cancelDelete());
-
   expect(result.current.del.routeToDelete).toBeNull();
   expect(mockDelete).not.toHaveBeenCalled();
 });
