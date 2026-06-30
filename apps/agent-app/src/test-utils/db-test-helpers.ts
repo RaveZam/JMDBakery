@@ -9,6 +9,7 @@
 import { getDb, initDb } from "@/src/lib/db";
 import RoutesDao from "@/src/lib/dao/routes-dao";
 import ProvincesDao from "@/src/lib/dao/province-dao";
+import StoresDao from "@/src/lib/dao/store-dao";
 
 export type OutboxRow = {
   id: string;
@@ -28,6 +29,11 @@ export function resetDb(): void {
   const db = getDb();
   // Children before parents — foreign_keys is ON in initDb().
   db.runSync("DELETE FROM outbox");
+  db.runSync("DELETE FROM sales");
+  db.runSync("DELETE FROM session_inventory");
+  db.runSync("DELETE FROM ending_inventory");
+  db.runSync("DELETE FROM session_stores");
+  db.runSync("DELETE FROM route_sessions");
   db.runSync("DELETE FROM stores");
   db.runSync("DELETE FROM provinces");
   db.runSync("DELETE FROM routes");
@@ -41,6 +47,11 @@ export function seedRoute(name = "North Route"): string {
 /** Insert a province under a route directly (no outbox row) and return its id. */
 export function seedProvince(routeId: string, name = "Bulacan"): string {
   return ProvincesDao.insertProvince(routeId, name);
+}
+
+/** Insert a store under a province directly (no outbox row) and return its id. */
+export function seedStore(provinceId: string, name = "Store A"): string {
+  return StoresDao.insertStore({ provinceId, name, province: "", city: "", barangay: "" });
 }
 
 /** Pending outbox rows, optionally filtered by entity_type, oldest first. */
