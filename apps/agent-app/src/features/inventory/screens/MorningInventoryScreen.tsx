@@ -22,11 +22,6 @@ const MOCK_ITEMS = [
   { inventoryId: "2", productId: "p2", productName: "Ensaymada", qty: 50 },
 ];
 
-const MOCK_PRODUCTS = [
-  { id: "p1", name: "Pandesal", price: 5 },
-  { id: "p2", name: "Ensaymada", price: 20 },
-];
-
 export default function MorningInventoryScreen() {
   const [adderOpen, setAdderOpen] = useState(false);
 
@@ -64,9 +59,7 @@ export default function MorningInventoryScreen() {
 
         <InventoryAdderModal
           visible={adderOpen}
-          products={MOCK_PRODUCTS}
           onClose={() => setAdderOpen(false)}
-          onAdd={() => setAdderOpen(false)}
         />
       </ThemedView>
     </SafeAreaView>
