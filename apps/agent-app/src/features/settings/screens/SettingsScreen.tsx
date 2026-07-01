@@ -13,13 +13,15 @@ import { router } from "expo-router";
 import { ThemedView } from "@/src/shared/components/ThemedView";
 import { ThemedText } from "@/src/shared/components/ThemedText";
 import { supabase } from "@/src/lib/supabase";
-import { getDb } from "@/src/lib/db";
 import { Colors } from "@/src/shared/constants/Colors";
+import { useDownloadSync } from "@/src/features/settings/useDownloadSync";
+import { clearSessionData } from "@/src/features/settings/services/clearSessionData";
 import type { Session } from "@supabase/supabase-js";
 
 export default function SettingsScreen() {
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
+  const { syncing, triggerDownload } = useDownloadSync();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -35,12 +37,7 @@ export default function SettingsScreen() {
           text: "Clear",
           style: "destructive",
           onPress: () => {
-            getDb().withTransactionSync(() => {
-              getDb().runSync(`DELETE FROM sales`);
-              getDb().runSync(`DELETE FROM session_stores`);
-              getDb().runSync(`DELETE FROM route_sessions`);
-              getDb().runSync(`DELETE FROM outbox`);
-            });
+            clearSessionData();
             Alert.alert("Done", "Session data cleared.");
           },
         },
@@ -134,6 +131,22 @@ export default function SettingsScreen() {
             </View>
           )}
         </View>
+
+        <TouchableOpacity
+          style={styles.downloadButton}
+          activeOpacity={0.8}
+          onPress={triggerDownload}
+          disabled={syncing || loading}
+        >
+          {syncing ? (
+            <ActivityIndicator color={Colors.light.tint} />
+          ) : (
+            <>
+              <Ionicons name="cloud-download-outline" size={16} color={Colors.light.tint} />
+              <Text style={styles.downloadText}>Download Data</Text>
+            </>
+          )}
+        </TouchableOpacity>
 
         {/* DEV ONLY */}
         <TouchableOpacity
@@ -260,6 +273,22 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: "#E5E7EB",
+  },
+  downloadButton: {
+    height: 48,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: Colors.light.tint,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 10,
+  },
+  downloadText: {
+    color: Colors.light.tint,
+    fontWeight: "600",
+    fontSize: 14,
   },
   clearSessionButton: {
     height: 48,
