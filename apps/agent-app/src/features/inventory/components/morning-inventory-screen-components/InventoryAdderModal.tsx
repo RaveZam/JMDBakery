@@ -18,9 +18,10 @@ const HEADER_BG = "#0b4c29";
 type Props = {
   visible: boolean;
   onClose: () => void;
+  onAdded?: () => void;
 };
 
-export function InventoryAdderModal({ visible, onClose }: Props) {
+export function InventoryAdderModal({ visible, onClose, onAdded }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const { products } = useSetMorningInventory();
 
@@ -107,6 +108,7 @@ export function InventoryAdderModal({ visible, onClose }: Props) {
               disabled={!canAdd}
               onPress={() => {
                 products.save();
+                onAdded?.();
                 onClose();
               }}
             >

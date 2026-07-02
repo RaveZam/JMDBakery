@@ -10,6 +10,30 @@ type AddInventoryInput = {
   qty: number;
 };
 
+export function updateMorningInventoryQty(inventoryId: string, qty: number): void {
+  getDb().withTransactionSync(() => {
+    SessionInventoryDao.updateQuantity(inventoryId, qty);
+    enqueueOutbox({
+      entityType: "session_inventory",
+      entityId: inventoryId,
+      operation: "update",
+      payload: { quantity: qty },
+    });
+  });
+}
+
+export function removeMorningInventoryItem(inventoryId: string): void {
+  getDb().withTransactionSync(() => {
+    SessionInventoryDao.delete(inventoryId);
+    enqueueOutbox({
+      entityType: "session_inventory",
+      entityId: inventoryId,
+      operation: "delete",
+      payload: { id: inventoryId },
+    });
+  });
+}
+
 export function addMorningInventoryItem(input: AddInventoryInput): void {
   const id = generateUUID();
   getDb().withTransactionSync(() => {

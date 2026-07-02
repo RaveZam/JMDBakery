@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemedView } from "@/src/shared/components/ThemedView";
@@ -14,16 +15,22 @@ import { InventoryEmptyState } from "../components/morning-inventory-screen-comp
 import { InventoryTable } from "../components/morning-inventory-screen-components/InventoryTable";
 import { InventoryFooter } from "../components/morning-inventory-screen-components/InventoryFooter";
 import { InventoryAdderModal } from "../components/morning-inventory-screen-components/InventoryAdderModal";
+import { useSessionRouteInventory } from "../hooks/useSessionRouteInventory";
 
 const HEADER_BG = "#0b4c29";
 
-const MOCK_ITEMS = [
-  { inventoryId: "1", productId: "p1", productName: "Pandesal", qty: 100 },
-  { inventoryId: "2", productId: "p2", productName: "Ensaymada", qty: 50 },
-];
-
 export default function MorningInventoryScreen() {
+  const { routeName } = useLocalSearchParams<{ routeName?: string }>();
   const [adderOpen, setAdderOpen] = useState(false);
+  const { session } = useSessionRouteInventory();
+
+  function handleContinue() {
+    if (!session.finishInventory()) return;
+    router.replace({
+      pathname: "/main/routes/session",
+      params: { sessionId: session.id, routeName },
+    });
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
@@ -44,22 +51,23 @@ export default function MorningInventoryScreen() {
             <Text style={styles.addBtnText}>Add Product</Text>
           </TouchableOpacity>
 
-          {MOCK_ITEMS.length === 0 ? (
+          {session.items.length === 0 ? (
             <InventoryEmptyState />
           ) : (
             <InventoryTable
-              items={MOCK_ITEMS}
-              onSetQty={() => {}}
-              onRemove={() => {}}
+              items={session.items}
+              onSetQty={session.setItemQty}
+              onRemove={session.removeItem}
             />
           )}
         </ScrollView>
 
-        <InventoryFooter onContinue={() => {}} />
+        <InventoryFooter onContinue={handleContinue} />
 
         <InventoryAdderModal
           visible={adderOpen}
           onClose={() => setAdderOpen(false)}
+          onAdded={session.refresh}
         />
       </ThemedView>
     </SafeAreaView>
