@@ -3,36 +3,29 @@ import { useLocalSearchParams } from "expo-router";
 import { router } from "expo-router";
 import { ProductsDao } from "@/src/lib/dao/products-dao";
 import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
+import SessionStoresDao from "@/src/lib/dao/session-stores-dao";
 import { markStoreVisited } from "../services/visitLocalService";
 import { useDistributionLog } from "./useDistributionLog";
 import { computeSummary } from "../helpers/distribution-helpers";
 
 export function useStorePage() {
-  const params = useLocalSearchParams<{
-    storeId?: string;
-    storeName?: string;
-    storeProvince?: string;
-    storeCity?: string;
-    storeBarangay?: string;
-    contactName?: string;
-    provinceName?: string;
-    sessionStoreId?: string;
-  }>();
-
-  const storeName =
-    typeof params.storeName === "string" ? params.storeName : null;
-  const storeBarangay =
-    typeof params.storeBarangay === "string" ? params.storeBarangay : "";
-  const storeCity =
-    typeof params.storeCity === "string" ? params.storeCity : "";
-  const provinceName =
-    typeof params.provinceName === "string" ? params.provinceName : "";
-  const location = [storeBarangay, storeCity, provinceName]
-    .filter(Boolean)
-    .join(", ");
-
+  const params = useLocalSearchParams<{ sessionStoreId?: string }>();
   const sessionStoreId =
     typeof params.sessionStoreId === "string" ? params.sessionStoreId : null;
+
+  const sessionStore = useMemo(
+    () => (sessionStoreId ? SessionStoresDao.getById(sessionStoreId) : null),
+    [sessionStoreId],
+  );
+
+  const storeName = sessionStore?.store_name ?? null;
+  const location = [
+    sessionStore?.store_barangay,
+    sessionStore?.store_city,
+    sessionStore?.province_name,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   const products = useMemo(() => ProductsDao.getAllProducts(), []);
   const { loggedItems, logItem, updateItemQty, removeItem, editItem } =
