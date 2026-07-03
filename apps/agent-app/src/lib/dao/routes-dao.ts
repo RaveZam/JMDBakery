@@ -1,6 +1,5 @@
 import { getDb } from "@/src/lib/db";
 import { generateUUID } from "@/src/lib/uuid";
-import { logTable } from "@/src/lib/log-table";
 
 const RoutesDao = {
   getAllRoutes() {
@@ -35,13 +34,6 @@ const RoutesDao = {
     );
     db.runSync(`DELETE FROM provinces WHERE route_id = ?`, [id]);
     db.runSync(`DELETE FROM routes WHERE id = ?`, [id]);
-  },
-
-  logAll() {
-    const rows = getDb().getAllSync<{ id: string; name: string }>(
-      `SELECT * FROM routes`,
-    );
-    logTable("routes", rows as Record<string, unknown>[]);
   },
 };
 

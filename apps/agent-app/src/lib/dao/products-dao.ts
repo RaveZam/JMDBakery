@@ -1,5 +1,4 @@
 import { getDb } from "@/src/lib/db";
-import { logTable } from "@/src/lib/log-table";
 
 export const ProductsDao = {
   getAllProducts() {
@@ -21,12 +20,5 @@ export const ProductsDao = {
       `INSERT OR REPLACE INTO products (id, name, price) VALUES (?, ?, ?)`,
       [id, name, price],
     );
-  },
-
-  logAll() {
-    const rows = getDb().getAllSync<{ id: string; name: string; price: number }>(
-      `SELECT * FROM products`,
-    );
-    logTable("products", rows as Record<string, unknown>[]);
   },
 };

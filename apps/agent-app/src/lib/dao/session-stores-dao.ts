@@ -1,6 +1,5 @@
 import { getDb } from "@/src/lib/db";
 import { generateUUID } from "@/src/lib/uuid";
-import { logTable } from "@/src/lib/log-table";
 
 const SessionStoresDao = {
   insert(
@@ -45,17 +44,6 @@ const SessionStoresDao = {
     getDb().runSync(`UPDATE session_stores SET visited = 1 WHERE id = ?`, [
       sessionStoreId,
     ]);
-  },
-
-  logAll() {
-    const rows = getDb().getAllSync<{
-      id: string;
-      route_session_id: string;
-      store_id: string;
-      visited: number;
-      created_at: string;
-    }>(`SELECT * FROM session_stores`);
-    logTable("session_stores", rows as Record<string, unknown>[]);
   },
 };
 

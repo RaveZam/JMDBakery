@@ -1,6 +1,5 @@
 import { getDb } from "@/src/lib/db";
 import { generateUUID } from "@/src/lib/uuid";
-import { logTable } from "@/src/lib/log-table";
 
 type StoreRow = {
   id: string;
@@ -108,11 +107,6 @@ const StoresDao = {
       ],
     );
     return id;
-  },
-
-  logAll() {
-    const rows = getDb().getAllSync<StoreRow>(`SELECT * FROM stores`);
-    logTable("stores", rows as Record<string, unknown>[]);
   },
 };
 export default StoresDao;

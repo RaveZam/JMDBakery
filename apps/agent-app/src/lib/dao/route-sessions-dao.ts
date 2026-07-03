@@ -1,6 +1,5 @@
 import { getDb } from "@/src/lib/db";
 import { generateUUID } from "@/src/lib/uuid";
-import { logTable } from "@/src/lib/log-table";
 
 export type RouteSessionRow = {
   id: string;
@@ -57,13 +56,6 @@ const RouteSessionsDao = {
       `SELECT * FROM route_sessions WHERE id = ?`,
       [id],
     );
-  },
-
-  logAll() {
-    const rows = getDb().getAllSync<RouteSessionRow>(
-      `SELECT * FROM route_sessions`,
-    );
-    logTable("route_sessions", rows as Record<string, unknown>[]);
   },
 };
 

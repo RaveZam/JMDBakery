@@ -3,8 +3,7 @@ import { router, useSegments } from "expo-router";
 import { supabase } from "@/src/lib/supabase";
 import { initDb } from "@/src/lib/db";
 import { runDownloadSync } from "@/src/lib/sync/download";
-import RouteSessionsDao from "@/src/lib/dao/route-sessions-dao";
-import SessionStoresDao from "@/src/lib/dao/session-stores-dao";
+import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
 import SalesDao from "@/src/lib/dao/sales-dao";
 
 export function useAuthGuard(setCheckingSession: (value: boolean) => void) {
@@ -16,8 +15,7 @@ export function useAuthGuard(setCheckingSession: (value: boolean) => void) {
     (async () => {
       try {
         await initDb();
-        RouteSessionsDao.logAll();
-        SessionStoresDao.logAll();
+        SessionInventoryDao.logAll();
         SalesDao.logAll();
 
         const { data } = await supabase.auth.getSession();

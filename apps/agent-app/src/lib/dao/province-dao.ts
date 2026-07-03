@@ -1,6 +1,5 @@
 import { getDb } from "@/src/lib/db";
 import { generateUUID } from "@/src/lib/uuid";
-import { logTable } from "@/src/lib/log-table";
 
 const ProvincesDao = {
   insertProvince(routeId: string, name: string) {
@@ -35,15 +34,6 @@ const ProvincesDao = {
       `SELECT * FROM provinces WHERE route_id = ?`,
       [routeId],
     );
-  },
-
-  logAll() {
-    const rows = getDb().getAllSync<{
-      id: string;
-      name: string;
-      route_id: string;
-    }>(`SELECT * FROM provinces`);
-    logTable("provinces", rows as Record<string, unknown>[]);
   },
 };
 export default ProvincesDao;
