@@ -137,7 +137,13 @@ export function InventoryAdderModal({
               disabled={!canAdd}
               onPress={() => {
                 if (!selectedProductId) return;
-                inventory.setItemQty(selectedProductId, qty);
+                // Editing sets the row to an exact qty; adding accumulates onto
+                // whatever's already logged for that product instead of replacing it.
+                if (editing) {
+                  inventory.setItemQty(selectedProductId, qty);
+                } else {
+                  inventory.adjustItemQty(selectedProductId, qty);
+                }
                 onClose();
               }}
             >
