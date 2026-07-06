@@ -9,6 +9,7 @@ import {
   updateMorningInventoryQty,
   removeMorningInventoryItem,
 } from "../services/session-inventory-save-service";
+import { cancelSession } from "@/src/features/sessions/services/sessionLocalService";
 import { useProducts } from "./useProducts";
 import type { Inventory } from "../types/inventory-types";
 
@@ -101,6 +102,12 @@ export function useInventory(): { inventory: Inventory } {
     });
   }
 
+  const cancelInventorySession = useCallback(() => {
+    if (!sessionId) return;
+    cancelSession(sessionId);
+    router.replace("/main/routes");
+  }, [sessionId]);
+
   return {
     inventory: {
       id: sessionId ?? null,
@@ -111,6 +118,7 @@ export function useInventory(): { inventory: Inventory } {
       setItemQty,
       removeItem,
       handleContinue,
+      cancelInventorySession,
     },
   };
 }

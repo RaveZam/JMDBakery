@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useMorningInventory } from "@/src/features/inventory/context/useMorningInventory";
 
@@ -6,6 +6,21 @@ const HEADER_BG = "#0b4c29";
 
 export function InventoryFooter() {
   const { inventory } = useMorningInventory();
+
+  const confirmCancel = () => {
+    Alert.alert(
+      "Cancel this session?",
+      "This discards the current session. You can start a new one afterward.",
+      [
+        { text: "Keep session", style: "cancel" },
+        {
+          text: "Cancel session",
+          style: "destructive",
+          onPress: () => inventory.cancelInventorySession(),
+        },
+      ],
+    );
+  };
 
   return (
     <View style={styles.footer}>
@@ -16,6 +31,14 @@ export function InventoryFooter() {
       >
         <Text style={styles.continueBtnText}>Continue to Route</Text>
         <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.cancelBtn}
+        activeOpacity={0.7}
+        onPress={confirmCancel}
+      >
+        <Text style={styles.cancelBtnText}>Cancel Session</Text>
       </TouchableOpacity>
     </View>
   );
@@ -40,4 +63,11 @@ const styles = StyleSheet.create({
     backgroundColor: HEADER_BG,
   },
   continueBtnText: { fontSize: 15, fontWeight: "600", color: "#FFFFFF" },
+  cancelBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    marginTop: 10,
+  },
+  cancelBtnText: { fontSize: 14, fontWeight: "600", color: "#64748B" },
 });

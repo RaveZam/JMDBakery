@@ -11,4 +11,5 @@ export type Inventory = {
   setItemQty: (productId: string, qty: number) => void;
   removeItem: (productId: string) => void;
   handleContinue: () => void;
+  cancelInventorySession: () => void;
 };

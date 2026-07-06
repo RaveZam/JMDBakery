@@ -18,7 +18,7 @@ const FEATURES = [
 // Keep this list tiny; every entry is a coupling we accept on purpose.
 const ALLOWED_FEATURE_EDGES = {
   routes: ["sessions"], // RouteDetailScreen starts a session via useStartSession
-  inventory: ["store"], // morning inventory reuses store's picker/types
+  inventory: ["store", "sessions"], // reuses store's picker/types; can cancel the ongoing session
   history: ["store"], // session history renders store distribution items
 };
 
