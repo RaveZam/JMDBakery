@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import SessionInventoryDao, {
   type InventoryItem,
 } from "@/src/lib/dao/session-inventory-dao";
@@ -15,7 +15,10 @@ import type { Inventory } from "../types/inventory-types";
 export type { InventoryItem };
 
 export function useInventory(): { inventory: Inventory } {
-  const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
+  const { sessionId, routeName } = useLocalSearchParams<{
+    sessionId?: string;
+    routeName?: string;
+  }>();
   const { products } = useProducts();
   const [items, setItems] = useState<InventoryItem[]>(() =>
     sessionId ? SessionInventoryDao.getBySessionId(sessionId) : [],
@@ -90,6 +93,14 @@ export function useInventory(): { inventory: Inventory } {
     return true;
   }, [sessionId, items.length]);
 
+  function handleContinue() {
+    if (!finishInventory()) return;
+    router.replace({
+      pathname: "/main/routes/session",
+      params: { sessionId, routeName },
+    });
+  }
+
   return {
     inventory: {
       id: sessionId ?? null,
@@ -99,7 +110,7 @@ export function useInventory(): { inventory: Inventory } {
       adjustItemQty,
       setItemQty,
       removeItem,
-      finishInventory,
+      handleContinue,
     },
   };
 }

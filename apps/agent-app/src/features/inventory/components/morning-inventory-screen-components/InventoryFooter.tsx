@@ -1,19 +1,18 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useMorningInventory } from "@/src/features/inventory/context/useMorningInventory";
 
 const HEADER_BG = "#0b4c29";
 
-type Props = {
-  onContinue: () => void;
-};
+export function InventoryFooter() {
+  const { inventory } = useMorningInventory();
 
-export function InventoryFooter({ onContinue }: Props) {
   return (
     <View style={styles.footer}>
       <TouchableOpacity
         style={styles.continueBtn}
         activeOpacity={0.85}
-        onPress={onContinue}
+        onPress={inventory.handleContinue}
       >
         <Text style={styles.continueBtnText}>Continue to Route</Text>
         <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />

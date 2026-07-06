@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemedView } from "@/src/shared/components/ThemedView";
@@ -14,17 +13,8 @@ import { useMorningInventory } from "../context/useMorningInventory";
 const HEADER_BG = "#0b4c29";
 
 export function MorningInventoryScreenContent() {
-  const { routeName } = useLocalSearchParams<{ routeName?: string }>();
   const [adderOpen, setAdderOpen] = useState(false);
   const { inventory } = useMorningInventory();
-
-  function handleContinue() {
-    if (!inventory.finishInventory()) return;
-    router.replace({
-      pathname: "/main/routes/session",
-      params: { sessionId: inventory.id, routeName },
-    });
-  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
@@ -52,7 +42,7 @@ export function MorningInventoryScreenContent() {
           )}
         </ScrollView>
 
-        <InventoryFooter onContinue={handleContinue} />
+        <InventoryFooter />
 
         <InventoryAdderModal
           visible={adderOpen}
