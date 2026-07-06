@@ -1,21 +1,17 @@
 import { Modal, View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { modalStyles as m } from "@/src/shared/styles/modalStyles";
+import { useSessionRoute } from "../context/useSessionRoute";
 
-type Props = {
-  visible: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-};
-
-export function EndRouteModal({ visible, onConfirm, onCancel }: Props) {
+export function EndRouteModal() {
+  const { session } = useSessionRoute();
   return (
     <Modal
-      visible={visible}
+      visible={session.endModal.isOpen}
       transparent
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={onCancel}
+      onRequestClose={session.endModal.close}
     >
       <View style={m.backdrop}>
         <View style={m.content}>
@@ -27,10 +23,16 @@ export function EndRouteModal({ visible, onConfirm, onCancel }: Props) {
             Are you sure you want to end this route session?
           </Text>
           <View style={m.buttons}>
-            <TouchableOpacity style={m.cancelButton} onPress={onCancel}>
+            <TouchableOpacity
+              style={m.cancelButton}
+              onPress={session.endModal.close}
+            >
               <Text style={m.cancelText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={m.deleteButton} onPress={onConfirm}>
+            <TouchableOpacity
+              style={m.deleteButton}
+              onPress={session.actions.endRoute}
+            >
               <Text style={m.deleteText}>End Route</Text>
             </TouchableOpacity>
           </View>

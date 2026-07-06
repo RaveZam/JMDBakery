@@ -7,11 +7,7 @@ import { StoreConnector } from "./StoreConnector";
 
 import { useSessionRoute } from "../../context/useSessionRoute";
 
-type Props = {
-  onPressStore: (store: SessionStore) => void;
-};
-
-export function SessionStoreList({ onPressStore }: Props) {
+export function SessionStoreList() {
   const { session } = useSessionRoute();
 
   if (session.sections.length === 0) {
@@ -33,7 +29,7 @@ export function SessionStoreList({ onPressStore }: Props) {
               <SessionStoreItem
                 store={store}
                 index={localIndex}
-                onPress={() => onPressStore(store)}
+                onPress={() => session.actions.openStore(store)}
               />
             </View>
           ))}

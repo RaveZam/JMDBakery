@@ -1,17 +1,15 @@
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSessionRoute } from "../../context/useSessionRoute";
 
-type Props = {
-  onEndRoute: () => void;
-};
-
-export function EndRouteFooter({ onEndRoute }: Props) {
+export function EndRouteFooter() {
+  const { session } = useSessionRoute();
   return (
     <View style={styles.footer}>
       <TouchableOpacity
         style={styles.endRouteButton}
         activeOpacity={0.7}
-        onPress={onEndRoute}
+        onPress={session.endModal.open}
       >
         <Ionicons name="stop-circle-outline" size={17} color="#DC2626" />
         <Text style={styles.endRouteButtonText}>End Route</Text>
