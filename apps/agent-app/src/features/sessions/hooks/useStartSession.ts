@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { startSession } from "../services/sessionLocalService";
+import { startSession, OngoingSessionExistsError } from "../services/sessionLocalService";
 
 export function useStartSession() {
   const { routeId, routeName } = useLocalSearchParams<{
@@ -20,7 +20,14 @@ export function useStartSession() {
         params: { routeId, routeName, sessionId },
       });
     } catch (e) {
-      Alert.alert("Couldn't start session", String(e));
+      if (e instanceof OngoingSessionExistsError) {
+        Alert.alert(
+          "Session already running",
+          "Finish or Cancel your current session before starting a new one.",
+        );
+      } else {
+        Alert.alert("Couldn't start session", String(e));
+      }
     } finally {
       setLoading(false);
     }
