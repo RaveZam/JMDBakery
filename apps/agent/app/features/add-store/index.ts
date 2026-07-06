@@ -1,2 +1,0 @@
-export { AddstorePage } from "./AddstorePage";
-
