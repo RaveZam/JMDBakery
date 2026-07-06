@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -11,17 +12,10 @@ const BORDER = "#E2E8F0";
 export const PRESET_REASONS = ["Rotten", "Damaged", "Lost", "Custom"] as const;
 export type PresetReason = (typeof PRESET_REASONS)[number];
 
-export function ReasonPicker({
-  reason,
-  customReason,
-  onReasonChange,
-  onCustomReasonChange,
-}: {
-  reason: PresetReason;
-  customReason: string;
-  onReasonChange: (r: PresetReason) => void;
-  onCustomReasonChange: (v: string) => void;
-}) {
+export function ReasonPicker() {
+  const [reason, setReason] = useState<PresetReason>("Rotten");
+  const [customReason, setCustomReason] = useState("");
+
   return (
     <View style={styles.reasonSection}>
       <Text style={styles.reasonTitle}>Reason</Text>
@@ -30,7 +24,7 @@ export function ReasonPicker({
           <TouchableOpacity
             key={r}
             style={[styles.chip, reason === r && styles.chipActive]}
-            onPress={() => onReasonChange(r)}
+            onPress={() => setReason(r)}
             activeOpacity={0.7}
           >
             <Text
@@ -47,7 +41,7 @@ export function ReasonPicker({
           placeholder="Describe the reason…"
           placeholderTextColor="#94A3B8"
           value={customReason}
-          onChangeText={onCustomReasonChange}
+          onChangeText={setCustomReason}
           autoFocus
         />
       )}

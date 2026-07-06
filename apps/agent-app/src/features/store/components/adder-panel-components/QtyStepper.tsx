@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -8,28 +9,16 @@ import {
 
 const BORDER = "#E2E8F0";
 
-export function QtyStepper({
-  label,
-  value,
-  onChange,
-  accent,
-  autoFocus,
-}: {
-  label: string;
-  value: number;
-  onChange: (n: number) => void;
-  accent?: boolean;
-  autoFocus?: boolean;
-}) {
+export function QtyStepper() {
+  const [value, setValue] = useState(0);
+
   return (
     <View style={styles.wrap}>
-      <Text style={[styles.label, accent && styles.labelAccent]}>
-        {label}
-      </Text>
+      <Text style={styles.label}>Quantity</Text>
       <View style={styles.row}>
         <TouchableOpacity
           style={styles.btn}
-          onPress={() => onChange(Math.max(0, value - 1))}
+          onPress={() => setValue((v) => Math.max(0, v - 1))}
           activeOpacity={0.7}
         >
           <Text style={styles.btnText}>−</Text>
@@ -41,20 +30,17 @@ export function QtyStepper({
           value={String(value)}
           onChangeText={(v) => {
             const n = parseInt(v, 10);
-            onChange(isNaN(n) || n < 0 ? 0 : n);
+            setValue(isNaN(n) || n < 0 ? 0 : n);
           }}
           selectTextOnFocus
-          autoFocus={autoFocus}
         />
 
         <TouchableOpacity
-          style={[styles.btn, accent && styles.btnAccent]}
-          onPress={() => onChange(value + 1)}
+          style={styles.btn}
+          onPress={() => setValue((v) => v + 1)}
           activeOpacity={0.7}
         >
-          <Text style={[styles.btnText, accent && styles.btnTextAccent]}>
-            +
-          </Text>
+          <Text style={styles.btnText}>+</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -70,7 +56,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: "uppercase",
   },
-  labelAccent: { color: "#F97316" },
   row: { flexDirection: "row", alignItems: "center", gap: 16 },
   btn: {
     width: 44,
@@ -82,12 +67,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  btnAccent: {
-    borderColor: "#FDBA74",
-    backgroundColor: "#FFF7ED",
-  },
   btnText: { fontSize: 22, color: "#475569", lineHeight: 28 },
-  btnTextAccent: { color: "#F97316" },
   value: {
     width: 60,
     fontSize: 28,

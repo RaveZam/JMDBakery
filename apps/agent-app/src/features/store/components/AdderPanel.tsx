@@ -1,73 +1,18 @@
-import { useState } from "react";
 import { StyleSheet, View, Text } from "react-native";
-import { PickerModal } from "../../../shared/components/PickerModal";
 import { QtyStepper } from "./adder-panel-components/QtyStepper";
 import { ProductSelector } from "./adder-panel-components/ProductSelector";
-import {
-  ReasonPicker,
-  PRESET_REASONS,
-  type PresetReason,
-} from "./adder-panel-components/ReasonPicker";
+import { ReasonPicker } from "./adder-panel-components/ReasonPicker";
 import { AddButton } from "./adder-panel-components/AddButton";
-import type { AdderPanelProps, Product } from "../types/store-types";
 
 const BORDER = "#E2E8F0";
 
-export function AdderPanel({
-  products,
-  showPrice,
-  editData,
-  remainingByProduct,
-  onAdd,
-}: AdderPanelProps) {
-  const initProduct = editData
-    ? (products.find((p) => p.id === editData.productId) ?? products[0])
-    : products[0];
-  const initReason = PRESET_REASONS.includes(editData?.boReason as PresetReason)
-    ? (editData!.boReason as PresetReason)
-    : editData?.boReason
-      ? "Custom"
-      : "Rotten";
-
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [selected, setSelected] = useState<Product>(initProduct);
-  const [qty, setQty] = useState(editData?.qty ?? 1);
-  const [boQty, setBoQty] = useState(editData?.boQty ?? 0);
-  const [reason, setReason] = useState<PresetReason>(initReason);
-  const [customReason, setCustomReason] = useState(
-    initReason === "Custom" ? (editData?.boReason ?? "") : "",
-  );
-
-  const remaining = selected ? remainingByProduct?.[selected.id] : undefined;
-
-  function handleAdd() {
-    if (!selected || (qty === 0 && boQty === 0)) return;
-    const boReason =
-      boQty > 0
-        ? reason === "Custom"
-          ? customReason.trim() || "Custom"
-          : reason
-        : undefined;
-    onAdd(selected.id, qty, boQty, boReason);
-    setQty(1);
-    setBoQty(0);
-    setReason("Rotten");
-    setCustomReason("");
-  }
-
-  const canAdd = qty > 0 || boQty > 0;
-
+export function AdderPanel() {
   return (
     <View style={styles.panel}>
-      <ProductSelector
-        selected={selected}
-        showPrice={showPrice}
-        remaining={remaining}
-        onPress={() => setPickerOpen(true)}
-      />
+      <ProductSelector />
 
       <View style={styles.stepperSection}>
-        <QtyStepper label="Sold qty" value={qty} onChange={setQty} autoFocus />
+        <QtyStepper />
       </View>
 
       <View style={styles.sectionDivider}>
@@ -77,40 +22,12 @@ export function AdderPanel({
       </View>
 
       <View style={styles.stepperSection}>
-        <QtyStepper
-          label="Bad order qty"
-          value={boQty}
-          onChange={setBoQty}
-          accent={boQty > 0}
-        />
+        <QtyStepper />
       </View>
 
-      {boQty > 0 && (
-        <ReasonPicker
-          reason={reason}
-          customReason={customReason}
-          onReasonChange={setReason}
-          onCustomReasonChange={setCustomReason}
-        />
-      )}
+      <ReasonPicker />
 
-      <AddButton
-        isEdit={!!editData}
-        selected={selected}
-        qty={qty}
-        boQty={boQty}
-        canAdd={canAdd}
-        onPress={handleAdd}
-      />
-
-      <PickerModal
-        visible={pickerOpen}
-        products={products}
-        showPrice={showPrice}
-        remainingByProduct={remainingByProduct}
-        onSelected={setSelected}
-        onClose={() => setPickerOpen(false)}
-      />
+      <AddButton />
     </View>
   );
 }
