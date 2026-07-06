@@ -8,6 +8,13 @@ import { insertRouteSession } from "./route-session-create-service";
 import { insertSessionStore } from "./session-store-save-service";
 import { enqueueOutbox } from "@/src/lib/sync/outbox";
 
+export class OngoingSessionExistsError extends Error {
+  constructor() {
+    super("An ongoing session already exists");
+    this.name = "OngoingSessionExistsError";
+  }
+}
+
 export async function startSession(
   routeId: string,
   routeName: string,
@@ -20,6 +27,8 @@ export async function startSession(
 
   const conductedBy = session?.user?.id;
   if (!conductedBy) throw new Error("User not authenticated");
+
+  if (RouteSessionsDao.getOngoing()) throw new OngoingSessionExistsError();
 
   const sessionId = generateUUID();
 
@@ -54,6 +63,21 @@ export function completeSession(sessionId: string): void {
         entityType: "route_session",
         entityId: sessionId,
         operation: "create", // upsert the full, now-completed row
+        payload: row,
+      });
+    }
+  });
+}
+
+export function cancelSession(sessionId: string): void {
+  getDb().withTransactionSync(() => {
+    RouteSessionsDao.cancel(sessionId);
+    const row = RouteSessionsDao.getById(sessionId);
+    if (row) {
+      enqueueOutbox({
+        entityType: "route_session",
+        entityId: sessionId,
+        operation: "create", // upsert the full, now-cancelled row
         payload: row,
       });
     }
