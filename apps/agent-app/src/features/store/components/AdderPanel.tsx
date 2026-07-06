@@ -139,14 +139,9 @@ export function AdderPanel({
   );
 
   const remaining = selected ? remainingByProduct?.[selected.id] : undefined;
-  const tracked = remaining !== undefined;
-  // When editing, this line's persisted sold qty is already subtracted from
-  // remaining, so add it back to get the headroom available for this line.
-  const available = tracked ? remaining + (editData?.qty ?? 0) : Infinity;
-  const overStock = tracked && qty > available;
 
   function handleAdd() {
-    if (!selected || (qty === 0 && boQty === 0) || overStock) return;
+    if (!selected || (qty === 0 && boQty === 0)) return;
     const boReason =
       boQty > 0
         ? reason === "Custom"
@@ -160,7 +155,7 @@ export function AdderPanel({
     setCustomReason("");
   }
 
-  const canAdd = (qty > 0 || boQty > 0) && !overStock;
+  const canAdd = qty > 0 || boQty > 0;
 
   return (
     <View style={styles.panel}>
@@ -206,14 +201,6 @@ export function AdderPanel({
       {/* Sold qty */}
       <View style={styles.stepperSection}>
         <QtyStepper label="Sold qty" value={qty} onChange={setQty} autoFocus />
-        {overStock && (
-          <View style={styles.stockWarning}>
-            <Ionicons name="alert-circle" size={14} color="#DC2626" />
-            <Text style={styles.stockWarningText}>
-              Only {available} in stock for {selected?.name}
-            </Text>
-          </View>
-        )}
       </View>
 
       {/* Bad order divider */}
@@ -354,19 +341,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 4,
   },
-  stockWarning: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: "#FEF2F2",
-    borderWidth: 1,
-    borderColor: "#FECACA",
-  },
-  stockWarningText: { fontSize: 12, fontWeight: "600", color: "#DC2626" },
 
   sectionDivider: {
     flexDirection: "row",
