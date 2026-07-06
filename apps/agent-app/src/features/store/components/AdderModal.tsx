@@ -10,39 +10,26 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AdderPanel } from "./AdderPanel";
-import type { AdderPanelProps } from "../types/store-types";
+import { useProductQuantity } from "../context/useProductQuantity";
 
 const HEADER_BG = "#0b4c29";
 
-interface AdderModalProps extends AdderPanelProps {
-  visible: boolean;
-  title: string;
-  onClose: () => void;
-}
+export function AdderModal() {
+  const { adderModal } = useProductQuantity();
 
-export function AdderModal({
-  visible,
-  title,
-  onClose,
-  products,
-  showPrice,
-  editData,
-  remainingByProduct,
-  onAdd,
-}: AdderModalProps) {
   return (
     <Modal
-      visible={visible}
+      visible={adderModal.inventory.visible}
       transparent
       animationType="slide"
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={adderModal.inventory.close}
     >
       {/* Full-screen backdrop */}
       <TouchableOpacity
         style={styles.backdrop}
         activeOpacity={1}
-        onPress={onClose}
+        onPress={adderModal.inventory.close}
       />
 
       {/* Sheet pinned to bottom */}
@@ -58,8 +45,12 @@ export function AdderModal({
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>{title}</Text>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={8}>
+            <Text style={styles.title}>Add Items</Text>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={adderModal.inventory.close}
+              hitSlop={8}
+            >
               <Ionicons name="close" size={18} color="rgba(255,255,255,0.8)" />
             </TouchableOpacity>
           </View>
@@ -71,16 +62,7 @@ export function AdderModal({
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <AdderPanel
-              products={products}
-              showPrice={showPrice}
-              editData={editData}
-              remainingByProduct={remainingByProduct}
-              onAdd={(productId, qty, boQty, boReason) => {
-                onAdd(productId, qty, boQty, boReason);
-                onClose();
-              }}
-            />
+            <AdderPanel />
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
@@ -127,7 +109,12 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 18,
   },
-  title: { fontSize: 17, fontWeight: "700", color: "#FFFFFF", letterSpacing: -0.2 },
+  title: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    letterSpacing: -0.2,
+  },
   closeBtn: {
     width: 32,
     height: 32,

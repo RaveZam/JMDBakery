@@ -1,29 +1,73 @@
 import { useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
+import type { Product } from "../../types/store-types";
+import { useProductQuantity } from "../../context/useProductQuantity";
 
 const BORDER = "#E2E8F0";
 
 export function ProductSelector() {
-  const [selected, setSelected] = useState<string | null>(null);
+  const { adderModal } = useProductQuantity();
+  const [selected, setSelected] = useState<Product | null>(null);
+  const [listOpen, setListOpen] = useState(false);
 
   return (
     <View>
       <Text style={styles.sectionLabel}>Product</Text>
       <TouchableOpacity
         style={styles.productDropdown}
-        onPress={() => setSelected((s) => s ?? "Select product")}
+        onPress={() => setListOpen(true)}
         activeOpacity={0.8}
       >
         <View style={styles.productDropdownInner}>
           <Text style={styles.productName} numberOfLines={1}>
-            {selected ?? "Select product"}
+            {selected?.name ?? "Select product"}
           </Text>
         </View>
         <View style={styles.productChevron}>
           <Ionicons name="chevron-down" size={16} color="#64748B" />
         </View>
       </TouchableOpacity>
+
+      {selected && (
+        <Text style={styles.remainingLabel}>
+          {adderModal.inventory.remaining[selected.id] ?? 0} left
+        </Text>
+      )}
+
+      <Modal
+        visible={listOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setListOpen(false)}
+      >
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={() => setListOpen(false)}
+        >
+          <View style={styles.list}>
+            {adderModal.inventory.products.map((product) => (
+              <TouchableOpacity
+                key={product.id}
+                style={styles.listRow}
+                onPress={() => {
+                  setSelected(product);
+                  setListOpen(false);
+                }}
+              >
+                <Text style={styles.listRowName} numberOfLines={1}>
+                  {product.name}
+                </Text>
+                <Text style={styles.listRowRemaining}>
+                  {adderModal.inventory.remaining[product.id] ?? 0} left
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -57,4 +101,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  remainingLabel: {
+    marginTop: 6,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#64748B",
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "center",
+    padding: 24,
+  },
+  list: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    paddingVertical: 8,
+    maxHeight: "70%",
+  },
+  listRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER,
+  },
+  listRowName: { flex: 1, fontSize: 15, fontWeight: "600", color: "#0F172A" },
+  listRowRemaining: { fontSize: 13, fontWeight: "600", color: "#64748B" },
 });

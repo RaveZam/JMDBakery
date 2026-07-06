@@ -61,12 +61,6 @@ export type SectionRowProps = {
   onToggle: () => void;
 };
 
-export type StoreHeaderProps = {
-  storeName: string;
-  location?: string;
-  onBack: () => void;
-};
-
 export type OrdersSectionProps = {
   items: { item: LoggedItem; idx: number }[];
   onAddPress: () => void;
