@@ -9,7 +9,7 @@ export function EndRouteFooter() {
       <TouchableOpacity
         style={styles.endRouteButton}
         activeOpacity={0.7}
-        onPress={session.endModal.open}
+        onPress={session.openEndModal}
       >
         <Ionicons name="stop-circle-outline" size={17} color="#DC2626" />
         <Text style={styles.endRouteButtonText}>End Route</Text>

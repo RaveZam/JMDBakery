@@ -7,11 +7,11 @@ export function EndRouteModal() {
   const { session } = useSessionRoute();
   return (
     <Modal
-      visible={session.endModal.isOpen}
+      visible={session.isEndModalOpen}
       transparent
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={session.endModal.close}
+      onRequestClose={session.closeEndModal}
     >
       <View style={m.backdrop}>
         <View style={m.content}>
@@ -25,7 +25,7 @@ export function EndRouteModal() {
           <View style={m.buttons}>
             <TouchableOpacity
               style={m.cancelButton}
-              onPress={session.endModal.close}
+              onPress={session.closeEndModal}
             >
               <Text style={m.cancelText}>Cancel</Text>
             </TouchableOpacity>

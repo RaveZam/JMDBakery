@@ -41,18 +41,15 @@ export function useSession() {
   const openEndModal = useCallback(() => setIsEndModalOpen(true), []);
   const closeEndModal = useCallback(() => setIsEndModalOpen(false), []);
 
-  const endModal = {
-    isOpen: isEndModalOpen,
-    open: openEndModal,
-    close: closeEndModal,
-  };
-
-  const openStore = useCallback((store: SessionStore) => {
-    router.push({
-      pathname: "/main/routes/store/[sessionStoreId]",
-      params: { sessionStoreId: store.id },
-    });
-  }, []);
+  const openStore = useCallback(
+    (store: SessionStore) => {
+      router.push({
+        pathname: "/main/routes/store/[sessionStoreId]",
+        params: { sessionStoreId: store.id, sessionId },
+      });
+    },
+    [sessionId],
+  );
 
   const endRoute = useCallback(() => {
     if (!sessionId) return;
@@ -68,7 +65,9 @@ export function useSession() {
       session,
       sections,
       progress,
-      endModal,
+      isEndModalOpen,
+      openEndModal,
+      closeEndModal,
       actions,
     },
   };
