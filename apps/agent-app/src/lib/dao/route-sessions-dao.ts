@@ -25,6 +25,28 @@ const RouteSessionsDao = {
     return id;
   },
 
+  // Idempotent upsert for the download/pull path — the server is the source of
+  // truth, so a repeated pull updates the existing row instead of colliding on id.
+  upsertSession(
+    routeName: string,
+    sessionDate: string,
+    conductedBy: string,
+    status: string,
+    id: string = generateUUID(),
+  ): string {
+    getDb().runSync(
+      `INSERT INTO route_sessions (id, route_name, session_date, conducted_by, status)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         route_name   = excluded.route_name,
+         session_date = excluded.session_date,
+         conducted_by = excluded.conducted_by,
+         status       = excluded.status`,
+      [id, routeName, sessionDate, conductedBy, status],
+    );
+    return id;
+  },
+
   complete(id: string) {
     getDb().runSync(
       `UPDATE route_sessions SET status = 'completed' WHERE id = ?`,
