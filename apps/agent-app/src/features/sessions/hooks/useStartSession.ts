@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Alert } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { startSession, OngoingSessionExistsError } from "../services/sessionLocalService";
+import {
+  startSession,
+  OngoingSessionExistsError,
+} from "../services/sessionLocalService";
 
 export function useStartSession() {
   const { routeId, routeName } = useLocalSearchParams<{
