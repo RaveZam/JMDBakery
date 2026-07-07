@@ -4,7 +4,7 @@ let db: SQLite.SQLiteDatabase | null = null;
 
 export function getDb(): SQLite.SQLiteDatabase {
   if (!db) {
-    db = SQLite.openDatabaseSync("routeledger-v4.db");
+    db = SQLite.openDatabaseSync("routeledger-v5.db");
   }
   return db;
 }

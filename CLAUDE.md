@@ -103,7 +103,7 @@ src/features/                  # one feature = one subdomain; screens/ component
 
 ### SQLite Database Layer
 
-Database: `routeledger-v4.db` opened lazily via `getDb()` (`src/lib/db.ts`). `initDb()` is async, runs `PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;`, creates tables `IF NOT EXISTS` plus hot-path indexes, and is awaited in `useAuthGuard` before the session check.
+Database: `routeledger-v5.db` opened lazily via `getDb()` (`src/lib/db.ts`). `initDb()` is async, runs `PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;`, creates tables `IF NOT EXISTS` plus hot-path indexes, and is awaited in `useAuthGuard` before the session check.
 
 **Tables:** `routes`, `provinces`, `stores`, `route_sessions`, `session_stores`, `products`, `sales`, `session_inventory`, `ending_inventory`, `outbox` (see `src/lib/db.ts` for full schema).
 
