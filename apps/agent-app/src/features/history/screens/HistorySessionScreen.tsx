@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { useCallback, useMemo } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -13,6 +13,7 @@ import SessionStoresDao from "@/src/lib/dao/session-stores-dao";
 import SalesDao from "@/src/lib/dao/sales-dao";
 import EndingInventoryDao from "@/src/lib/dao/ending-inventory-dao";
 import type { LoggedItem } from "@/src/features/store/hooks/useDistributionLog";
+import { cancelHistorySession } from "../services/cancel-session-service";
 
 const HEADER_BG = "#0b4c29";
 
@@ -44,6 +45,27 @@ export default function HistorySessionScreen() {
     () => sessionId ? EndingInventoryDao.getBySessionId(sessionId).length > 0 : false,
     [sessionId],
   );
+
+  const isOngoing = session?.status === "ongoing";
+
+  const confirmCancel = useCallback(() => {
+    if (!sessionId) return;
+    Alert.alert(
+      "Cancel this session?",
+      "This discards the current session. You can start a new one afterward.",
+      [
+        { text: "Keep session", style: "cancel" },
+        {
+          text: "Cancel session",
+          style: "destructive",
+          onPress: () => {
+            cancelHistorySession(sessionId);
+            router.back();
+          },
+        },
+      ],
+    );
+  }, [sessionId]);
 
   const visitedCount = stores.filter((s) => s.visited === 1).length;
   const formattedDate = session?.session_date
@@ -81,6 +103,16 @@ export default function HistorySessionScreen() {
               <Ionicons name="warning-outline" size={13} color="#92400E" />
               <Text style={styles.warningText}>No Ending Inventory Logged</Text>
             </View>
+          )}
+          {isOngoing && (
+            <TouchableOpacity
+              style={styles.cancelBanner}
+              activeOpacity={0.8}
+              onPress={confirmCancel}
+            >
+              <Ionicons name="close-circle-outline" size={14} color="#FCA5A5" />
+              <Text style={styles.cancelBannerText}>Cancel Session</Text>
+            </TouchableOpacity>
           )}
         </View>
 
@@ -258,6 +290,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#92400E",
+  },
+
+  cancelBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
+    backgroundColor: "rgba(220, 38, 38, 0.18)",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    alignSelf: "flex-start",
+  },
+  cancelBannerText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#FCA5A5",
   },
 
   scroll: { flex: 1 },
