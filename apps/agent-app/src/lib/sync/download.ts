@@ -5,6 +5,7 @@ import RoutesDao from "@/src/lib/dao/routes-dao";
 import ProvincesDao from "@/src/lib/dao/province-dao";
 import StoresDao from "@/src/lib/dao/store-dao";
 import RouteSessionsDao from "../dao/route-sessions-dao";
+import { collapseOngoingSessions } from "./collapse-ongoing-sessions";
 
 export type DownloadResult = {
   routes: number;
@@ -127,7 +128,7 @@ async function downloadSessions(): Promise<number | null> {
     console.warn("[download] failed to fetch sessions:", error?.message);
     return null;
   }
-  for (const row of data) {
+  for (const row of collapseOngoingSessions(data)) {
     RouteSessionsDao.upsertSession(
       row.route_name,
       row.session_date,
