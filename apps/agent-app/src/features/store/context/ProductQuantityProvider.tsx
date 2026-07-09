@@ -1,8 +1,8 @@
 import { createContext, type ReactNode } from "react";
-import { useAdderModal } from "../hooks/useAdderModal";
+import { useStoreSales } from "../hooks/useStoreSales";
 
 export interface ProductQuantityContextValue {
-  adderModal: ReturnType<typeof useAdderModal>;
+  adderModal: ReturnType<typeof useStoreSales>;
 }
 
 export const ProductQuantityContext = createContext<
@@ -10,7 +10,7 @@ export const ProductQuantityContext = createContext<
 >(undefined);
 
 export function ProductQuantityProvider({ children }: { children: ReactNode }) {
-  const adderModal = useAdderModal();
+  const adderModal = useStoreSales();
   return (
     <ProductQuantityContext.Provider value={{ adderModal }}>
       {children}

@@ -22,7 +22,7 @@ import {
   updateSale,
 } from "../services/sales-services";
 
-export function useAdderModal() {
+export function useStoreSales() {
   const { sessionId, sessionStoreId } = useLocalSearchParams<{
     sessionId?: string;
     sessionStoreId?: string;
