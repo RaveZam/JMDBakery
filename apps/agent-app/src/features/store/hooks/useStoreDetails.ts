@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { getSessionStoreById } from "../services/store-services";
+import {
+  confirmSessionStoreVisit,
+  getSessionStoreById,
+} from "../services/store-services";
 import type { SessionStoreDetails } from "../types/store-types";
 
 export function useStoreDetails() {
   const { sessionStoreId } = useLocalSearchParams<{
     sessionStoreId?: string;
   }>();
+  const router = useRouter();
   const [store, setStore] = useState<SessionStoreDetails | null>(null);
 
   useEffect(() => {
@@ -15,5 +19,11 @@ export function useStoreDetails() {
     setStore(getSessionStoreById(sessionStoreId));
   }, [sessionStoreId]);
 
-  return { store };
+  const confirmVisit = () => {
+    if (!sessionStoreId) return;
+    confirmSessionStoreVisit(sessionStoreId);
+    router.back();
+  };
+
+  return { store, confirmVisit };
 }
