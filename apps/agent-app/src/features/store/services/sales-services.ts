@@ -19,6 +19,11 @@ export function getSalesBySessionStore(sessionStoreId: string): LoggedItem[] {
   return SalesDao.getBySessionStoreId(sessionStoreId);
 }
 
+// Sums sold revenue for one session store, computed in SQL from the sales table.
+export function getNetTotalBySessionStore(sessionStoreId: string): number {
+  return SalesDao.getNetTotal(sessionStoreId);
+}
+
 function toSalePayload(id: string, input: AddSaleInput) {
   return {
     id,

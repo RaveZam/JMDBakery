@@ -96,6 +96,14 @@ const SalesDao = {
     getDb().runSync(`DELETE FROM sales WHERE id = ?`, [saleId]);
   },
 
+  getNetTotal(sessionStoreId: string): number {
+    const row = getDb().getFirstSync<{ total: number }>(
+      `SELECT COALESCE(SUM(total), 0) as total FROM sales WHERE session_store_id = ?`,
+      [sessionStoreId],
+    );
+    return row?.total ?? 0;
+  },
+
   logAll() {
     const rows = getDb().getAllSync<{
       id: string;
