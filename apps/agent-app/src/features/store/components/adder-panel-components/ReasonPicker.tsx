@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
 } from "react-native";
+import { useProductQuantity } from "../../context/useProductQuantity";
 
 const BORDER = "#E2E8F0";
 
@@ -13,8 +14,15 @@ export const PRESET_REASONS = ["Rotten", "Damaged", "Lost", "Custom"] as const;
 export type PresetReason = (typeof PRESET_REASONS)[number];
 
 export function ReasonPicker() {
-  const [reason, setReason] = useState<PresetReason>("Rotten");
+  const { adderModal } = useProductQuantity();
+  const [reason, setReason] = useState<PresetReason | null>(null);
   const [customReason, setCustomReason] = useState("");
+
+  const setBoReason = (preset: PresetReason, custom: string) => {
+    adderModal.inventory.setBoReason(preset === "Custom" ? custom : preset);
+  };
+
+  if (adderModal.inventory.boQty === 0) return null;
 
   return (
     <View style={styles.reasonSection}>
@@ -24,7 +32,10 @@ export function ReasonPicker() {
           <TouchableOpacity
             key={r}
             style={[styles.chip, reason === r && styles.chipActive]}
-            onPress={() => setReason(r)}
+            onPress={() => {
+              setReason(r);
+              setBoReason(r, customReason);
+            }}
             activeOpacity={0.7}
           >
             <Text
@@ -41,7 +52,10 @@ export function ReasonPicker() {
           placeholder="Describe the reason…"
           placeholderTextColor="#94A3B8"
           value={customReason}
-          onChangeText={setCustomReason}
+          onChangeText={(v) => {
+            setCustomReason(v);
+            setBoReason("Custom", v);
+          }}
           autoFocus
         />
       )}
