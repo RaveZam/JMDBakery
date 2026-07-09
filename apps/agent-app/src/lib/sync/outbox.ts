@@ -113,15 +113,24 @@ export async function runOutboxSync(): Promise<{
   synced: number;
   failed: number;
 }> {
-  if (!(await isWifiConnected())) return { synced: 0, failed: 0 };
+  console.log("[outbox] attempting sync");
+
+  if (!(await isWifiConnected())) {
+    console.log("[outbox] skipped: no wifi connection");
+    return { synced: 0, failed: 0 };
+  }
 
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) return { synced: 0, failed: 0 };
+  if (!session) {
+    console.log("[outbox] skipped: no active session");
+    return { synced: 0, failed: 0 };
+  }
 
   const pending = getPendingRows();
+  console.log(`[outbox] ${pending.length} pending row(s)`);
 
   let synced = 0;
   let failed = 0;
@@ -139,6 +148,8 @@ export async function runOutboxSync(): Promise<{
       );
     }
   }
+
+  console.log(`[outbox] sync complete: ${synced} synced, ${failed} failed`);
 
   return { synced, failed };
 }

@@ -18,7 +18,7 @@ import { useAppReady } from "@/src/shared/hooks/useAppReady";
 import { runOutboxSync } from "@/src/lib/sync/outbox";
 import "react-native-get-random-values";
 
-const SYNC_INTERVAL_MS = 30_000;
+const SYNC_INTERVAL_MS = 5_000;
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
