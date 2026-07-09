@@ -10,12 +10,12 @@ test("no sales yet leaves the full stocked qty remaining", () => {
   });
 });
 
-test("subtracts sold count from stocked qty", () => {
+test("subtracts sold and bo counts from stocked qty", () => {
   const result = computeRemaining(
     [{ productId: "p1", qty: 40 }],
     { p1: { sold: 15, bo: 2 } },
   );
-  expect(result).toEqual({ p1: 25 });
+  expect(result).toEqual({ p1: 23 });
 });
 
 test("multiple products are computed independently", () => {
