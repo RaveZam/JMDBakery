@@ -3,11 +3,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AdderModal } from "../components/AdderModal";
 import { OrdersSection } from "../components/OrdersSection";
 import { StoreHeader } from "../components/StoreHeader";
+import { VisitFooter } from "../components/VisitFooter";
 
 const HEADER_BG = "#0b4c29";
 const BODY_BG = "#F0F0EB";
 
 export default function StorePage() {
+  let netTotal = 0;
+  let confirmVisit = () => {};
   return (
     <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
       <StoreHeader />
@@ -19,7 +22,7 @@ export default function StorePage() {
         <OrdersSection />
         <AdderModal />
       </ScrollView>
-      {/* <VisitFooter netTotal={netTotal} onConfirm={confirmVisit} /> */}
+      <VisitFooter netTotal={netTotal} onConfirm={confirmVisit} />
     </SafeAreaView>
   );
 }
