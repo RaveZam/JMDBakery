@@ -10,6 +10,9 @@ import { getDb, initDb } from "@/src/lib/db";
 import RoutesDao from "@/src/lib/dao/routes-dao";
 import ProvincesDao from "@/src/lib/dao/province-dao";
 import StoresDao from "@/src/lib/dao/store-dao";
+import RouteSessionsDao from "@/src/lib/dao/route-sessions-dao";
+import SessionStoresDao from "@/src/lib/dao/session-stores-dao";
+import { ProductsDao } from "@/src/lib/dao/products-dao";
 
 export type OutboxRow = {
   id: string;
@@ -33,6 +36,7 @@ export function resetDb(): void {
   db.runSync("DELETE FROM session_inventory");
   db.runSync("DELETE FROM ending_inventory");
   db.runSync("DELETE FROM session_stores");
+  db.runSync("DELETE FROM products");
   db.runSync("DELETE FROM route_sessions");
   db.runSync("DELETE FROM stores");
   db.runSync("DELETE FROM provinces");
@@ -52,6 +56,36 @@ export function seedProvince(routeId: string, name = "Bulacan"): string {
 /** Insert a store under a province directly (no outbox row) and return its id. */
 export function seedStore(provinceId: string, name = "Store A"): string {
   return StoresDao.insertStore({ provinceId, name, province: "", city: "", barangay: "" });
+}
+
+/** Insert a route session directly (no outbox row) and return its id. */
+export function seedRouteSession(routeName = "North Route"): string {
+  return RouteSessionsDao.insert({
+    routeName,
+    sessionDate: "2026-06-30",
+    conductedBy: "user-1",
+    createdAt: "2026-06-30T00:00:00.000Z",
+  });
+}
+
+/** Insert a session store directly (no outbox row) and return its id. */
+export function seedSessionStore(
+  routeSessionId: string,
+  storeId: string,
+  provinceId?: string,
+): string {
+  return SessionStoresDao.insert({
+    routeSessionId,
+    storeId,
+    provinceId: provinceId ?? null,
+    createdAt: "2026-06-30T00:00:00.000Z",
+  });
+}
+
+/** Insert a product directly (no outbox row) and return its id. */
+export function seedProduct(id = "prod-1", name = "Pandesal", price = 10): string {
+  ProductsDao.insertProduct(id, name, price);
+  return id;
 }
 
 /** Pending outbox rows, optionally filtered by entity_type, oldest first. */
