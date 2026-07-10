@@ -36,6 +36,7 @@ export function InventoryRow({ item, onEdit }: Props) {
         style={styles.deleteBtn}
         onPress={() => inventory.removeItem(item.productId)}
         hitSlop={8}
+        accessibilityLabel="remove-item"
       >
         <Ionicons name="trash-outline" size={16} color="#DC2626" />
       </TouchableOpacity>
