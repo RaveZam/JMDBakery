@@ -15,6 +15,7 @@ export type HistorySession = {
   inventory: ReturnType<typeof SessionInventoryDao.getBySessionId>;
   stores: ReturnType<typeof SessionStoresDao.getBySessionId>;
   salesByStore: Record<string, LoggedItem[]>;
+  endingInventory: ReturnType<typeof EndingInventoryDao.getBySessionId>;
   hasEndingInventory: boolean;
   isOngoing: boolean;
   actions: { confirmCancel: () => void };
@@ -57,13 +58,13 @@ function useSessionDetailData(sessionId: string) {
     return map;
   }, [stores]);
 
-  const hasEndingInventory = useMemo(
-    () =>
-      sessionId ? EndingInventoryDao.getBySessionId(sessionId).length > 0 : false,
+  const endingInventory = useMemo(
+    () => (sessionId ? EndingInventoryDao.getBySessionId(sessionId) : []),
     [sessionId],
   );
+  const hasEndingInventory = endingInventory.length > 0;
 
-  return { session, inventory, stores, salesByStore, hasEndingInventory };
+  return { session, inventory, stores, salesByStore, endingInventory, hasEndingInventory };
 }
 
 export function useHistorySession(): { session: HistorySession } {
@@ -71,7 +72,7 @@ export function useHistorySession(): { session: HistorySession } {
   const sessionId =
     typeof params.sessionId === "string" ? params.sessionId : "";
 
-  const { session, inventory, stores, salesByStore, hasEndingInventory } =
+  const { session, inventory, stores, salesByStore, endingInventory, hasEndingInventory } =
     useSessionDetailData(sessionId);
 
   const isOngoing = session?.status === "ongoing";
@@ -90,6 +91,7 @@ export function useHistorySession(): { session: HistorySession } {
       inventory,
       stores,
       salesByStore,
+      endingInventory,
       hasEndingInventory,
       isOngoing,
       actions,

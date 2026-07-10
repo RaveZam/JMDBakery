@@ -2,10 +2,17 @@ import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useHistorySessionContext } from "../../context/HistorySessionContext";
+import type { SessionTab } from "./SessionTabs";
 
-export function EndingInventoryFab() {
+type Props = {
+  tab: SessionTab;
+};
+
+export function EndingInventoryFab({ tab }: Props) {
   const session = useHistorySessionContext();
-  if (session.inventory.length === 0) return null;
+  if (tab !== "inventory" || session.inventory.length === 0 || session.hasEndingInventory) {
+    return null;
+  }
 
   return (
     <TouchableOpacity
@@ -21,18 +28,8 @@ export function EndingInventoryFab() {
         })
       }
     >
-      <Ionicons
-        name={
-          session.hasEndingInventory ? "checkmark-circle-outline" : "layers-outline"
-        }
-        size={20}
-        color="#FFFFFF"
-      />
-      <Text style={styles.fabText}>
-        {session.hasEndingInventory
-          ? "Update Ending Inventory"
-          : "Log Ending Inventory"}
-      </Text>
+      <Ionicons name="layers-outline" size={20} color="#FFFFFF" />
+      <Text style={styles.fabText}>Log Ending Inventory</Text>
     </TouchableOpacity>
   );
 }
