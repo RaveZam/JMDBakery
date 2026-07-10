@@ -3,10 +3,10 @@
 // leave a stale value. The read-only service is mocked so nothing hits SQLite.
 import { renderHook, act } from "@testing-library/react-native";
 
-import { useStoreDetail } from "../useStoreDetail";
-import { getStoreById } from "../../services/store-services";
+import { useStoreDetail } from "@/src/features/routes/hooks/useStoreDetail";
+import { getStoreById } from "@/src/features/routes/services/store-services";
 
-jest.mock("../../services/store-services", () => ({ getStoreById: jest.fn() }));
+jest.mock("@/src/features/routes/services/store-services", () => ({ getStoreById: jest.fn() }));
 
 const mockGetById = getStoreById as jest.Mock;
 const STORE = { id: "s1", name: "Aling Nena", province_id: "p1" };

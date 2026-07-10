@@ -6,7 +6,7 @@ import {
   updateRouteName,
   deleteRoute,
   getRoutes,
-} from "../route-save-service";
+} from "@/src/features/routes/services/route-save-service";
 import StoresDao from "@/src/lib/dao/store-dao";
 import ProvincesDao from "@/src/lib/dao/province-dao";
 import {

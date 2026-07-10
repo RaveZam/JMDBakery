@@ -13,7 +13,7 @@ import {
   startSession,
   cancelSession,
   OngoingSessionExistsError,
-} from "../sessionLocalService";
+} from "@/src/features/sessions/services/sessionLocalService";
 
 jest.mock("@/src/lib/supabase", () => ({
   supabase: {

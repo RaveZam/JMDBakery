@@ -5,12 +5,12 @@
 // makes and how state changes — including the confirmDelete no-op guard.
 import { renderHook, act } from "@testing-library/react-native";
 
-import { useRoute } from "../useRoute";
+import { useRoute } from "@/src/features/routes/hooks/useRoute";
 import {
   getRoutes,
   createRoute,
   deleteRoute,
-} from "../../services/route-save-service";
+} from "@/src/features/routes/services/route-save-service";
 
 // useFocusEffect only fires inside a navigator; here we make it behave like a
 // mount effect so loadRoutes() runs once on render.
@@ -20,7 +20,7 @@ jest.mock("expo-router", () => ({
     React.useEffect(cb, [cb]);
   },
 }));
-jest.mock("../../services/route-save-service", () => ({
+jest.mock("@/src/features/routes/services/route-save-service", () => ({
   getRoutes: jest.fn(),
   createRoute: jest.fn(),
   deleteRoute: jest.fn(),

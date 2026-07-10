@@ -7,8 +7,8 @@ import {
   getOutbox,
 } from "@/src/test-utils/db-test-helpers";
 import { getDb } from "@/src/lib/db";
-import { insertRouteSession } from "../route-session-create-service";
-import { insertSessionStore } from "../session-store-save-service";
+import { insertRouteSession } from "@/src/features/sessions/services/route-session-create-service";
+import { insertSessionStore } from "@/src/features/sessions/services/session-store-save-service";
 
 beforeAll(async () => { await createSchema(); });
 beforeEach(() => { resetDb(); });

@@ -1,6 +1,6 @@
 import { renderHook, act } from "@testing-library/react-native";
-import { useSession } from "../useSession";
-import { cancelSession } from "../../services/sessionLocalService";
+import { useSession } from "@/src/features/sessions/hooks/useSession";
+import { cancelSession } from "@/src/features/sessions/services/sessionLocalService";
 
 jest.mock("expo-router", () => ({
   router: { push: jest.fn() },
@@ -8,8 +8,8 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ sessionId: "session-1" }),
 }));
 
-jest.mock("../../services/sessionLocalService", () => {
-  const actual = jest.requireActual("../../services/sessionLocalService");
+jest.mock("@/src/features/sessions/services/sessionLocalService", () => {
+  const actual = jest.requireActual("@/src/features/sessions/services/sessionLocalService");
   return { ...actual, cancelSession: jest.fn(), completeSession: jest.fn() };
 });
 

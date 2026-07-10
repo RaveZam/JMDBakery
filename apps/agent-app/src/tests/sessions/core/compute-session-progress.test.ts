@@ -1,4 +1,4 @@
-import { computeSessionProgress } from "./compute-session-progress";
+import { computeSessionProgress } from "@/src/features/sessions/core/compute-session-progress";
 
 test("empty session is 0% with no divide-by-zero", () => {
   expect(computeSessionProgress(0, 0)).toEqual({

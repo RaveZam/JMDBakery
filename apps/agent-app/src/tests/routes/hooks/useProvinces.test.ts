@@ -3,12 +3,12 @@
 // read-only service and the router param are both mocked.
 import { renderHook, act } from "@testing-library/react-native";
 
-import { useProvinces } from "../useProvinces";
-import { getProvinces } from "../../services/province-save-service";
+import { useProvinces } from "@/src/features/routes/hooks/useProvinces";
+import { getProvinces } from "@/src/features/routes/services/province-save-service";
 import { useLocalSearchParams } from "expo-router";
 
 jest.mock("expo-router", () => ({ useLocalSearchParams: jest.fn() }));
-jest.mock("../../services/province-save-service", () => ({
+jest.mock("@/src/features/routes/services/province-save-service", () => ({
   getProvinces: jest.fn(),
 }));
 

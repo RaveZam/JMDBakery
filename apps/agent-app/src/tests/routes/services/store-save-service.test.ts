@@ -6,8 +6,8 @@ import {
   updateStore,
   deleteStore,
   type StoreFields,
-} from "../store-save-service";
-import { getStoreById, getStoresForProvince } from "../store-services";
+} from "@/src/features/routes/services/store-save-service";
+import { getStoreById, getStoresForProvince } from "@/src/features/routes/services/store-services";
 import {
   createSchema,
   resetDb,

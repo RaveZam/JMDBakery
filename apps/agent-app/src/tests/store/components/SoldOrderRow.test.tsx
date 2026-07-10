@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react-native";
-import { SoldOrderRow } from "./SoldOrderRow";
-import type { LoggedItem } from "../hooks/useDistributionLog";
+import { SoldOrderRow } from "@/src/features/store/components/SoldOrderRow";
+import type { LoggedItem } from "@/src/features/store/hooks/useDistributionLog";
 
 function makeItem(overrides: Partial<LoggedItem> = {}): LoggedItem {
   return {

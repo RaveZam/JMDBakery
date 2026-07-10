@@ -1,4 +1,4 @@
-import { validateSaleInput } from "./validate-sale-input";
+import { validateSaleInput } from "@/src/features/store/core/validate-sale-input";
 
 test("zero qty and zero BO qty is invalid", () => {
   expect(validateSaleInput({ qty: 0, boQty: 0, boReason: "" })).toEqual({

@@ -1,4 +1,4 @@
-import { computeRemaining } from "./compute-remaining";
+import { computeRemaining } from "@/src/features/store/core/compute-remaining";
 
 test("empty items is an empty map", () => {
   expect(computeRemaining([], {})).toEqual({});

@@ -1,4 +1,4 @@
-import { hasEnoughStock } from "./has-enough-stock";
+import { hasEnoughStock } from "@/src/features/store/core/has-enough-stock";
 
 test("requested qty within remaining is enough", () => {
   expect(hasEnoughStock({ qty: 5, boQty: 2, remaining: 10 })).toBe(true);

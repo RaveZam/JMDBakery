@@ -5,12 +5,12 @@
 // modal/name state wiring. The service is mocked so nothing touches SQLite.
 import { renderHook, act } from "@testing-library/react-native";
 
-import { useRouteName } from "../useRouteName";
-import { updateRouteName } from "../../services/route-save-service";
+import { useRouteName } from "@/src/features/routes/hooks/useRouteName";
+import { updateRouteName } from "@/src/features/routes/services/route-save-service";
 import { useLocalSearchParams } from "expo-router";
 
 jest.mock("expo-router", () => ({ useLocalSearchParams: jest.fn() }));
-jest.mock("../../services/route-save-service", () => ({
+jest.mock("@/src/features/routes/services/route-save-service", () => ({
   updateRouteName: jest.fn(),
 }));
 

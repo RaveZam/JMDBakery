@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react-native";
-import { useInventory } from "../useInventory";
+import { useInventory } from "@/src/features/inventory/hooks/useInventory";
 import { cancelSession } from "@/src/features/sessions/services/sessionLocalService";
 
 jest.mock("expo-router", () => ({
@@ -11,7 +11,7 @@ jest.mock("@/src/features/sessions/services/sessionLocalService", () => ({
   cancelSession: jest.fn(),
 }));
 
-jest.mock("../useProducts", () => ({
+jest.mock("@/src/features/inventory/hooks/useProducts", () => ({
   useProducts: () => ({ products: [] }),
 }));
 

@@ -4,16 +4,16 @@ import { router } from "expo-router";
 import {
   startSession,
   OngoingSessionExistsError,
-} from "../../services/sessionLocalService";
-import { useStartSession } from "../useStartSession";
+} from "@/src/features/sessions/services/sessionLocalService";
+import { useStartSession } from "@/src/features/sessions/hooks/useStartSession";
 
 jest.mock("expo-router", () => ({
   useLocalSearchParams: jest.fn(() => ({ routeId: "route-1", routeName: "Test Route" })),
   router: { replace: jest.fn() },
 }));
 
-jest.mock("../../services/sessionLocalService", () => {
-  const actual = jest.requireActual("../../services/sessionLocalService");
+jest.mock("@/src/features/sessions/services/sessionLocalService", () => {
+  const actual = jest.requireActual("@/src/features/sessions/services/sessionLocalService");
   return { ...actual, startSession: jest.fn() };
 });
 

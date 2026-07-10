@@ -1,4 +1,4 @@
-import { collapseOngoingSessions } from "../collapse-ongoing-sessions";
+import { collapseOngoingSessions } from "@/src/lib/sync/collapse-ongoing-sessions";
 
 type Row = { id: string; status: string; created_at?: string | null };
 

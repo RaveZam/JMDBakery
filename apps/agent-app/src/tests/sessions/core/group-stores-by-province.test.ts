@@ -1,5 +1,5 @@
-import { groupStoresByProvince } from "./group-stores-by-province";
-import type { SessionStore } from "../types/session-types";
+import { groupStoresByProvince } from "@/src/features/sessions/core/group-stores-by-province";
+import type { SessionStore } from "@/src/features/sessions/types/session-types";
 
 function store(overrides: Partial<SessionStore>): SessionStore {
   return {

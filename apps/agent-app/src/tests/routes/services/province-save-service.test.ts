@@ -5,7 +5,7 @@ import {
   updateProvinceName,
   deleteProvince,
   getProvinces,
-} from "../province-save-service";
+} from "@/src/features/routes/services/province-save-service";
 import StoresDao from "@/src/lib/dao/store-dao";
 import {
   createSchema,

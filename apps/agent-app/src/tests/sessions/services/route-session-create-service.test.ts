@@ -1,6 +1,6 @@
 import { createSchema, resetDb, getOutbox } from "@/src/test-utils/db-test-helpers";
 import { getDb } from "@/src/lib/db";
-import { insertRouteSession } from "../route-session-create-service";
+import { insertRouteSession } from "@/src/features/sessions/services/route-session-create-service";
 
 beforeAll(async () => { await createSchema(); });
 beforeEach(() => { resetDb(); });

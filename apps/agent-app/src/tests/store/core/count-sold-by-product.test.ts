@@ -1,5 +1,5 @@
-import { countSoldByProduct } from "./count-sold-by-product";
-import type { LoggedItem } from "../types/store-types";
+import { countSoldByProduct } from "@/src/features/store/core/count-sold-by-product";
+import type { LoggedItem } from "@/src/features/store/types/store-types";
 
 const item = (over: Partial<LoggedItem>): LoggedItem => ({
   saleId: "sale",

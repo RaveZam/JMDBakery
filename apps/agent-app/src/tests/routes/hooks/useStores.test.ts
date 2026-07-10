@@ -3,10 +3,10 @@
 // The read-only service is mocked.
 import { renderHook } from "@testing-library/react-native";
 
-import { useStores } from "../useStores";
-import { getStoresForProvince } from "../../services/store-services";
+import { useStores } from "@/src/features/routes/hooks/useStores";
+import { getStoresForProvince } from "@/src/features/routes/services/store-services";
 
-jest.mock("../../services/store-services", () => ({
+jest.mock("@/src/features/routes/services/store-services", () => ({
   getStoresForProvince: jest.fn(),
 }));
 
