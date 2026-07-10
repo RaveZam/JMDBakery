@@ -123,7 +123,10 @@ async function downloadStores(): Promise<number | null> {
 }
 
 async function downloadSessions(): Promise<number | null> {
-  const { data, error } = await supabase.from("route_sessions").select("*");
+  const { data, error } = await supabase
+    .from("route_sessions")
+    .select("*")
+    .is("deleted_at", null);
   if (error || !data) {
     console.warn("[download] failed to fetch sessions:", error?.message);
     return null;

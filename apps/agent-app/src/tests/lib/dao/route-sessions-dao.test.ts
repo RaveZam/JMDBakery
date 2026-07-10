@@ -84,3 +84,16 @@ test("cancel frees the ongoing slot for a new session", () => {
   const cancelled = RouteSessionsDao.getById(a);
   expect(cancelled?.status).toBe("cancelled");
 });
+
+test("delete removes the row", () => {
+  const a = RouteSessionsDao.insert({
+    routeName: "R",
+    sessionDate: "2026-07-06",
+    conductedBy: "user-1",
+    createdAt: "2026-07-06T00:00:00Z",
+  });
+
+  RouteSessionsDao.delete(a);
+
+  expect(RouteSessionsDao.getById(a)).toBeFalsy();
+});

@@ -65,6 +65,10 @@ const RouteSessionsDao = {
     );
   },
 
+  delete(id: string) {
+    getDb().runSync(`DELETE FROM route_sessions WHERE id = ?`, [id]);
+  },
+
   markInventoryFinished(id: string) {
     getDb().runSync(
       `UPDATE route_sessions SET morning_inventory_finished = 1 WHERE id = ?`,
