@@ -19,7 +19,6 @@ const HEADER_BG = "#0b4c29";
 export default function EndingInventoryScreen() {
   const insets = useSafeAreaInsets();
   const { endingInventory } = useEndingInventory();
-  const { routeName, items, saving, updateQty, save } = endingInventory;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
@@ -37,7 +36,7 @@ export default function EndingInventoryScreen() {
             <Text style={styles.headerLabel}>ENDING INVENTORY</Text>
           </View>
           <Text style={styles.headerTitle} numberOfLines={1}>
-            {routeName || "Session"}
+            {endingInventory.routeName || "Session"}
           </Text>
         </View>
 
@@ -48,7 +47,7 @@ export default function EndingInventoryScreen() {
         >
           <Text style={styles.sectionTitle}>Products</Text>
 
-          {items.length === 0 ? (
+          {endingInventory.items.length === 0 ? (
             <View style={styles.emptyCard}>
               <Ionicons name="layers-outline" size={22} color="#94A3B8" />
               <Text style={styles.emptyText}>
@@ -66,7 +65,7 @@ export default function EndingInventoryScreen() {
                 </Text>
                 <Text style={[styles.colHead, styles.colHeadQty]}>QTY</Text>
               </View>
-              {items.map((item) => (
+              {endingInventory.items.map((item) => (
                 <View key={item.productId} style={styles.row}>
                   <Text style={styles.rowProduct} numberOfLines={1}>
                     {item.productName}
@@ -74,7 +73,9 @@ export default function EndingInventoryScreen() {
                   <Text style={styles.rowExpected}>{item.expected}</Text>
                   <View style={styles.qtyControls}>
                     <TouchableOpacity
-                      onPress={() => updateQty(item.productId, -1)}
+                      onPress={() =>
+                        endingInventory.updateQty(item.productId, -1)
+                      }
                       hitSlop={8}
                     >
                       <Ionicons
@@ -85,7 +86,9 @@ export default function EndingInventoryScreen() {
                     </TouchableOpacity>
                     <Text style={styles.rowQty}>{item.quantity}</Text>
                     <TouchableOpacity
-                      onPress={() => updateQty(item.productId, 1)}
+                      onPress={() =>
+                        endingInventory.updateQty(item.productId, 1)
+                      }
                       hitSlop={8}
                     >
                       <Ionicons
@@ -103,14 +106,17 @@ export default function EndingInventoryScreen() {
 
         <View style={styles.footer}>
           <TouchableOpacity
-            style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+            style={[
+              styles.saveButton,
+              endingInventory.saving && styles.saveButtonDisabled,
+            ]}
             activeOpacity={0.7}
-            disabled={saving}
-            onPress={save}
+            disabled={endingInventory.saving}
+            onPress={endingInventory.save}
           >
             <Ionicons name="cloud-upload-outline" size={18} color="#FFFFFF" />
             <Text style={styles.saveButtonText}>
-              {saving ? "Saving..." : "Save Ending Inventory"}
+              {endingInventory.saving ? "Saving..." : "Save Ending Inventory"}
             </Text>
           </TouchableOpacity>
         </View>
