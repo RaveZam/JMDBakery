@@ -1,7 +1,7 @@
 import { Banknote, Percent, PackageX, ShoppingBag, Store } from "lucide-react";
 import { KpiCard } from "./KpiCard";
-import { useComputeSalesKPI } from "../hooks/useComputeSalesKPI";
-import { FilterRange } from "../types/dashboard-types";
+import { computeSalesKPI } from "../helpers/computeSalesKPI";
+import { FilterRange, SalesKpiRecord } from "../types/dashboard-types";
 
 const FILTER_LABEL: Record<FilterRange, string> = {
   today: "Today",
@@ -9,9 +9,9 @@ const FILTER_LABEL: Record<FilterRange, string> = {
   "30days": "Past 30 Days",
 };
 
-export function KpiStrip({ data, filter }: { data: any; filter: FilterRange }) {
+export function KpiStrip({ data, filter }: { data: SalesKpiRecord[]; filter: FilterRange }) {
   const { totalSales, avgPerStore, totalBO, finalBboRate, totalSold } =
-    useComputeSalesKPI(data);
+    computeSalesKPI(data);
 
   const label = FILTER_LABEL[filter];
 

@@ -31,3 +31,10 @@ export type ProductSoldRecord = {
   soldQty: number;
   total: number;
 };
+
+export type SalesKpiRecord = {
+  store: string;
+  total: number;
+  soldQty: number;
+  boQty: number;
+};

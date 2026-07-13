@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { computeTopAgents } from "../helpers/computeTopAgents";
-import { formatCurrencyThousands } from "../helpers/formatCurrencyThousands";
+import { formatCurrencyCompact } from "../helpers/formatCurrencyCompact";
 import type { AgentSaleRecord } from "../types/dashboard-types";
 
 const BAR_COLORS = ["#1f7a44", "#2f9e5e", "#c79a3a", "#dec06a", "#86a06b"];
@@ -63,7 +63,9 @@ export function TopAgentsChart({
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No data for this period.</p>
+          <p className="text-sm text-muted-foreground">
+            No data for this period.
+          </p>
         ) : (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
@@ -73,7 +75,7 @@ export function TopAgentsChart({
             >
               <XAxis
                 type="number"
-                tickFormatter={formatCurrencyThousands}
+                tickFormatter={formatCurrencyCompact}
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}

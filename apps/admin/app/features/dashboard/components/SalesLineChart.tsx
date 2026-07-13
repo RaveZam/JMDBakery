@@ -11,9 +11,9 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { SalesRecord } from "@/app/server/getBaseData";
+import { computeSalesTimeline } from "../helpers/computeSalesTimeline";
 import { formatCurrencyCompact } from "../helpers/formatCurrencyCompact";
-import { formatHourLabel } from "../helpers/formatHourLabel";
-import { formatSalesXLabel } from "../helpers/formatSalesXLabel";
 import { FilterRange } from "../types/dashboard-types";
 
 const CHART_TITLE: Record<FilterRange, string> = {
@@ -26,37 +26,10 @@ export function SalesLineChart({
   data,
   filter,
 }: {
-  data: any[];
+  data: SalesRecord[];
   filter: FilterRange;
 }): ReactElement {
-  let chartData: { label: string; sales: number }[];
-
-  if (filter === "today") {
-    const salesByHour: Record<number, number> = {};
-    for (const row of data) {
-      const hour = row.createdAt ? parseInt(row.createdAt.slice(11, 13)) : null;
-      if (hour === null) continue;
-      salesByHour[hour] = (salesByHour[hour] ?? 0) + row.total;
-    }
-    chartData = Object.keys(salesByHour)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .map((hour) => ({
-        label: formatHourLabel(hour),
-        sales: salesByHour[hour],
-      }));
-  } else {
-    const salesByDate: Record<string, number> = {};
-    for (const row of data) {
-      salesByDate[row.date] = (salesByDate[row.date] ?? 0) + row.total;
-    }
-    chartData = Object.keys(salesByDate)
-      .sort()
-      .map((date) => ({
-        label: formatSalesXLabel(date, filter),
-        sales: salesByDate[date],
-      }));
-  }
+  const chartData = computeSalesTimeline(data, filter);
 
   return (
     <Card className="border-border/70 shadow-soft dark:shadow-soft-dark">
