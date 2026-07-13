@@ -1,4 +1,4 @@
-import Sidebar from "@/app/features/dashboard/components/Sidebar";
+import Sidebar from "@/app/features/shell/components/Sidebar";
 import AiChat from "@/app/features/aichat/ai-chat";
 
 export default function DashboardLayout({

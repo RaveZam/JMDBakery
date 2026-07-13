@@ -1,5 +1,3 @@
-import type { ComponentType, ReactNode } from "react";
-
 export type FilterRange = "today" | "7days" | "30days";
 export const FILTERS: { label: string; value: FilterRange }[] = [
   { label: "Today", value: "today" },
@@ -16,29 +14,6 @@ export type KpiCardTone =
   | "warning"
   | "critical";
 export type KpiCardAccent = "green" | "gold" | "amber" | "red" | "slate";
-
-export type StatsCardTone = "primary" | "neutral";
-
-export type TeamMember = {
-  name: string;
-  subtitle: string;
-  status: "Completed" | "In Progress" | "Pending";
-  avatarFallback: string;
-};
-
-export type NavItem = {
-  href: string;
-  label: string;
-  icon: ComponentType<{ className?: string }>;
-  badge?: ReactNode;
-};
-
-export type NavGroup = {
-  title: string;
-  items: NavItem[];
-};
-
-export type DayDatum = { day: string; value: number; tone?: "solid" | "striped" };
 
 export type ProductBoRecord = {
   product: string;
