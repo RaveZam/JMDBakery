@@ -3,8 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
-export type StatsCardTone = "primary" | "neutral";
+import type { StatsCardTone } from "../types/dashboard-types";
 
 function StatsCardArrow({ tone }: { tone: StatsCardTone }): ReactElement {
   return (

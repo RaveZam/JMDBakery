@@ -11,32 +11,11 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { computeTopAgents } from "../helpers/computeTopAgents";
+import { formatCurrencyThousands } from "../helpers/formatCurrencyThousands";
+import type { AgentSaleRecord } from "../types/dashboard-types";
 
 const BAR_COLORS = ["#1f7a44", "#2f9e5e", "#c79a3a", "#dec06a", "#86a06b"];
-
-type SaleRecord = {
-  agent: string;
-  total: number;
-};
-
-function computeTopAgents(data: SaleRecord[]) {
-  const totals: { [agent: string]: number } = {};
-
-  for (const row of data) {
-    if (!totals[row.agent]) totals[row.agent] = 0;
-    totals[row.agent] += row.total;
-  }
-
-  return Object.entries(totals)
-    .map(([agent, revenue]) => ({ agent, revenue }))
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, 5);
-}
-
-function formatCurrencyPHP(value: number): string {
-  if (value >= 1000) return `₱${(value / 1000).toFixed(1)}k`;
-  return `₱${value}`;
-}
 
 function CustomTooltip({
   active,
@@ -70,7 +49,11 @@ function CustomTooltip({
   );
 }
 
-export function TopAgentsChart({ data }: { data: SaleRecord[] }): ReactElement {
+export function TopAgentsChart({
+  data,
+}: {
+  data: AgentSaleRecord[];
+}): ReactElement {
   const chartData = computeTopAgents(data);
 
   return (
@@ -90,7 +73,7 @@ export function TopAgentsChart({ data }: { data: SaleRecord[] }): ReactElement {
             >
               <XAxis
                 type="number"
-                tickFormatter={formatCurrencyPHP}
+                tickFormatter={formatCurrencyThousands}
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}

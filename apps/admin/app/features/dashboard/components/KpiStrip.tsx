@@ -1,7 +1,7 @@
 import { Banknote, Percent, PackageX, ShoppingBag, Store } from "lucide-react";
 import { KpiCard } from "./KpiCard";
 import { useComputeSalesKPI } from "../hooks/useComputeSalesKPI";
-import { FilterRange } from "../types";
+import { FilterRange } from "../types/dashboard-types";
 
 const FILTER_LABEL: Record<FilterRange, string> = {
   today: "Today",

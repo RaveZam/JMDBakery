@@ -12,27 +12,8 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-type SaleRecord = {
-  product: string;
-  soldQty: number;
-  boQty: number;
-};
-
-function computeProductTotals(data: SaleRecord[]) {
-  const totals: { [product: string]: { sold: number; bo: number } } = {};
-
-  for (const row of data) {
-    if (!totals[row.product]) totals[row.product] = { sold: 0, bo: 0 };
-    totals[row.product].sold += row.soldQty;
-    totals[row.product].bo += row.boQty;
-  }
-
-  return Object.entries(totals)
-    .map(([product, { sold, bo }]) => ({ product, sold, bo }))
-    .sort((a, b) => b.sold - a.sold)
-    .slice(0, 5);
-}
+import { computeProductTotals } from "../helpers/computeProductTotals";
+import type { ProductBoRecord } from "../types/dashboard-types";
 
 function CustomTooltip({
   active,
@@ -78,7 +59,7 @@ function CustomTooltip({
 export function ProductSoldVsBoChart({
   data,
 }: {
-  data: SaleRecord[];
+  data: ProductBoRecord[];
 }): ReactElement {
   const chartData = computeProductTotals(data);
 

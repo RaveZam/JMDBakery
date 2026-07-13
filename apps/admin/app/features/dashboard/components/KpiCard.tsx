@@ -1,18 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { type LucideIcon } from "lucide-react";
+import type { KpiCardAccent, KpiCardTone } from "../types/dashboard-types";
 
-type Tone =
-  | "neutral"
-  | "hero"
-  | "primary"
-  | "healthy"
-  | "medium"
-  | "warning"
-  | "critical";
-type Accent = "green" | "gold" | "amber" | "red" | "slate";
-
-const accentChip: Record<Accent, string> = {
+const accentChip: Record<KpiCardAccent, string> = {
   green: "bg-primary/10 text-primary",
   gold: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
   amber:
@@ -21,7 +12,7 @@ const accentChip: Record<Accent, string> = {
   slate: "bg-muted text-muted-foreground",
 };
 
-const solidTone: Partial<Record<Tone, string>> = {
+const solidTone: Partial<Record<KpiCardTone, string>> = {
   hero: "bg-primary",
   primary: "bg-primary",
   healthy: "bg-primary",
@@ -41,8 +32,8 @@ export function KpiCard({
   title: string;
   primary: string;
   secondary?: string;
-  tone?: Tone;
-  accent?: Accent;
+  tone?: KpiCardTone;
+  accent?: KpiCardAccent;
   icon?: LucideIcon;
 }) {
   const solid = solidTone[tone];

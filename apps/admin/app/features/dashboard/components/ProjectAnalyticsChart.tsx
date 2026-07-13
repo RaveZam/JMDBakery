@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { scaleBand, scaleLinear } from "@visx/scale";
 import { Bar } from "@visx/shape";
-
-type DayDatum = { day: string; value: number; tone?: "solid" | "striped" };
+import type { DayDatum } from "../types/dashboard-types";
 
 const defaultData: DayDatum[] = [
   { day: "S", value: 42, tone: "striped" },

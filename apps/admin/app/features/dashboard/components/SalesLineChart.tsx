@@ -11,28 +11,10 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FilterRange } from "../types";
-
-function formatCurrencyPHP(value: number): string {
-  if (value >= 1_000_000) return `₱${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1000) return `₱${(value / 1000).toFixed(1)}k`;
-  return `₱${value}`;
-}
-
-function formatXLabel(dateStr: string, filter: FilterRange): string {
-  const date = new Date(dateStr);
-  if (filter === "30days") {
-    return date.toLocaleDateString("en-PH", { month: "short", day: "numeric" });
-  }
-  return date.toLocaleDateString("en-PH", { weekday: "short" });
-}
-
-function formatHourLabel(hour: number): string {
-  if (hour === 0) return "12am";
-  if (hour < 12) return `${hour}am`;
-  if (hour === 12) return "12pm";
-  return `${hour - 12}pm`;
-}
+import { formatCurrencyCompact } from "../helpers/formatCurrencyCompact";
+import { formatHourLabel } from "../helpers/formatHourLabel";
+import { formatSalesXLabel } from "../helpers/formatSalesXLabel";
+import { FilterRange } from "../types/dashboard-types";
 
 const CHART_TITLE: Record<FilterRange, string> = {
   today: "Sales Today",
@@ -71,7 +53,7 @@ export function SalesLineChart({
     chartData = Object.keys(salesByDate)
       .sort()
       .map((date) => ({
-        label: formatXLabel(date, filter),
+        label: formatSalesXLabel(date, filter),
         sales: salesByDate[date],
       }));
   }
@@ -99,13 +81,16 @@ export function SalesLineChart({
               tickLine={false}
             />
             <YAxis
-              tickFormatter={formatCurrencyPHP}
+              tickFormatter={formatCurrencyCompact}
               tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip
-              formatter={(value: number) => [formatCurrencyPHP(value), "Sales"]}
+              formatter={(value: number) => [
+                formatCurrencyCompact(value),
+                "Sales",
+              ]}
               contentStyle={{
                 fontSize: 12,
                 borderRadius: 10,

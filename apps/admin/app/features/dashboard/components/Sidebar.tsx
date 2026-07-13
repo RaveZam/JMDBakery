@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentType, ReactElement, ReactNode } from "react";
+import type { ReactElement } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,18 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import AccountCard from "./AccountCard";
-
-type NavItem = {
-  href: string;
-  label: string;
-  icon: ComponentType<{ className?: string }>;
-  badge?: ReactNode;
-};
-
-type NavGroup = {
-  title: string;
-  items: NavItem[];
-};
+import type { NavGroup, NavItem } from "../types/dashboard-types";
 
 const navGroups: NavGroup[] = [
   {

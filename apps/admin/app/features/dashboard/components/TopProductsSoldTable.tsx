@@ -1,41 +1,15 @@
 "use client";
 
-import { type ReactElement, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { computeTopProducts } from "../helpers/computeTopProducts";
+import { formatCurrencyPHP } from "../helpers/formatCurrencyPHP";
+import type { ProductSoldRecord } from "../types/dashboard-types";
 
 const COLORS = ["#1f7a44", "#2f9e5e", "#c79a3a", "#dec06a", "#86a06b"];
 
-function formatCurrencyPHP(value: number): string {
-  return `₱${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-}
-
-type Record = {
-  product: string;
-  soldQty: number;
-  total: number;
-};
-
-function computeTopProducts(data: Record[]) {
-  const totals: { [product: string]: { qty: number; value: number } } = {};
-
-  for (const row of data) {
-    if (!totals[row.product])
-      totals[row.product] = {
-        qty: 0,
-        value: 0,
-      };
-    totals[row.product].qty += row.soldQty;
-    totals[row.product].value += row.total;
-  }
-
-  return Object.entries(totals)
-    .map(([name, { qty, value }]) => ({ name, qty, value }))
-    .sort((a, b) => b.qty - a.qty)
-    .slice(0, 5);
-}
-
-export function TopProductsSoldTable({ data }: { data: Record[] }) {
+export function TopProductsSoldTable({ data }: { data: ProductSoldRecord[] }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 

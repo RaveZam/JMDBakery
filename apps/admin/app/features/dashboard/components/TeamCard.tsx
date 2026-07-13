@@ -1,23 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-type TeamMember = {
-  name: string;
-  subtitle: string;
-  status: "Completed" | "In Progress" | "Pending";
-  avatarFallback: string;
-};
-
-function statusVariant(status: TeamMember["status"]) {
-  switch (status) {
-    case "Completed":
-      return "success";
-    case "In Progress":
-      return "warning";
-    case "Pending":
-      return "pending";
-  }
-}
+import { statusVariant } from "../helpers/statusVariant";
+import type { TeamMember } from "../types/dashboard-types";
 
 function Avatar({ fallback }: { fallback: string }) {
   return (
