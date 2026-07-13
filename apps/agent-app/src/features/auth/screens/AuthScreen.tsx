@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -9,33 +9,15 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { supabase } from "@/src/lib/supabase";
 import { Colors } from "@/src/shared/constants/Colors";
 import useLogin from "../hooks/useLogin";
+import useSessionRedirect from "../hooks/useSessionRedirect";
 
 export default function AuthScreen(): ReactElement {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        const session = data?.session ?? null;
-        if (mounted && session) {
-          router.replace("/");
-        }
-      } catch (err) {
-        // ignore - we'll show auth screen
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const offline = useSessionRedirect();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -48,6 +30,15 @@ export default function AuthScreen(): ReactElement {
 
           <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>Sign in to your account to continue.</Text>
+
+          {offline && (
+            <View style={styles.offlineBanner}>
+              <Ionicons name="cloud-offline-outline" size={16} color="#92400E" />
+              <Text style={styles.offlineText}>
+                No connection — reconnect to resume your session.
+              </Text>
+            </View>
+          )}
 
           {/* Email */}
           <View style={styles.inputWrap}>
@@ -77,10 +68,10 @@ export default function AuthScreen(): ReactElement {
           </View>
 
           <TouchableOpacity
-            style={[styles.button, loading ? styles.buttonDisabled : null]}
+            style={[styles.button, loading || offline ? styles.buttonDisabled : null]}
             onPress={useLogin(email, password)}
             activeOpacity={0.8}
-            disabled={loading}
+            disabled={loading || offline}
           >
             <Text style={styles.buttonText}>
               {loading ? "Signing in..." : "Sign in"}
@@ -128,6 +119,19 @@ const styles = StyleSheet.create({
     color: "#64748B",
     textAlign: "center",
     marginBottom: 8,
+  },
+  offlineBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#FEF3C7",
+    borderRadius: 10,
+    padding: 10,
+  },
+  offlineText: {
+    flex: 1,
+    fontSize: 12,
+    color: "#92400E",
   },
   inputWrap: {
     flexDirection: "row",
