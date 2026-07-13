@@ -31,7 +31,7 @@ test("shows the empty state when there are no sessions", () => {
 
   render(<HistorySessionList />);
 
-  expect(screen.getByText("No sessions yet.")).toBeOnTheScreen();
+  expect(screen.getByText("No sessions yet")).toBeOnTheScreen();
 });
 
 test("renders one card per session instead of the empty state", () => {

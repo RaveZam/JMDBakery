@@ -19,5 +19,3 @@ export function useProvinces() {
 
   return { provinces, loadProvinces };
 }
-
-export default useProvinces;

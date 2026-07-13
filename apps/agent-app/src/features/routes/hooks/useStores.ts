@@ -17,5 +17,3 @@ export function useStores(provinceId: string) {
 
   return { stores, loadStores };
 }
-
-export default useStores;

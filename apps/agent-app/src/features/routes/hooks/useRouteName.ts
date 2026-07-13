@@ -33,5 +33,3 @@ export function useRouteName() {
     rename: { isModalOpen: modalOpen, openModal, closeModal, submit },
   };
 }
-
-export default useRouteName;

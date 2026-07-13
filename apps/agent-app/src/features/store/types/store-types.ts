@@ -31,26 +31,6 @@ export type LoggedItem = {
   boReason?: string;
 };
 
-export type EditData = {
-  productId: string;
-  qty: number;
-  boQty: number;
-  boReason?: string;
-};
-
-export type AdderPanelProps = {
-  products: Product[];
-  showPrice: boolean;
-  editData?: EditData;
-  remainingByProduct?: Record<string, number>;
-  onAdd: (
-    productId: string,
-    qty: number,
-    boQty: number,
-    boReason?: string,
-  ) => void;
-};
-
 export type SoldRowProps = {
   item: LoggedItem;
   index: number;
@@ -64,9 +44,3 @@ export type SectionRowProps = {
   onToggle: () => void;
 };
 
-export type OrdersSectionProps = {
-  items: { item: LoggedItem; idx: number }[];
-  onAddPress: () => void;
-  onItemPress: (idx: number) => void;
-  onDeleteItem: (idx: number) => void;
-};

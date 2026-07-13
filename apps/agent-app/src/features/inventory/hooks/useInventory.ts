@@ -13,8 +13,6 @@ import { cancelSession } from "@/src/features/sessions/services/sessionLocalServ
 import { useProducts } from "./useProducts";
 import type { Inventory } from "../types/inventory-types";
 
-export type { InventoryItem };
-
 export function useInventory(): { inventory: Inventory } {
   const { sessionId, routeName } = useLocalSearchParams<{
     sessionId?: string;

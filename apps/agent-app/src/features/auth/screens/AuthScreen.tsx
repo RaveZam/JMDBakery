@@ -13,7 +13,7 @@ import { Colors } from "@/src/shared/constants/Colors";
 import useLogin from "../hooks/useLogin";
 import useSessionRedirect from "../hooks/useSessionRedirect";
 
-export default function AuthScreen(): ReactElement {
+function AuthScreen(): ReactElement {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

@@ -16,5 +16,3 @@ export function useStoreDetail() {
 
   return { store, openStore, closeStore };
 }
-
-export default useStoreDetail;
