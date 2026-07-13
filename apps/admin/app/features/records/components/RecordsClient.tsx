@@ -1,23 +1,48 @@
-import type { ReactElement } from "react";
+"use client";
+
+import { useMemo, type ReactElement } from "react";
 import Link from "next/link";
 
 import { RecordsToolbar } from "@/app/features/records/components/RecordsToolbar";
 import { RecordsFiltersBar } from "@/app/features/records/components/RecordsFiltersBar";
 import { formatCurrencyPHP } from "@/lib/utils";
-import type { RecordsPageData } from "@/app/features/records/server/records-page-data";
+import {
+  buildRecordsPageUrl,
+  getRecordsPageData,
+} from "@/app/features/records/server/records-page-data";
 import type { RouteSession } from "@/app/features/records/server/fetch-sessions";
+import type { LedgerRecord } from "@/app/features/records/types";
+import { parseRecordsFilters } from "@/lib/selectors/filters";
+import { useSalesData } from "@/app/features/sales-data/SalesDataProvider";
+import type { SalesRecord } from "@/app/server/getBaseData";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
 type Props = {
-  data: RecordsPageData;
   sessions: RouteSession[];
   sp: SearchParams;
-  buildUrl: (sp: SearchParams, next: Record<string, string | null>) => string;
 };
 
-export function RecordsClient({ data, sessions, sp, buildUrl }: Props): ReactElement {
-  const { agents, filters, rows, totals, page, totalPages, rowCount, rawQuery } = data;
+function toRecords(raw: SalesRecord[]): LedgerRecord[] {
+  return raw.map((r) => ({
+    ...r,
+    lineTotal: r.soldQty * r.unitPrice,
+  }));
+}
+
+export function RecordsClient({ sessions, sp }: Props): ReactElement {
+  const { data: allData } = useSalesData();
+  const filters = parseRecordsFilters(sp);
+
+  const data = useMemo(() => {
+    const records = toRecords(allData).filter(
+      (r) => r.date >= filters.dateFrom && r.date <= filters.dateTo,
+    );
+    return getRecordsPageData(records, filters, sp);
+  }, [allData, sp, filters]);
+
+  const buildUrl = buildRecordsPageUrl;
+  const { agents, rows, totals, page, totalPages, rowCount, rawQuery } = data;
 
   return (
     <>

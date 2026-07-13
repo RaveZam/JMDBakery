@@ -4,6 +4,7 @@ export type LedgerRecord = {
   date: string;
   agent: string;
   store: string;
+  province: string;
   product: string;
   soldQty: number;
   boQty: number;
