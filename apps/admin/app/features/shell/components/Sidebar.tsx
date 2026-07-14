@@ -19,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import AccountCard from "./AccountCard";
-import type { NavGroup, NavItem } from "../types/dashboard-types";
+import type { NavGroup, NavItem } from "../types/shell-types";
 
 const navGroups: NavGroup[] = [
   {
