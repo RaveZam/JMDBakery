@@ -1,0 +1,170 @@
+# E2E: the full ROUTE LIFECYCLE journey — create a route (+ province + store),
+# start the session, log starting/morning inventory, visit the store (log one
+# plain order and one order with a bad-order/BO qty + reason), confirm the
+# visit, finish the route, then log ending inventory from History.
+#
+# Prereqs (see references/maestro-e2e.md):
+#   - A dev build installed on a booted simulator:  npx expo run:ios
+#   - Maestro CLI:  curl -Ls "https://get.maestro.mobile.dev" | bash
+#   - At least two products already synced locally (products pull on sign-in
+#     via runDownloadSync) — the product picker is selected by index below
+#     since product names aren't fixed test data.
+#   - Test credentials below (a real Supabase user for this app).
+# Run:  maestro test .maestro/route-full-lifecycle-flow.yaml
+#
+# KNOWN FRAGILITY (see chat notes): outside the `routes` feature, most screens
+# in sessions/inventory/store/history don't set a testID, so most taps here
+# match by visible text, or by index when two elements share the same
+# text/placeholder (e.g. the sold-qty and BO-qty steppers both render "+").
+# ending_inventory's qty buttons render icons (not text), so those have
+# testIDs (`ending-inventory-increment-<productId>` /
+# `ending-inventory-decrement-<productId>`) instead.
+# If the text/index-based taps flake in CI, the fix is adding testIDs to those
+# components too, not more index guessing here.
+appId: com.ravenzam.agentapp
+---
+# Cold launch. clearState wipes the local DB so the run always starts from an
+# empty routes list (and logs us out, so we sign in below).
+- launchApp:
+    clearState: true
+
+# --- Sign in (the auth guard redirects a clean launch to the sign-in screen) ---
+- assertVisible: "Welcome back"
+- tapOn: "Email"
+- inputText: "agent@gmail.com" # TODO: a real test user for this app
+- tapOn: "Password"
+- inputText: "agent123" # TODO
+- hideKeyboard
+- tapOn: "Sign in"
+
+# --- Create a route, a province, and a store to visit ---
+- assertVisible:
+    id: "create-route-fab"
+- tapOn:
+    id: "create-route-fab"
+- tapOn: "Enter route name"
+- inputText: "Full Lifecycle Route"
+- tapOn: "Create New Route"
+- assertVisible: "Full Lifecycle Route"
+
+- tapOn: "Full Lifecycle Route"
+- assertVisible: "Location"
+- tapOn: "Location"
+- tapOn: "e.g. Makati, Quezon City"
+- inputText: "Pampanga"
+- tapOn:
+    text: "^Add$"
+- assertVisible: "Pampanga"
+
+- tapOn: "add-store" # accessibilityLabel on the "+" icon (province card's add-store button)
+# NOTE: no hideKeyboard between fields here — AddStoreModal sets
+# onRequestClose={handleCancel}, and Maestro's hideKeyboard sends the Android
+# back action, which triggers onRequestClose and closes the whole modal
+# instead of just the keyboard. The form's ScrollView already has
+# keyboardShouldPersistTaps="handled" so tapping the next field works fine
+# with the keyboard still open.
+- tapOn: "e.g. Guadalupe Market"
+- inputText: "Aling Nena Store"
+- tapOn: "e.g. Makati City"
+- inputText: "San Fernando"
+- tapOn: "e.g. Guadalupe Nuevo"
+- inputText: "Dolores"
+- tapOn: "e.g. Rico"
+- inputText: "Rico Santos"
+- tapOn: "0917 000 0000"
+- inputText: "09171234567"
+- tapOn:
+    text: "^Add$"
+    optional: true # first tap can land mid the last field's keyboard-close transition and get lost; retry below if the modal is still open
+- tapOn:
+    text: "^Add$"
+    optional: true
+- assertVisible: "Aling Nena Store"
+
+# --- Start the route session ---
+- tapOn: "Start Session"
+- assertVisible: "Are you sure you want to start this route session?"
+- tapOn: "Start"
+
+# --- Morning inventory: log the stock loaded for today ---
+- assertVisible: "MORNING INVENTORY"
+- tapOn: "Add Product"
+- tapOn: "Select product"
+- tapOn:
+    id: "picker-option-0" # first product in the picker list
+    optional: true # picker opens with a fade animation; a tap fired before it settles can get lost — retry below (id-scoped, so a no-op once the picker's gone)
+- tapOn:
+    id: "picker-option-0"
+    optional: true
+- tapOn:
+    text: "\\+"
+    index: 0 # bump loaded qty once above zero
+- tapOn: "Add to Inventory"
+- tapOn: "Continue to Route"
+
+# --- Session route: open the store we added ---
+- assertVisible: "Aling Nena Store"
+- tapOn: "Aling Nena Store"
+
+# --- Log a plain order (no bad-order qty) ---
+- tapOn: "+ Add Order"
+- tapOn: "Select product"
+- tapOn:
+    id: "picker-option-0"
+    optional: true # picker opens with a fade animation; a tap fired before it settles can get lost — retry below (id-scoped, so a no-op once the picker's gone)
+- tapOn:
+    id: "picker-option-0"
+    optional: true
+- tapOn:
+    text: "\\+"
+    index: 0 # sold Quantity stepper
+- tapOn: "Add to Order"
+- assertNotVisible: "No orders yet."
+
+# --- Log a second order with only a bad-order (BO) qty + reason (no sold qty) ---
+# Reuses the same product as the first order: this test environment only
+# syncs one product locally, so there's no picker-option-1 to select.
+- tapOn: "+ Add Order"
+- tapOn: "Select product"
+- tapOn:
+    id: "picker-option-0"
+    optional: true # picker opens with a fade animation; a tap fired before it settles can get lost — retry below (id-scoped, so a no-op once the picker's gone)
+- tapOn:
+    id: "picker-option-0"
+    optional: true
+- tapOn:
+    text: "\\+"
+    index: 1 # Bad Order Qty stepper — reveals the ReasonPicker once > 0 (index 1: sold Qty stepper is index 0, untouched here)
+- assertVisible: "Reason"
+- tapOn: "Rotten"
+- tapOn: "Add to Order"
+- assertVisible: "BO" # the orders table's BO column now has a non-zero row, with no sold qty logged
+
+# --- Confirm the visit ---
+- tapOn: "Confirm visit"
+- assertVisible: "Aling Nena Store"
+- assertVisible: "Visited"
+
+# --- Finish the route ---
+- tapOn: "Finish Route"
+- assertVisible: "Are you sure you want to end this route session?"
+- extendedWaitUntil:
+    visible: "^End Route$"
+    timeout: 4000 # confirm modal fades in; a tap fired before it settles misses the button entirely
+- tapOn:
+    text: "^End Route$"
+    index: 1 # index 0 is the modal's title Text (also "End Route"), index 1 is the actual confirm button
+- extendedWaitUntil:
+    notVisible: "Are you sure you want to end this route session?"
+    timeout: 4000 # ending the session is async (writes + navigation); the confirm modal lingers briefly
+
+# --- Log ending inventory from History ---
+- tapOn: "History"
+- tapOn: "Full Lifecycle Route"
+- tapOn: "Inventory"
+- tapOn: "Log Ending Inventory"
+- assertVisible: "ENDING INVENTORY"
+- tapOn:
+    id: "ending-inventory-increment-.*" # productId is dynamic, so match by prefix
+- tapOn: "Save Ending Inventory"
+- assertNotVisible: "Saving..."
