@@ -46,6 +46,7 @@ export function ProvinceCard({ province, onEditProvince }: Props) {
           activeOpacity={0.7}
           onPress={() => setShowAddStore(true)}
           testID={`province-add-store-${province.id}`}
+          accessibilityLabel="add-store"
         >
           <Ionicons name="add" size={18} color="#3F7355" />
         </TouchableOpacity>

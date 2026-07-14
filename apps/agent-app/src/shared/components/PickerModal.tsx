@@ -28,11 +28,13 @@ const BORDER = "#E2E8F0";
 
 function PickerRow({
   item,
+  index,
   showPrice,
   remaining,
   onPress,
 }: {
   item: PickerProduct;
+  index: number;
   showPrice: boolean;
   remaining?: number;
   onPress: () => void;
@@ -46,6 +48,7 @@ function PickerRow({
       style={[styles.modalOption, outOfStock && styles.modalOptionDisabled]}
       disabled={outOfStock}
       onPress={onPress}
+      testID={`picker-option-${index}`}
     >
       <Text style={textStyle}>
         {item.name}
@@ -80,9 +83,10 @@ export function PickerModal({
           <FlatList
             data={products}
             keyExtractor={(p) => p.id}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <PickerRow
                 item={item}
+                index={index}
                 showPrice={showPrice}
                 remaining={remainingByProduct?.[item.id]}
                 onPress={() => handleSelect(item)}

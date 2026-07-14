@@ -6,6 +6,8 @@ import {
   Text,
   Modal,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useState } from "react";
 import { ThemedText } from "@/src/shared/components/ThemedText";
@@ -37,7 +39,10 @@ export function AddStoreModal({
   onClose,
   onAdded,
 }: AddStoreModalProps) {
-  const [fields, setFields] = useState<StoreFields>({ ...EMPTY_FIELDS, province: provinceName });
+  const [fields, setFields] = useState<StoreFields>({
+    ...EMPTY_FIELDS,
+    province: provinceName,
+  });
   const setField = (key: keyof StoreFields, value: string) =>
     setFields((prev) => ({ ...prev, [key]: value }));
 
@@ -66,7 +71,10 @@ export function AddStoreModal({
       onRequestClose={handleCancel}
     >
       <View style={m.backdrop}>
-        <View style={styles.modalContent}>
+        <KeyboardAvoidingView
+          style={styles.modalContent}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
           <ThemedText type="defaultSemiBold" style={styles.modalTitle}>
             Add Store
           </ThemedText>
@@ -136,7 +144,7 @@ export function AddStoreModal({
               <Text style={styles.modalPrimaryButtonText}>Add</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

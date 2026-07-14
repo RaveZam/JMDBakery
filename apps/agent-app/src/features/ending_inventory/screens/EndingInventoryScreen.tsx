@@ -81,6 +81,7 @@ export default function EndingInventoryScreen() {
                   <Text style={styles.rowExpected}>{item.expected}</Text>
                   <View style={styles.qtyControls}>
                     <TouchableOpacity
+                      testID={`ending-inventory-decrement-${item.productId}`}
                       onPress={() =>
                         endingInventory.updateQty(item.productId, -1)
                       }
@@ -94,6 +95,7 @@ export default function EndingInventoryScreen() {
                     </TouchableOpacity>
                     <Text style={styles.rowQty}>{item.quantity}</Text>
                     <TouchableOpacity
+                      testID={`ending-inventory-increment-${item.productId}`}
                       onPress={() =>
                         endingInventory.updateQty(item.productId, 1)
                       }

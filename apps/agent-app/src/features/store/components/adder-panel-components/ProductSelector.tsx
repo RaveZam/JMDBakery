@@ -51,7 +51,7 @@ export function ProductSelector() {
           onPress={() => setListOpen(false)}
         >
           <View style={styles.list}>
-            {adderModal.inventory.products.map((product) => (
+            {adderModal.inventory.products.map((product, index) => (
               <TouchableOpacity
                 key={product.id}
                 style={styles.listRow}
@@ -59,6 +59,7 @@ export function ProductSelector() {
                   adderModal.inventory.setSelectedProduct(product);
                   setListOpen(false);
                 }}
+                testID={`picker-option-${index}`}
               >
                 <Text style={styles.listRowName} numberOfLines={1}>
                   {product.name}
