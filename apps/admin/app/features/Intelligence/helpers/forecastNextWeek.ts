@@ -1,9 +1,6 @@
 import { DataPoint, ForecastChartData } from "../types/forecast_types";
-
-function phNow(): Date {
-  const now = new Date();
-  return new Date(now.getTime() + 8 * 60 * 60 * 1000);
-}
+import { phNow } from "./phNow";
+import { computeForecastBounds } from "./computeForecastBounds";
 
 export function forecastNextWeek(data: any[]): ForecastChartData {
   let dayOffset = 0;
@@ -67,11 +64,14 @@ export function forecastNextWeek(data: any[]): ForecastChartData {
     });
   }
 
+  const sortedData = sevenDayForecastData.sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
+
   return {
     title: "7-day revenue forecast",
-    forecastStart: "...",
-    forecastEnd: "...",
+    ...computeForecastBounds(sortedData),
     yFormatter: (v) => `₱${(v / 1000).toFixed(0)}k`,
-    data: sevenDayForecastData.sort((a, b) => a.label.localeCompare(b.label)),
+    data: sortedData,
   };
 }

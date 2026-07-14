@@ -1,22 +1,8 @@
-import { ForecastChartData, DataPoint } from "../types/forecast_types";
+import { ForecastChartData, DataPoint, DailySalesPoint } from "../types/forecast_types";
 import * as ss from "simple-statistics";
-
-type yearData = { sale_date: string; total_sales: number; order_count: number };
-
-const MONTH_NAMES = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+import { MONTH_NAMES } from "./monthNames";
+import { phNow } from "./phNow";
+import { computeForecastBounds } from "./computeForecastBounds";
 
 function getWeekOfMonth(day: number): number {
   if (day <= 7) return 1;
@@ -34,12 +20,7 @@ function getWeekStart(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), weekStart);
 }
 
-function phNow(): Date {
-  const now = new Date();
-  return new Date(now.getTime() + 8 * 60 * 60 * 1000);
-}
-
-export function forecastNextMonth(yearData: yearData[]): ForecastChartData {
+export function forecastNextMonth(dailySales: DailySalesPoint[]): ForecastChartData {
   const weeklyDateForThePastYear: { label: string; actual: number }[] = [];
   const nextMonthForecastData: DataPoint[] = [];
   const offsetDate = phNow();
@@ -50,7 +31,7 @@ export function forecastNextMonth(yearData: yearData[]): ForecastChartData {
   const cutoffMonth = cutoffDate.getMonth();
   const nextMonthName = MONTH_NAMES[cutoffMonth];
 
-  for (const record of yearData ?? []) {
+  for (const record of dailySales ?? []) {
     const date = new Date(record.sale_date.split("T")[0]);
     const day = date.getDate();
     const monthIdx = date.getMonth();
@@ -71,8 +52,8 @@ export function forecastNextMonth(yearData: yearData[]): ForecastChartData {
       const chartExisting = nextMonthForecastData.find(
         (w) => w.label === label,
       );
-      if (chartExisting && chartExisting.actual) {
-        chartExisting.actual += record.total_sales;
+      if (chartExisting) {
+        chartExisting.actual = (chartExisting.actual ?? 0) + record.total_sales;
       } else {
         nextMonthForecastData.push({ label, actual: record.total_sales });
       }
@@ -80,15 +61,10 @@ export function forecastNextMonth(yearData: yearData[]): ForecastChartData {
   }
 
   const points = weeklyDateForThePastYear.map((d, i) => [i, d.actual]);
-  console.log(weeklyDateForThePastYear);
   const reg = ss.linearRegression(points);
   const line = ss.linearRegressionLine(reg);
 
-  console.log(reg);
-  console.log("points", JSON.stringify(points));
-  console.log("length", points.length);
-
-  //display the remaining weeks of current month + 1 week into next month as forecast
+  // display the remaining weeks of current month + 1 week into next month as forecast
   const nextWeekStartIndex = weeklyDateForThePastYear.length;
   const currentWeek = getWeekOfMonth(cutoffDate.getDate());
   const followingMonthName = MONTH_NAMES[(cutoffMonth + 1) % 12];
@@ -104,16 +80,17 @@ export function forecastNextMonth(yearData: yearData[]): ForecastChartData {
     forecast: Math.round(line(nextWeekStartIndex + weeksForecasted)),
   });
 
+  const data = nextMonthForecastData.sort(
+    (a, b) =>
+      MONTH_NAMES.indexOf(a.label.split(" ")[0]) -
+        MONTH_NAMES.indexOf(b.label.split(" ")[0]) ||
+      a.label.localeCompare(b.label),
+  );
+
   return {
     title: "Next Month Revenue Forecast",
-    forecastStart: "...",
-    forecastEnd: "...",
+    ...computeForecastBounds(data),
     yFormatter: (v) => `₱${(v / 1000).toFixed(0)}k`,
-    data: nextMonthForecastData.sort(
-      (a, b) =>
-        MONTH_NAMES.indexOf(a.label.split(" ")[0]) -
-          MONTH_NAMES.indexOf(b.label.split(" ")[0]) ||
-        a.label.localeCompare(b.label),
-    ),
+    data,
   };
 }

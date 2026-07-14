@@ -8,3 +8,9 @@ export interface ForecastChartData {
   forecastEnd: string;
   yFormatter: (v: number) => string;
 }
+
+export type DailySalesPoint = {
+  sale_date: string;
+  total_sales: number;
+  order_count: number;
+};
