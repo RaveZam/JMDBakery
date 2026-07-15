@@ -1,25 +1,20 @@
 import { DataPoint, ForecastChartData } from "../types/forecast_types";
+import type { SalesRecord } from "@/app/server/getBaseData";
 import { phNow } from "./phNow";
+import { toDateKey } from "./toDateKey";
 import { computeForecastBounds } from "./computeForecastBounds";
 
-export function forecastNextWeek(data: any[]): ForecastChartData {
-  let dayOffset = 0;
+export function forecastNextWeek(data: SalesRecord[]): ForecastChartData {
   const sevenDayForecastData: DataPoint[] = [];
 
-  for (dayOffset; dayOffset < 7; dayOffset++) {
+  for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
     const dateToFind = phNow();
     dateToFind.setDate(dateToFind.getDate() - dayOffset);
-    const dateToFindStr = dateToFind.toISOString().split("T")[0];
+    const dateToFindStr = toDateKey(dateToFind);
 
-    const SalesThatDate = data.filter((item) => {
-      const rawDate = item.createdAt.split("T")[0];
-      const saleDate = new Date(rawDate);
-      const saleDateStr = saleDate.toISOString().split("T")[0];
-      return saleDateStr === dateToFindStr;
-    });
-
-    const totalSalesThatDay = SalesThatDate.reduce(
-      (sum: number, r: any) => r.total + sum,
+    const salesThatDate = data.filter((item) => item.date === dateToFindStr);
+    const totalSalesThatDay = salesThatDate.reduce(
+      (sum, r) => r.total + sum,
       0,
     );
 
@@ -30,27 +25,20 @@ export function forecastNextWeek(data: any[]): ForecastChartData {
 
     const dateToForecast = phNow();
     dateToForecast.setDate(dateToForecast.getDate() + dayOffset + 1);
-    const dateToForecastStr = dateToForecast.toISOString().split("T")[0];
-
+    const dateToForecastStr = toDateKey(dateToForecast);
     const dayOfTheSalesToForecast = dateToForecast.getDay();
 
-    const totalSalesThatDayOfTheWeekinTheMonth = data.filter((item) => {
-      const rawDate = item.createdAt.split("T")[0];
-      const dateToFind = new Date(rawDate);
-      const dayOfTheRawDate = dateToFind.getDay();
-      return dayOfTheSalesToForecast === dayOfTheRawDate;
-    });
+    const salesThatDayOfTheWeekInTheMonth = data.filter(
+      (item) => new Date(item.date).getDay() === dayOfTheSalesToForecast,
+    );
 
-    const totalSalesOfThatDayThePastMonth =
-      totalSalesThatDayOfTheWeekinTheMonth.reduce(
-        (sum: number, r: any) => r.total + sum,
-        0,
-      );
+    const totalSalesOfThatDayThePastMonth = salesThatDayOfTheWeekInTheMonth.reduce(
+      (sum, r) => r.total + sum,
+      0,
+    );
 
     const numberOfThatDayConductedInTheMonth = new Set(
-      totalSalesThatDayOfTheWeekinTheMonth?.map(
-        (r: any) => r.createdAt.split("T")[0],
-      ),
+      salesThatDayOfTheWeekInTheMonth.map((r) => r.date),
     ).size;
 
     const forecastOfNextWeekOnThatDay =

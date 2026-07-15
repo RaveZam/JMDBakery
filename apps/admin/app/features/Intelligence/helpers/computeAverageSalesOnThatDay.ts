@@ -1,27 +1,23 @@
-function phNow(): Date {
-  const now = new Date();
-  return new Date(now.getTime() + 8 * 60 * 60 * 1000);
-}
+import type { SalesRecord } from "@/app/server/getBaseData";
+import { phNow } from "./phNow";
 
-export function computeAverageSalesOnThatDay(data: any) {
+export function computeAverageSalesOnThatDay(data: SalesRecord[]) {
   const dayToday = phNow().getDay();
 
-  const salesThatDay = data.filter((r: any) => {
-    const rawDate = r.createdAt.split("T")[0];
-    return new Date(rawDate).getDay() === dayToday + 1;
-  });
-
-  const totalSalesThatDay = salesThatDay?.reduce(
-    (sum: number, r: any) => r.total + sum,
-    0,
+  const salesThatDay = data.filter(
+    (r) => new Date(r.date).getDay() === dayToday + 1,
   );
 
+  const totalSalesThatDay = salesThatDay.reduce((sum, r) => r.total + sum, 0);
+
   const howManyDaysOfThatDayInAMonth = new Set(
-    salesThatDay?.map((r: any) => r.createdAt.split("T")[0]),
+    salesThatDay.map((r) => r.date),
   ).size;
 
   const predictedRevenueForTomorrow =
-    totalSalesThatDay / howManyDaysOfThatDayInAMonth;
+    howManyDaysOfThatDayInAMonth === 0
+      ? 0
+      : totalSalesThatDay / howManyDaysOfThatDayInAMonth;
 
   return {
     predictedRevenueForTomorrow,

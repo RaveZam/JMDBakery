@@ -1,11 +1,9 @@
-export function computeBORateThisMonth(data: any) {
-  let borate = 0;
+import type { SalesRecord } from "@/app/server/getBaseData";
 
-  const bototal = data.reduce((sum: number, r: any) => r.boQty + sum, 0);
-
-  const soldtotal = data.reduce((sum: number, r: any) => r.soldQty + sum, 0);
-
-  borate = (bototal / soldtotal) * 100;
+export function computeBORateThisMonth(data: SalesRecord[]) {
+  const boTotal = data.reduce((sum, r) => r.boQty + sum, 0);
+  const soldTotal = data.reduce((sum, r) => r.soldQty + sum, 0);
+  const borate = soldTotal === 0 ? 0 : (boTotal / soldTotal) * 100;
 
   return { borate };
 }

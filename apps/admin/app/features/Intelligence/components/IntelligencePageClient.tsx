@@ -18,7 +18,9 @@ export function IntelligencePageClient({ sp }: { sp: SearchParams }) {
   const { data: allData, isLoading } = useSalesData();
   const filters = parseRecordsFiltersLast30Days(sp);
 
-  const data = useMemo(
+  // getIntelligenceMetrics expects the last-30-days window; province/forecast
+  // helpers below intentionally take the full ~6-month allData instead.
+  const last30DaysData = useMemo(
     () =>
       allData.filter(
         (r) => r.date >= filters.dateFrom && r.date <= filters.dateTo,
@@ -26,7 +28,10 @@ export function IntelligencePageClient({ sp }: { sp: SearchParams }) {
     [allData, filters.dateFrom, filters.dateTo],
   );
   const provinces = useMemo(() => computeProvinceRevenue(allData), [allData]);
-  const metrics = useMemo(() => getIntelligenceMetrics(data), [data]);
+  const metrics = useMemo(
+    () => getIntelligenceMetrics(last30DaysData),
+    [last30DaysData],
+  );
 
   if (isLoading) {
     return (

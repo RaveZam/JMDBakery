@@ -4,6 +4,8 @@ import { MONTH_NAMES } from "./monthNames";
 import { phNow } from "./phNow";
 import { computeForecastBounds } from "./computeForecastBounds";
 
+const WEEK_START_DAY = [1, 8, 15, 22];
+
 function getWeekOfMonth(day: number): number {
   if (day <= 7) return 1;
   if (day <= 14) return 2;
@@ -11,13 +13,8 @@ function getWeekOfMonth(day: number): number {
   return 4;
 }
 function getWeekStart(date: Date): Date {
-  const day = date.getDate();
-  let weekStart: number;
-  if (day <= 7) weekStart = 1;
-  else if (day <= 14) weekStart = 8;
-  else if (day <= 21) weekStart = 15;
-  else weekStart = 22;
-  return new Date(date.getFullYear(), date.getMonth(), weekStart);
+  const week = getWeekOfMonth(date.getDate());
+  return new Date(date.getFullYear(), date.getMonth(), WEEK_START_DAY[week - 1]);
 }
 
 export function forecastNextMonth(dailySales: DailySalesPoint[]): ForecastChartData {

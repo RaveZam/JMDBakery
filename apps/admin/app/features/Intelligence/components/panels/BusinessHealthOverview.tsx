@@ -35,7 +35,7 @@ export function BusinessHealthOverview({
         />
         <KpiCard
           title="Predicted sales Tomorrow"
-          primary={`₱${isNaN(metrics.predictedRevenueForTomorrow) ? 0 : metrics.predictedRevenueForTomorrow}`}
+          primary={`₱${metrics.predictedRevenueForTomorrow}`}
           secondary={`Your Typical Sales On  ${WEEKDAYS[(metrics.dayToday + 1) % 7]}`}
           tone="primary"
           icon={CalendarDays}

@@ -1,3 +1,4 @@
+import type { SalesRecord } from "@/app/server/getBaseData";
 import { computeRevenueTodayAndYesterday } from "./computeRevenueTodayAndYesterday";
 import { computeAverageSalesOnThatDay } from "./computeAverageSalesOnThatDay";
 import { computeMovingAverageAndDayAverage } from "./computeMovingAverageAndDayAverage";
@@ -15,7 +16,7 @@ export interface IntelligenceMetrics {
   boRisk: BORisk;
 }
 
-export function getIntelligenceMetrics(data: any): IntelligenceMetrics {
+export function getIntelligenceMetrics(data: SalesRecord[]): IntelligenceMetrics {
   const { totalSalesToday, totalSalesYesterday, percentageDiff } =
     computeRevenueTodayAndYesterday(data);
   const { predictedRevenueForTomorrow, dayToday } =
