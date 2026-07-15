@@ -5,7 +5,7 @@ import {
   BarChart2,
 } from "lucide-react";
 import { KpiCard } from "../../../dashboard/components/KpiCard";
-import type { IntelligenceMetrics } from "../../helpers/getIntelligenceMetrics";
+import type { IntelligenceMetrics } from "../../helpers/metrics";
 
 const WEEKDAYS = [
   "Sunday",

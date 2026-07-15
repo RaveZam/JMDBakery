@@ -1,4 +1,4 @@
-import { IntelligenceActionCard } from "../IntelligenceActionCard";
+import { IntelligenceActionCard } from "./IntelligenceActionCard";
 import { NEXT_BEST_ACTIONS } from "../../constants/nextBestActions";
 
 export function NextBestActions() {

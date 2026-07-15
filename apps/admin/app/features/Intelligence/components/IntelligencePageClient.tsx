@@ -1,13 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
-import { getIntelligenceMetrics } from "../helpers/getIntelligenceMetrics";
-import { computeProvinceRevenue } from "../helpers/computeProvinceRevenue";
-import { IntelligenceHeader } from "./panels/IntelligenceHeader";
-import { BusinessHealthOverview } from "./panels/BusinessHealthOverview";
-import { NextBestActions } from "./panels/NextBestActions";
-import { ForecastSection } from "./panels/ForecastSection";
-import { MorningInventoryInsights } from "./panels/MorningInventoryInsights";
+import {
+  getIntelligenceMetrics,
+  computeProvinceRevenue,
+} from "../helpers/metrics";
+import { IntelligenceHeader } from "./IntelligenceHeader";
+import { BusinessHealthOverview } from "./health";
+import { NextBestActions } from "./actions";
+import { ForecastSection } from "./forecast";
+import { MorningInventoryInsights } from "./inventory";
 import { STATIC_BARANGAYS } from "../constants/staticBarangays";
 import { useSalesData } from "@/app/features/sales-data/SalesDataProvider";
 import { parseRecordsFiltersLast30Days } from "@/lib/selectors/filters";

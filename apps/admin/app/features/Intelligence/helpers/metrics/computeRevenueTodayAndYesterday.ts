@@ -1,6 +1,6 @@
 import type { SalesRecord } from "@/app/server/getBaseData";
-import { phNow } from "./phNow";
-import { toDateKey } from "./toDateKey";
+import { phNow } from "../shared/phNow";
+import { toDateKey } from "../shared/toDateKey";
 
 export function computeRevenueTodayAndYesterday(data: SalesRecord[]) {
   const today = toDateKey(phNow());

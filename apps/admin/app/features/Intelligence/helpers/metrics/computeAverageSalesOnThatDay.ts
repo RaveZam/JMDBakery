@@ -1,5 +1,5 @@
 import type { SalesRecord } from "@/app/server/getBaseData";
-import { phNow } from "./phNow";
+import { phNow } from "../shared/phNow";
 
 export function computeAverageSalesOnThatDay(data: SalesRecord[]) {
   const dayToday = phNow().getDay();

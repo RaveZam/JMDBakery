@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { IntelligenceAction } from "../constants/nextBestActions";
+import type { IntelligenceAction } from "../../constants/nextBestActions";
 
 const priorityVariant: Record<string, "warning" | "secondary" | "pending"> = {
   P0: "warning",

@@ -1,5 +1,5 @@
 import type { SalesRecord } from "@/app/server/getBaseData";
-import type { DailySalesPoint } from "../types/forecast_types";
+import type { DailySalesPoint } from "../../types/forecast_types";
 
 export function aggregateDailySales(records: SalesRecord[]): DailySalesPoint[] {
   const totals = new Map<string, { total_sales: number; order_count: number }>();

@@ -16,9 +16,8 @@ import {
   Legend,
   ReferenceArea,
 } from "recharts";
-import { ForecastRange } from "../types/forecast_types";
-import { aggregateDailySales } from "../helpers/aggregateDailySales";
-import { getForecastChartData } from "../helpers/getForecastChartData";
+import { ForecastRange } from "../../types/forecast_types";
+import { aggregateDailySales, getForecastChartData } from "../../helpers/forecast";
 
 const RANGES: { value: ForecastRange; label: string }[] = [
   { value: "weekly", label: "Weekly" },
