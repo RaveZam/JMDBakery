@@ -1,6 +1,6 @@
 "use client";
 
-import { useSalesData } from "@/app/features/sales-data/SalesDataProvider";
+import { useSalesDataQuery } from "@/app/features/sales-data/salesDataQuery";
 import { useRecordsFilter } from "../hooks/useRecordsFilter";
 import { RecordsHeader } from "./RecordsHeader";
 import { RecordsSummary } from "./RecordsSummary";
@@ -9,7 +9,7 @@ import { RecordsTable } from "./RecordsTable";
 import { RecordsPagination } from "./RecordsPagination";
 
 export function RecordsClient() {
-  const { data: allRecords } = useSalesData();
+  const { data: allRecords } = useSalesDataQuery();
   const {
     view,
     setView,

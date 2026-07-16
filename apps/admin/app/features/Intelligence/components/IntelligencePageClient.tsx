@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useSalesData } from "@/app/features/sales-data/SalesDataProvider";
+import { useSalesDataQuery } from "@/app/features/sales-data/salesDataQuery";
 import { parseRecordsFiltersLast30Days } from "@/lib/selectors/filters";
 import { computeIntelligenceKpis } from "../helpers/kpis";
 import { IntelligenceHeader } from "./IntelligenceHeader";
@@ -11,7 +11,7 @@ import { ForecastChart } from "./ForecastChart";
 type SearchParams = Record<string, string | string[] | undefined>;
 
 export function IntelligencePageClient({ sp }: { sp: SearchParams }) {
-  const { data: allData, isLoading } = useSalesData();
+  const { data: allData, isLoading } = useSalesDataQuery();
   const filters = parseRecordsFiltersLast30Days(sp);
 
   // KPIs use a recent 30-day window; the forecast chart uses the full

@@ -6,11 +6,11 @@ import { ProductSoldVsBoChart } from "@/app/features/dashboard/components/Produc
 import { TopProductsSoldTable } from "@/app/features/dashboard/components/TopProductsSoldTable";
 import { SalesLineChart } from "@/app/features/dashboard/components/SalesLineChart";
 import { DashboardHeader } from "@/app/features/dashboard/components/DashboardHeader";
-import { useSalesData } from "@/app/features/sales-data/SalesDataProvider";
+import { useSalesDataQuery } from "@/app/features/sales-data/salesDataQuery";
 import { useDashboardFilter } from "../hooks/useDashboardFilter";
 
 export function DashboardClient() {
-  const { data: allData } = useSalesData();
+  const { data: allData } = useSalesDataQuery();
   const { filter, data, onFilterChange } = useDashboardFilter(allData);
 
   return (

@@ -2,7 +2,6 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/app/features/sales-data/getQueryClient";
 import { getSalesDataset } from "@/app/server/getBaseData";
 import { SALES_DATASET_QUERY_KEY } from "@/app/features/sales-data/salesDataQuery";
-import { SalesDataProvider } from "@/app/features/sales-data/SalesDataProvider";
 
 export default async function SalesDataLayout({
   children,
@@ -17,7 +16,7 @@ export default async function SalesDataLayout({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <SalesDataProvider>{children}</SalesDataProvider>
+      {children}
     </HydrationBoundary>
   );
 }
