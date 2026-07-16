@@ -1,15 +1,11 @@
 import type { ReactElement } from "react";
-import { Store } from "lucide-react";
 
-import { getStores, getStoreSaleYears } from "./services/storesService";
-import { StoresTable } from "./components/StoresTable";
+import { getStoresWithRevenue } from "./services/storesService";
+import { StoresGrid } from "./components/StoresGrid";
+import { StoresEmptyState } from "./components/StoresEmptyState";
 
-export async function StoresPage({
-  year,
-}: {
-  year?: number;
-}): Promise<ReactElement> {
-  const [stores, years] = await Promise.all([getStores(year), getStoreSaleYears()]);
+export async function StoresPage(): Promise<ReactElement> {
+  const stores = await getStoresWithRevenue();
 
   return (
     <>
@@ -27,13 +23,7 @@ export async function StoresPage({
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto w-full max-w-[1200px] space-y-4">
           {stores.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-10 text-muted-foreground">
-              <Store className="h-10 w-10 opacity-50" />
-              <p className="text-sm">No stores found.</p>
-              <p className="text-xs">
-                Stores will appear once agents sync their route data.
-              </p>
-            </div>
+            <StoresEmptyState />
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
@@ -43,7 +33,7 @@ export async function StoresPage({
                 </span>{" "}
                 stores
               </p>
-              <StoresTable stores={stores} years={years} selectedYear={year} />
+              <StoresGrid stores={stores} />
             </>
           )}
         </div>

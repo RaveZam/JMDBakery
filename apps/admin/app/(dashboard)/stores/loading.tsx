@@ -12,28 +12,21 @@ export default function Loading(): ReactElement {
         </div>
       </header>
       <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="mx-auto w-full max-w-[1200px]">
-          <div className="overflow-auto rounded-2xl border bg-card">
-            <table className="w-full min-w-[800px] text-sm">
-              <thead className="bg-muted/60 text-xs text-muted-foreground">
-                <tr>
-                  {["Store", "Contact", "Phone", "Sold", "BO", "Revenue", "Visits"].map((h) => (
-                    <th key={h} className="px-3 py-3 text-left font-medium">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i} className="border-t">
-                    {Array.from({ length: 7 }).map((__, j) => (
-                      <td key={j} className="px-3 py-2.5">
-                        <div className="h-4 w-20 animate-pulse rounded bg-muted" />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="mx-auto w-full max-w-[1200px] space-y-4">
+          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-4 rounded-2xl border bg-background p-5">
+                <div className="space-y-1.5">
+                  <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+                  <div className="h-3 w-40 animate-pulse rounded bg-muted" />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="h-6 w-28 animate-pulse rounded bg-muted" />
+                  <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
