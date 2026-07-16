@@ -1,14 +1,13 @@
-import { DataPoint, ForecastChartData } from "../../types/forecast_types";
+import type { DataPoint, ForecastChartData } from "../types";
 import type { SalesRecord } from "@/app/server/getBaseData";
-import { phNow } from "../shared/phNow";
-import { toDateKey } from "../shared/toDateKey";
+import { nowInManila, toDateKey } from "./dateUtils";
 import { computeForecastBounds } from "./computeForecastBounds";
 
 export function forecastNextWeek(data: SalesRecord[]): ForecastChartData {
   const sevenDayForecastData: DataPoint[] = [];
 
   for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-    const dateToFind = phNow();
+    const dateToFind = nowInManila();
     dateToFind.setDate(dateToFind.getDate() - dayOffset);
     const dateToFindStr = toDateKey(dateToFind);
 
@@ -23,7 +22,7 @@ export function forecastNextWeek(data: SalesRecord[]): ForecastChartData {
       actual: totalSalesThatDay,
     });
 
-    const dateToForecast = phNow();
+    const dateToForecast = nowInManila();
     dateToForecast.setDate(dateToForecast.getDate() + dayOffset + 1);
     const dateToForecastStr = toDateKey(dateToForecast);
     const dayOfTheSalesToForecast = dateToForecast.getDay();

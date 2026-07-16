@@ -1,18 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  getIntelligenceMetrics,
-  computeProvinceRevenue,
-} from "../helpers/metrics";
-import { IntelligenceHeader } from "./IntelligenceHeader";
-import { BusinessHealthOverview } from "./health";
-import { NextBestActions } from "./actions";
-import { ForecastSection } from "./forecast";
-import { MorningInventoryInsights } from "./inventory";
-import { STATIC_BARANGAYS } from "../constants/staticBarangays";
 import { useSalesData } from "@/app/features/sales-data/SalesDataProvider";
 import { parseRecordsFiltersLast30Days } from "@/lib/selectors/filters";
+import { computeIntelligenceKpis } from "../helpers/kpis";
+import { IntelligenceHeader } from "./IntelligenceHeader";
+import { KpiSection } from "./KpiSection";
+import { ForecastChart } from "./ForecastChart";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -20,20 +14,13 @@ export function IntelligencePageClient({ sp }: { sp: SearchParams }) {
   const { data: allData, isLoading } = useSalesData();
   const filters = parseRecordsFiltersLast30Days(sp);
 
-  // getIntelligenceMetrics expects the last-30-days window; province/forecast
-  // helpers below intentionally take the full ~6-month allData instead.
+  // KPIs use a recent 30-day window; the forecast chart uses the full
+  // available history so it has enough data to fit trends/seasonality.
   const last30DaysData = useMemo(
-    () =>
-      allData.filter(
-        (r) => r.date >= filters.dateFrom && r.date <= filters.dateTo,
-      ),
+    () => allData.filter((r) => r.date >= filters.dateFrom && r.date <= filters.dateTo),
     [allData, filters.dateFrom, filters.dateTo],
   );
-  const provinces = useMemo(() => computeProvinceRevenue(allData), [allData]);
-  const metrics = useMemo(
-    () => getIntelligenceMetrics(last30DaysData),
-    [last30DaysData],
-  );
+  const kpis = useMemo(() => computeIntelligenceKpis(last30DaysData), [last30DaysData]);
 
   if (isLoading) {
     return (
@@ -51,13 +38,8 @@ export function IntelligencePageClient({ sp }: { sp: SearchParams }) {
       <IntelligenceHeader />
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto w-full max-w-[1200px] space-y-6">
-          <BusinessHealthOverview metrics={metrics} />
-          <NextBestActions />
-          <ForecastSection data={allData} />
-          <MorningInventoryInsights
-            provinces={provinces}
-            barangays={STATIC_BARANGAYS}
-          />
+          <KpiSection kpis={kpis} />
+          <ForecastChart records={allData} />
         </div>
       </div>
     </>

@@ -8,8 +8,7 @@ export function IntelligenceHeader() {
               Intelligence
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Health overview, predicted revenue, next best actions, and agent
-              risk signals
+              Health overview and revenue forecast
             </p>
           </div>
         </div>

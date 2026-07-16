@@ -1,7 +1,6 @@
-import { ForecastChartData, DataPoint, DailySalesPoint } from "../../types/forecast_types";
+import type { ForecastChartData, DataPoint, DailySalesPoint } from "../types";
 import * as ss from "simple-statistics";
-import { MONTH_NAMES } from "../shared/monthNames";
-import { phNow } from "../shared/phNow";
+import { MONTH_LABELS, nowInManila } from "./dateUtils";
 import { computeForecastBounds } from "./computeForecastBounds";
 
 const WEEK_START_DAY = [1, 8, 15, 22];
@@ -20,19 +19,19 @@ function getWeekStart(date: Date): Date {
 export function forecastNextMonth(dailySales: DailySalesPoint[]): ForecastChartData {
   const weeklyDateForThePastYear: { label: string; actual: number }[] = [];
   const nextMonthForecastData: DataPoint[] = [];
-  const offsetDate = phNow();
+  const offsetDate = nowInManila();
   offsetDate.setDate(offsetDate.getDate() - 31);
   const startingDate = getWeekStart(offsetDate);
-  const now = phNow();
+  const now = nowInManila();
   const cutoffDate = getWeekStart(now);
   const cutoffMonth = cutoffDate.getMonth();
-  const nextMonthName = MONTH_NAMES[cutoffMonth];
+  const nextMonthName = MONTH_LABELS[cutoffMonth];
 
   for (const record of dailySales ?? []) {
     const date = new Date(record.sale_date.split("T")[0]);
     const day = date.getDate();
     const monthIdx = date.getMonth();
-    const monthLabel = MONTH_NAMES[monthIdx];
+    const monthLabel = MONTH_LABELS[monthIdx];
     const week = getWeekOfMonth(day);
     const label = `${monthLabel} W${week}`;
 
@@ -64,7 +63,7 @@ export function forecastNextMonth(dailySales: DailySalesPoint[]): ForecastChartD
   // display the remaining weeks of current month + 1 week into next month as forecast
   const nextWeekStartIndex = weeklyDateForThePastYear.length;
   const currentWeek = getWeekOfMonth(cutoffDate.getDate());
-  const followingMonthName = MONTH_NAMES[(cutoffMonth + 1) % 12];
+  const followingMonthName = MONTH_LABELS[(cutoffMonth + 1) % 12];
   for (let i = currentWeek; i <= 4; i++) {
     nextMonthForecastData.push({
       label: `${nextMonthName} W${i}`,
@@ -79,8 +78,8 @@ export function forecastNextMonth(dailySales: DailySalesPoint[]): ForecastChartD
 
   const data = nextMonthForecastData.sort(
     (a, b) =>
-      MONTH_NAMES.indexOf(a.label.split(" ")[0]) -
-        MONTH_NAMES.indexOf(b.label.split(" ")[0]) ||
+      MONTH_LABELS.indexOf(a.label.split(" ")[0]) -
+        MONTH_LABELS.indexOf(b.label.split(" ")[0]) ||
       a.label.localeCompare(b.label),
   );
 

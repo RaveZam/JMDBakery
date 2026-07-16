@@ -1,8 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { ReactElement } from "react";
-import type { SalesRecord } from "@/app/server/getBaseData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ComposedChart,
@@ -16,65 +14,50 @@ import {
   Legend,
   ReferenceArea,
 } from "recharts";
-import { ForecastRange } from "../../types/forecast_types";
-import { aggregateDailySales, getForecastChartData } from "../../helpers/forecast";
+import type { ForecastRange } from "../types";
+import type { SalesRecord } from "@/app/server/getBaseData";
+import { getForecastChartData } from "../helpers/getForecastChartData";
+import { aggregateDailySales } from "../helpers/aggregateDailySales";
 
-const RANGES: { value: ForecastRange; label: string }[] = [
+const RANGE_OPTIONS: { value: ForecastRange; label: string }[] = [
   { value: "weekly", label: "Weekly" },
   { value: "monthly", label: "Monthly" },
   { value: "yearly", label: "Yearly" },
 ];
 
-export function IntelligenceForecastChart({
-  data,
-}: {
-  data: SalesRecord[];
-}): ReactElement {
+export function ForecastChart({ records }: { records: SalesRecord[] }) {
   const [range, setRange] = useState<ForecastRange>("weekly");
-  const dailySales = useMemo(() => aggregateDailySales(data), [data]);
-  const {
-    title,
-    data: rawChartData,
-    forecastStart,
-    forecastEnd,
-    yFormatter,
-  } = useMemo(
-    () => getForecastChartData(range, data, dailySales),
-    [range, data, dailySales],
+  const dailySales = useMemo(() => aggregateDailySales(records), [records]);
+  const series = useMemo(
+    () => getForecastChartData(range, records, dailySales),
+    [range, records, dailySales],
   );
 
-  // Bridge the actual and forecast lines visually by carrying the last actual
-  // value forward as the forecast anchor point. Mark it so the tooltip can
-  // suppress the duplicate forecast entry at that point.
-  const chartData = rawChartData
-    .filter((point) => point.actual == null || point.actual > 0)
-    .map((point, i, arr) => {
-      const isLastActual =
-        point.actual != null &&
-        point.forecast == null &&
-        arr[i + 1]?.forecast != null;
-      return isLastActual
-        ? { ...point, forecast: point.actual, isBridge: true }
-        : point;
-    });
+  // Bridge the actual and forecast lines by carrying the last actual value
+  // forward as the first forecast point, so the two segments connect visually.
+  const chartData = series.data.map((point, i, all) => {
+    const isSeam =
+      point.actual != null && point.forecast == null && all[i + 1]?.forecast != null;
+    return isSeam ? { ...point, forecast: point.actual, isSeam: true } : point;
+  });
 
   return (
     <Card className="shadow-soft">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="text-base">{title}</CardTitle>
+          <CardTitle className="text-base">{series.title}</CardTitle>
           <div className="flex rounded-md overflow-hidden text-xs font-medium border border-emerald-800">
-            {RANGES.map((r) => (
+            {RANGE_OPTIONS.map((option) => (
               <button
-                key={r.value}
-                onClick={() => setRange(r.value)}
+                key={option.value}
+                onClick={() => setRange(option.value)}
                 className={`px-3 py-1.5 transition-colors ${
-                  range === r.value
+                  range === option.value
                     ? "bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 text-white"
                     : "bg-background text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950"
                 }`}
               >
-                {r.label}
+                {option.label}
               </button>
             ))}
           </div>
@@ -83,34 +66,28 @@ export function IntelligenceForecastChart({
       <CardContent>
         <div className="h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart
-              data={chartData}
-              margin={{ top: 8, right: 8, left: 8, bottom: 8 }}
-            >
+            <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
               <defs>
-                <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="intelligenceActualFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
                   <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="rgba(148,163,184,0.35)"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.35)" />
               <ReferenceArea
-                x1={forecastStart}
-                x2={forecastEnd}
+                x1={series.forecastStart}
+                x2={series.forecastEnd}
                 fill="rgb(148,163,184)"
                 fillOpacity={0.12}
                 strokeOpacity={0}
               />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={yFormatter} />
+              <YAxis tick={{ fontSize: 11 }} tickFormatter={series.yFormatter} />
               <Tooltip
                 content={({ active, payload, label }) => {
                   if (!active || !payload?.length) return null;
-                  const isBridge = payload[0]?.payload?.isBridge;
-                  const entries = isBridge
+                  const isSeam = payload[0]?.payload?.isSeam;
+                  const entries = isSeam
                     ? payload.filter((p) => p.dataKey !== "forecast")
                     : payload;
                   return (
@@ -135,7 +112,7 @@ export function IntelligenceForecastChart({
                 name="Actual"
                 stroke="#10b981"
                 strokeWidth={2}
-                fill="url(#actualGradient)"
+                fill="url(#intelligenceActualFill)"
                 dot={{ r: 3, fill: "#10b981", strokeWidth: 0 }}
                 activeDot={{ r: 5, fill: "#059669", strokeWidth: 0 }}
                 connectNulls={false}

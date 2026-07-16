@@ -1,1 +1,0 @@
-export { ForecastSection } from "./ForecastSection";

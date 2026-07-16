@@ -1,1 +1,0 @@
-export { MorningInventoryInsights } from "./MorningInventoryInsights";

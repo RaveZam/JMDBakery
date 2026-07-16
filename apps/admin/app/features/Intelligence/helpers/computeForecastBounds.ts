@@ -1,4 +1,4 @@
-import { DataPoint } from "../../types/forecast_types";
+import type { DataPoint } from "../types";
 
 export function computeForecastBounds(data: DataPoint[]): {
   forecastStart: string;

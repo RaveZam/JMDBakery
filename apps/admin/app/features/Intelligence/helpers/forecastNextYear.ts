@@ -1,24 +1,17 @@
-import { ForecastChartData, DataPoint, DailySalesPoint } from "../../types/forecast_types";
-import { MONTH_NAMES } from "../shared/monthNames";
-import { phNow } from "../shared/phNow";
+import type { ForecastChartData, DataPoint, DailySalesPoint } from "../types";
+import { MONTH_LABELS, nowInManila, addDays } from "./dateUtils";
 import { computeForecastBounds } from "./computeForecastBounds";
-import { fitHoltWinters, HOLT_WINTERS_MIN_POINTS } from "./holtWintersFit";
-
-function addDays(date: Date, days: number): Date {
-  const next = new Date(date);
-  next.setDate(next.getDate() + days);
-  return next;
-}
+import { fitHoltWinters, HOLT_WINTERS_MIN_HISTORY } from "./holtWinters";
 
 export function forecastNextYear(dailySales: DailySalesPoint[]): ForecastChartData {
   const title = "Yearly Revenue Forecast (Holt-Winters)";
   const yFormatter = (v: number) => `₱${(v / 1000).toFixed(0)}k`;
 
-  if (dailySales.length < HOLT_WINTERS_MIN_POINTS) {
+  if (dailySales.length < HOLT_WINTERS_MIN_HISTORY) {
     return { title, forecastStart: "", forecastEnd: "", yFormatter, data: [] };
   }
 
-  const now = phNow();
+  const now = nowInManila();
   const yearNow = now.getFullYear();
   const cutoffDate = new Date(yearNow, now.getMonth(), now.getDate());
 
@@ -26,7 +19,7 @@ export function forecastNextYear(dailySales: DailySalesPoint[]): ForecastChartDa
   for (const point of dailySales) {
     const date = new Date(point.sale_date.split("T")[0]);
     if (date.getFullYear() !== yearNow || date >= cutoffDate) continue;
-    const label = MONTH_NAMES[date.getMonth()];
+    const label = MONTH_LABELS[date.getMonth()];
     actualByMonth.set(label, (actualByMonth.get(label) ?? 0) + point.total_sales);
   }
 
@@ -44,7 +37,7 @@ export function forecastNextYear(dailySales: DailySalesPoint[]): ForecastChartDa
   for (let h = 1; h <= daysToForecast; h++) {
     const date = addDays(lastDate, h);
     if (date.getFullYear() !== yearNow) break;
-    const label = MONTH_NAMES[date.getMonth()];
+    const label = MONTH_LABELS[date.getMonth()];
     forecastByMonth.set(label, (forecastByMonth.get(label) ?? 0) + forecastFn(h));
   }
 
