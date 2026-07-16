@@ -1,36 +1,33 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import type { StoreRow } from "../types/store-types";
+import type { StoreRow, TopProduct } from "../types/store-types";
 
-export async function getStoreSaleYears(): Promise<number[]> {
+type StoreWithRevenueRow = {
+  id: string;
+  store_name: string;
+  contact_number: string | null;
+  contact_name: string | null;
+  province: string | null;
+  city: string | null;
+  barangay: string | null;
+  created_at: string;
+  total_revenue: number | string;
+};
+
+type TopProductRow = {
+  product_name: string;
+  revenue: number | string;
+};
+
+export async function getStoresWithRevenue(): Promise<StoreRow[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("route_sessions")
-    .select("session_date")
-    .order("session_date", { ascending: true });
+
+  const { data, error } = await supabase.rpc("get_stores_with_revenue");
 
   if (error) throw new Error(error.message);
 
-  const years = [
-    ...new Set(
-      (data ?? []).map((r) => new Date(r.session_date).getFullYear())
-    ),
-  ].sort((a, b) => a - b);
-
-  return years;
-}
-
-export async function getStores(year?: number): Promise<StoreRow[]> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.rpc("get_stores_summary", {
-    p_year: year ?? null,
-  });
-
-  if (error) throw new Error(error.message);
-
-  return (data ?? []).map((s: any) => ({
+  return ((data ?? []) as StoreWithRevenueRow[]).map((s) => ({
     id: s.id,
     storeName: s.store_name,
     contactNumber: s.contact_number,
@@ -39,10 +36,23 @@ export async function getStores(year?: number): Promise<StoreRow[]> {
     city: s.city,
     barangay: s.barangay,
     createdAt: s.created_at,
-    totalSales: Number(s.total_sales),
-    totalBO: Number(s.total_bo),
     totalRevenue: Number(s.total_revenue),
-    visitCount: Number(s.visit_count),
-    topItems: (s.top_items ?? []) as { productName: string; sold: number }[],
+  }));
+}
+
+export async function getStoreTopProducts(
+  storeId: string,
+): Promise<TopProduct[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_store_top_products", {
+    p_store_id: storeId,
+  });
+
+  if (error) throw new Error(error.message);
+
+  return ((data ?? []) as TopProductRow[]).map((p) => ({
+    productName: p.product_name,
+    revenue: Number(p.revenue),
   }));
 }

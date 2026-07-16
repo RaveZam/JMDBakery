@@ -1,5 +1,3 @@
-export type StoreItem = { productName: string; sold: number };
-
 export type StoreRow = {
   id: string;
   storeName: string;
@@ -9,9 +7,7 @@ export type StoreRow = {
   city: string | null;
   barangay: string | null;
   createdAt: string;
-  totalSales: number;
-  totalBO: number;
   totalRevenue: number;
-  visitCount: number;
-  topItems: StoreItem[];
 };
+
+export type TopProduct = { productName: string; revenue: number };
