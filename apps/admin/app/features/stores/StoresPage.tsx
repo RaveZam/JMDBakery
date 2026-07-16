@@ -1,44 +1,34 @@
-import type { ReactElement } from "react";
+"use client";
 
-import { getStoresWithRevenue } from "./services/storesService";
-import { groupStoresByLocation } from "./helpers/storeHelpers";
-import { StoresGrid } from "./components/StoresGrid";
+import { useMemo, type ReactElement } from "react";
+
+import { useStoresQuery } from "./storesQuery";
+import { computeStoreStats, groupStoresByLocation } from "./helpers/storeHelpers";
+import { StoresList } from "./components/StoresList";
+import { StoresBoardSkeleton } from "./components/StoresBoardSkeleton";
 import { StoresEmptyState } from "./components/StoresEmptyState";
+import { StoresHeader } from "./components/StoresHeader";
 
-export async function StoresPage(): Promise<ReactElement> {
+export function StoresPage(): ReactElement {
   // Raw DB rows may contain duplicates of the same real-world store (see
-  // groupStoresByLocation); merge before rendering so "stores.length" below
-  // reflects what's actually shown, not raw row count.
-  const stores = groupStoresByLocation(await getStoresWithRevenue());
+  // groupStoresByLocation); merge before rendering so counts/stats below
+  // reflect what's actually shown, not raw row count.
+  const { data, isLoading } = useStoresQuery();
+  const stores = useMemo(() => groupStoresByLocation(data), [data]);
+  const stats = useMemo(() => computeStoreStats(stores), [stores]);
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b bg-slate-50/80 px-6 py-5 backdrop-blur dark:bg-background/80">
-        <div className="mx-auto w-full max-w-[1200px]">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Stores</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Store directory with sales performance.
-            </p>
-          </div>
-        </div>
-      </header>
+      <StoresHeader stats={stats} />
 
       <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="mx-auto w-full max-w-[1200px] space-y-4">
-          {stores.length === 0 ? (
+        <div className="mx-auto w-full max-w-[1200px]">
+          {isLoading ? (
+            <StoresBoardSkeleton />
+          ) : stores.length === 0 ? (
             <StoresEmptyState />
           ) : (
-            <>
-              <p className="text-sm text-muted-foreground">
-                Showing{" "}
-                <span className="font-medium text-foreground">
-                  {stores.length}
-                </span>{" "}
-                stores
-              </p>
-              <StoresGrid stores={stores} />
-            </>
+            <StoresList stores={stores} />
           )}
         </div>
       </div>

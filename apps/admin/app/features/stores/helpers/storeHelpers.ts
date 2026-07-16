@@ -1,4 +1,4 @@
-import type { GroupedStoreRow, StoreRow, TopProduct } from "../types/store-types";
+import type { GroupedStoreRow, StoreRow, StoreStats, TopProduct } from "../types/store-types";
 
 export function formatAddress(
   barangay: string | null,
@@ -55,6 +55,26 @@ export function groupStoresByLocation(stores: StoreRow[]): GroupedStoreRow[] {
       // -> {id: "s2", storeName: "red ribbon ", totalRevenue: 800, memberIds: ["s1", "s2"], ...}
     })
     .sort((a, b) => b.totalRevenue - a.totalRevenue);
+}
+
+// Powers the header stat strip: total account count, revenue across every
+// store, and whichever province contributes the most revenue (not just the
+// most stores) so it reads as "where the money is," not "where we have the
+// most pins on the map."
+export function computeStoreStats(stores: GroupedStoreRow[]): StoreStats {
+  const totalRevenue = stores.reduce((sum, store) => sum + store.totalRevenue, 0);
+
+  const revenueByProvince = new Map<string, number>();
+  for (const store of stores) {
+    if (!store.province) continue;
+    revenueByProvince.set(
+      store.province,
+      (revenueByProvince.get(store.province) ?? 0) + store.totalRevenue,
+    );
+  }
+  const [topProvince] = [...revenueByProvince.entries()].sort((a, b) => b[1] - a[1])[0] ?? [null];
+
+  return { storeCount: stores.length, totalRevenue, topProvince };
 }
 
 // results is one TopProduct[] per store id; flatten and sum by

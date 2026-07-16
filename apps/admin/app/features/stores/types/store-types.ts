@@ -19,3 +19,9 @@ export type StoreRow = {
 export type GroupedStoreRow = StoreRow & { memberIds: string[] };
 
 export type TopProduct = { productName: string; revenue: number };
+
+export type StoreStats = {
+  storeCount: number;
+  totalRevenue: number;
+  topProvince: string | null;
+};
