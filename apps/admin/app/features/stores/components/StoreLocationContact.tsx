@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 
 import { formatCurrencyPHP } from "@/lib/utils";
-import type { StoreRow } from "../types/store-types";
+import type { GroupedStoreRow } from "../types/store-types";
 
 function StatCard({
   label,
@@ -18,7 +18,7 @@ function StatCard({
   );
 }
 
-function LocationSection({ store }: { store: StoreRow }): ReactElement {
+function LocationSection({ store }: { store: GroupedStoreRow }): ReactElement {
   if (!store.province && !store.city && !store.barangay) {
     return (
       <span className="text-sm text-muted-foreground">No address on file</span>
@@ -49,7 +49,7 @@ function LocationSection({ store }: { store: StoreRow }): ReactElement {
   );
 }
 
-export function StoreLocationContact({ store }: { store: StoreRow }): ReactElement {
+export function StoreLocationContact({ store }: { store: GroupedStoreRow }): ReactElement {
   return (
     <div className="flex-1 space-y-4 px-5 py-4">
       <section>

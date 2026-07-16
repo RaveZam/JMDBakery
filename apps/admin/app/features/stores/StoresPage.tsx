@@ -1,11 +1,15 @@
 import type { ReactElement } from "react";
 
 import { getStoresWithRevenue } from "./services/storesService";
+import { groupStoresByLocation } from "./helpers/storeHelpers";
 import { StoresGrid } from "./components/StoresGrid";
 import { StoresEmptyState } from "./components/StoresEmptyState";
 
 export async function StoresPage(): Promise<ReactElement> {
-  const stores = await getStoresWithRevenue();
+  // Raw DB rows may contain duplicates of the same real-world store (see
+  // groupStoresByLocation); merge before rendering so "stores.length" below
+  // reflects what's actually shown, not raw row count.
+  const stores = groupStoresByLocation(await getStoresWithRevenue());
 
   return (
     <>

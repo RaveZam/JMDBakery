@@ -4,10 +4,10 @@ import { useState, type ReactElement } from "react";
 
 import { StoreCard } from "./StoreCard";
 import { StoreDetailModal } from "./StoreDetailModal";
-import type { StoreRow } from "../types/store-types";
+import type { GroupedStoreRow } from "../types/store-types";
 
-export function StoresGrid({ stores }: { stores: StoreRow[] }): ReactElement {
-  const [selectedStore, setSelectedStore] = useState<StoreRow | null>(null);
+export function StoresGrid({ stores }: { stores: GroupedStoreRow[] }): ReactElement {
+  const [selectedStore, setSelectedStore] = useState<GroupedStoreRow | null>(null);
 
   return (
     <>

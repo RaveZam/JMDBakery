@@ -36,8 +36,12 @@ function TopProductsList({
   );
 }
 
-export function StoreTopProductsPanel({ storeId }: { storeId: string }): ReactElement {
-  const { products, loading, error } = useStoreTopProducts(storeId);
+export function StoreTopProductsPanel({
+  storeIds,
+}: {
+  storeIds: string[];
+}): ReactElement {
+  const { products, loading, error } = useStoreTopProducts(storeIds);
 
   return (
     <div className="w-56 shrink-0 px-4 py-4">

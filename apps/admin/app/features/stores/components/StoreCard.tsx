@@ -2,14 +2,17 @@ import type { ReactElement } from "react";
 
 import { formatCurrencyPHP } from "@/lib/utils";
 import { formatAddress } from "../helpers/storeHelpers";
-import type { StoreRow } from "../types/store-types";
+import type { GroupedStoreRow } from "../types/store-types";
 
 export function StoreCard({
   store,
   onSelect,
 }: {
-  store: StoreRow;
-  onSelect: (store: StoreRow) => void;
+  // store.totalRevenue is already summed across store.memberIds by
+  // groupStoresByLocation, so this renders correctly whether or not the
+  // card represents merged duplicate rows.
+  store: GroupedStoreRow;
+  onSelect: (store: GroupedStoreRow) => void;
 }): ReactElement {
   return (
     <button

@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { ModalOverlay } from "@/app/features/products/components/ModalOverlay";
 import { StoreLocationContact } from "./StoreLocationContact";
 import { StoreTopProductsPanel } from "./StoreTopProductsPanel";
-import type { StoreRow } from "../types/store-types";
+import type { GroupedStoreRow } from "../types/store-types";
 
 function useCloseOnEscape(active: boolean, onClose: () => void): void {
   useEffect(() => {
@@ -24,7 +24,7 @@ function StoreDetailHeader({
   store,
   onClose,
 }: {
-  store: StoreRow;
+  store: GroupedStoreRow;
   onClose: () => void;
 }): ReactElement {
   const joined = new Date(store.createdAt).toLocaleDateString("en-PH", {
@@ -55,7 +55,7 @@ export function StoreDetailModal({
   store,
   onClose,
 }: {
-  store: StoreRow | null;
+  store: GroupedStoreRow | null;
   onClose: () => void;
 }): ReactElement | null {
   useCloseOnEscape(store !== null, onClose);
@@ -71,7 +71,10 @@ export function StoreDetailModal({
 
           <div className="flex divide-x">
             <StoreLocationContact store={store} />
-            <StoreTopProductsPanel storeId={store.id} />
+            {/* store.memberIds may hold >1 underlying store id if this card
+                merged duplicate DB rows; fetch + merge top products for all
+                of them so this panel isn't missing sales from a duplicate. */}
+            <StoreTopProductsPanel storeIds={store.memberIds} />
           </div>
         </div>
       </div>
