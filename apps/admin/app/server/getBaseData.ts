@@ -1,4 +1,4 @@
-import { cache } from "react";
+"use server";
 import { createClient } from "@/utils/supabase/server";
 import { getAgentMap } from "@/app/server/getAgentMap";
 
@@ -76,7 +76,7 @@ function mapSessionStore(
  * window of sales rows, cached 5min client-side via React Query. Each page
  * applies its own date-range filter/aggregation against this in memory.
  */
-export const getSalesDataset = cache(async (): Promise<SalesRecord[]> => {
+export const getSalesDataset = async (): Promise<SalesRecord[]> => {
   const [supabase, agentMap] = await Promise.all([
     createClient(),
     getAgentMap(),
@@ -106,4 +106,4 @@ export const getSalesDataset = cache(async (): Promise<SalesRecord[]> => {
       mapSessionStore(sessionStore, session, agent),
     );
   });
-});
+};
