@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+
 import { getProducts } from "./services/productsService";
 import { ProductsClient } from "./components/ProductsClient";
 

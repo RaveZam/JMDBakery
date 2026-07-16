@@ -1,15 +1,10 @@
-import { ProductRow } from "../components/ProductsTable";
-import type { NewProduct } from "../components/AddProductModal";
-
-export type ProductsTableProps = {
-  products: ProductRow[];
-  onEdit: (product: ProductRow) => void;
-  onDelete: (id: string) => void;
+export type Product = {
+  id: string;
+  name: string;
+  price: number;
 };
 
-export type AddProductModalProps = {
-  onClose: () => void;
-  onAdd: (product: NewProduct) => void;
-  initialValues?: NewProduct;
-  title?: string;
+export type ProductInput = {
+  name: string;
+  price: number;
 };

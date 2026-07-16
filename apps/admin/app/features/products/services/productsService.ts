@@ -1,9 +1,9 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import type { ProductRow } from "../components/ProductsTable";
+import type { Product, ProductInput } from "../types/product-types";
 
-export async function getProducts(): Promise<ProductRow[]> {
+export async function getProducts(): Promise<Product[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
@@ -19,24 +19,28 @@ export async function getProducts(): Promise<ProductRow[]> {
   }));
 }
 
-export async function addProduct(name: string, price: number): Promise<ProductRow> {
+export async function addProduct(input: ProductInput): Promise<Product> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
-    .insert({ product_name: name, product_price: price })
+    .insert({ product_name: input.name, product_price: input.price })
     .select("id, product_name, product_price")
     .single();
 
   if (error) throw new Error(error.message);
 
-  return { id: data.id, name: data.product_name as string, price: Number(data.product_price) };
+  return {
+    id: data.id,
+    name: data.product_name as string,
+    price: Number(data.product_price),
+  };
 }
 
-export async function updateProduct(id: string, name: string, price: number): Promise<void> {
+export async function updateProduct(id: string, input: ProductInput): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase
     .from("products")
-    .update({ product_name: name, product_price: price })
+    .update({ product_name: input.name, product_price: input.price })
     .eq("id", id);
 
   if (error) throw new Error(error.message);
