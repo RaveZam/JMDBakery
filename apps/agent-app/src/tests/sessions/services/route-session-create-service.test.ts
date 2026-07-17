@@ -13,6 +13,7 @@ test("inserts a route_sessions row with status ongoing", () => {
       routeName: "North Route",
       sessionDate: "2026-06-30",
       conductedBy: "user-1",
+      conductedByName: "Agent One",
       createdAt: "2026-06-30T00:00:00.000Z",
     });
   });
@@ -32,6 +33,7 @@ test("enqueues a route_session create outbox row with correct payload", () => {
       routeName: "South Route",
       sessionDate: "2026-06-30",
       conductedBy: "user-1",
+      conductedByName: "Agent One",
       createdAt: "2026-06-30T00:00:00.000Z",
     });
   });
@@ -44,5 +46,6 @@ test("enqueues a route_session create outbox row with correct payload", () => {
     route_name: "South Route",
     status: "ongoing",
     conducted_by: "user-1",
+    conducted_by_name: "Agent One",
   });
 });

@@ -6,6 +6,7 @@ type InsertRouteSessionInput = {
   routeName: string;
   sessionDate: string;
   conductedBy: string;
+  conductedByName: string;
   createdAt: string;
 };
 
@@ -15,6 +16,7 @@ export function insertRouteSession(input: InsertRouteSessionInput): void {
     routeName: input.routeName,
     sessionDate: input.sessionDate,
     conductedBy: input.conductedBy,
+    conductedByName: input.conductedByName,
     createdAt: input.createdAt,
     id: input.sessionId,
   });
@@ -27,6 +29,7 @@ export function insertRouteSession(input: InsertRouteSessionInput): void {
       route_name: input.routeName,
       session_date: input.sessionDate,
       conducted_by: input.conductedBy,
+      conducted_by_name: input.conductedByName,
       status: "ongoing",
       created_at: input.createdAt,
     },

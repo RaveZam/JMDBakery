@@ -28,6 +28,9 @@ export async function startSession(
   const conductedBy = session?.user?.id;
   if (!conductedBy) throw new Error("User not authenticated");
 
+  const conductedByName =
+    session.user.user_metadata?.name ?? session.user.email ?? "Unknown";
+
   if (RouteSessionsDao.getOngoing()) throw new OngoingSessionExistsError();
 
   const sessionId = generateUUID();
@@ -44,6 +47,7 @@ export async function startSession(
       routeName,
       sessionDate,
       conductedBy,
+      conductedByName,
       createdAt,
     });
     for (const store of stores) {

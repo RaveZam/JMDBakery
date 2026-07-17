@@ -19,7 +19,15 @@ jest.mock("@/src/lib/supabase", () => ({
   supabase: {
     auth: {
       getSession: jest.fn().mockResolvedValue({
-        data: { session: { user: { id: "user-1" } } },
+        data: {
+          session: {
+            user: {
+              id: "user-1",
+              email: "agent@example.com",
+              user_metadata: { name: "Agent One" },
+            },
+          },
+        },
       }),
     },
   },
@@ -89,6 +97,31 @@ test("enqueues route_session + session_store outbox rows", async () => {
     province_id: provinceId,
     visited: false,
   });
+});
+
+test("startSession snapshots the agent name from the auth session", async () => {
+  const routeId = seedRoute("Named Route");
+  const provinceId = seedProvince(routeId);
+  seedStore(provinceId);
+
+  const sessionId = await startSession(routeId, "Named Route");
+
+  expect(RouteSessionsDao.getById(sessionId)?.conducted_by_name).toBe("Agent One");
+  const out = getOutbox("route_session");
+  expect(JSON.parse(out[0].payload)).toMatchObject({ conducted_by_name: "Agent One" });
+});
+
+test("startSession falls back to email then Unknown when name is absent", async () => {
+  const { supabase } = require("@/src/lib/supabase");
+  (supabase.auth.getSession as jest.Mock).mockResolvedValueOnce({
+    data: { session: { user: { id: "user-1", email: "agent@example.com" } } },
+  });
+  const routeId = seedRoute("Emailed Route");
+  const provinceId = seedProvince(routeId);
+  seedStore(provinceId);
+
+  const sessionId = await startSession(routeId, "Emailed Route");
+  expect(RouteSessionsDao.getById(sessionId)?.conducted_by_name).toBe("agent@example.com");
 });
 
 test("throws when not authenticated", async () => {
