@@ -1,6 +1,5 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
-import { getAgentMap } from "@/app/server/getAgentMap";
 
 export type SalesRecord = {
   id: string;
@@ -35,7 +34,7 @@ type RawSessionStore = {
 type RawSession = {
   id: string;
   session_date: string;
-  conducted_by: string | null;
+  conducted_by_name: string | null;
   session_stores: RawSessionStore[];
 };
 
@@ -77,16 +76,13 @@ function mapSessionStore(
  * applies its own date-range filter/aggregation against this in memory.
  */
 export const getSalesDataset = async (): Promise<SalesRecord[]> => {
-  const [supabase, agentMap] = await Promise.all([
-    createClient(),
-    getAgentMap(),
-  ]);
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("route_sessions")
     .select(
       `
-      id, session_date, conducted_by,
+      id, session_date, conducted_by_name,
       session_stores!inner(
         sales(*),
         stores(store_name, province)
@@ -101,7 +97,7 @@ export const getSalesDataset = async (): Promise<SalesRecord[]> => {
   const rows = (data ?? []) as unknown as RawSession[];
 
   return rows.flatMap((session) => {
-    const agent = agentMap[session.conducted_by ?? ""]?.name ?? "Unknown";
+    const agent = session.conducted_by_name ?? "Unknown";
     return session.session_stores.flatMap((sessionStore) =>
       mapSessionStore(sessionStore, session, agent),
     );
