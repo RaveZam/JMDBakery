@@ -42,6 +42,7 @@ export async function initDb(): Promise<void> {
       route_name                  TEXT NOT NULL,
       session_date                TEXT NOT NULL,
       conducted_by                TEXT NOT NULL,
+      conducted_by_name           TEXT,
       status                      TEXT NOT NULL DEFAULT 'ongoing' CHECK(status IN ('ongoing', 'completed', 'cancelled')),
       morning_inventory_finished  INTEGER NOT NULL DEFAULT 0,
       created_at                  TEXT NOT NULL
@@ -121,6 +122,14 @@ export async function initDb(): Promise<void> {
   try {
     database.runSync(
       `ALTER TABLE route_sessions ADD COLUMN morning_inventory_finished INTEGER NOT NULL DEFAULT 0`,
+    );
+  } catch {
+    // column already exists — safe to ignore
+  }
+
+  try {
+    database.runSync(
+      `ALTER TABLE route_sessions ADD COLUMN conducted_by_name TEXT`,
     );
   } catch {
     // column already exists — safe to ignore

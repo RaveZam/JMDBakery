@@ -41,3 +41,10 @@ test("allows a new ongoing session once the previous is cancelled", () => {
   );
   expect(() => insertSession("ongoing")).not.toThrow();
 });
+
+test("route_sessions has conducted_by_name column", () => {
+  const cols = getDb().getAllSync<{ name: string }>(
+    "PRAGMA table_info(route_sessions)",
+  );
+  expect(cols.map((c) => c.name)).toContain("conducted_by_name");
+});

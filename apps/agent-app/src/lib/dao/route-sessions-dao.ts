@@ -6,6 +6,7 @@ export type RouteSessionRow = {
   route_name: string;
   session_date: string;
   conducted_by: string;
+  conducted_by_name: string | null;
   status: string;
   morning_inventory_finished: 0 | 1;
   created_at: string;
@@ -17,12 +18,13 @@ const RouteSessionsDao = {
     sessionDate: string;
     conductedBy: string;
     createdAt: string;
+    conductedByName?: string | null;
     id?: string;
   }): string {
     const id = input.id ?? generateUUID();
     getDb().runSync(
-      `INSERT INTO route_sessions (id, route_name, session_date, conducted_by, status, created_at) VALUES (?, ?, ?, ?, 'ongoing', ?)`,
-      [id, input.routeName, input.sessionDate, input.conductedBy, input.createdAt],
+      `INSERT INTO route_sessions (id, route_name, session_date, conducted_by, conducted_by_name, status, created_at) VALUES (?, ?, ?, ?, ?, 'ongoing', ?)`,
+      [id, input.routeName, input.sessionDate, input.conductedBy, input.conductedByName ?? null, input.createdAt],
     );
     return id;
   },
@@ -35,18 +37,20 @@ const RouteSessionsDao = {
     conductedBy: string;
     status: string;
     createdAt: string;
+    conductedByName?: string | null;
     id?: string;
   }): string {
     const id = input.id ?? generateUUID();
     getDb().runSync(
-      `INSERT INTO route_sessions (id, route_name, session_date, conducted_by, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)
+      `INSERT INTO route_sessions (id, route_name, session_date, conducted_by, conducted_by_name, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
-         route_name   = excluded.route_name,
-         session_date = excluded.session_date,
-         conducted_by = excluded.conducted_by,
-         status       = excluded.status`,
-      [id, input.routeName, input.sessionDate, input.conductedBy, input.status, input.createdAt],
+         route_name        = excluded.route_name,
+         session_date      = excluded.session_date,
+         conducted_by      = excluded.conducted_by,
+         conducted_by_name = excluded.conducted_by_name,
+         status            = excluded.status`,
+      [id, input.routeName, input.sessionDate, input.conductedBy, input.conductedByName ?? null, input.status, input.createdAt],
     );
     return id;
   },

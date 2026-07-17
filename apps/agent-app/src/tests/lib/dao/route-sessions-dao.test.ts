@@ -97,3 +97,20 @@ test("delete removes the row", () => {
 
   expect(RouteSessionsDao.getById(a)).toBeFalsy();
 });
+
+test("insert persists conducted_by_name", () => {
+  const id = RouteSessionsDao.insert({
+    routeName: "R", sessionDate: "2026-07-06", conductedBy: "user-1",
+    createdAt: "2026-07-06T00:00:00Z", conductedByName: "Agent One",
+  });
+  expect(RouteSessionsDao.getById(id)?.conducted_by_name).toBe("Agent One");
+});
+
+test("upsertSession persists conducted_by_name", () => {
+  RouteSessionsDao.upsertSession({
+    routeName: "R", sessionDate: "2026-07-06", conductedBy: "user-1",
+    status: "completed", createdAt: "2026-07-06T00:00:00Z",
+    id: "s1", conductedByName: "Agent Two",
+  });
+  expect(RouteSessionsDao.getById("s1")?.conducted_by_name).toBe("Agent Two");
+});
