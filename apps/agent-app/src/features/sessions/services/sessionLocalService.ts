@@ -25,13 +25,13 @@ export async function startSession(
     data: { session },
   } = await supabase.auth.getSession();
 
+  if (RouteSessionsDao.getOngoing()) throw new OngoingSessionExistsError();
+
   const conductedBy = session?.user?.id;
   if (!conductedBy) throw new Error("User not authenticated");
 
   const conductedByName =
     session.user.user_metadata?.name ?? session.user.email ?? "Unknown";
-
-  if (RouteSessionsDao.getOngoing()) throw new OngoingSessionExistsError();
 
   const sessionId = generateUUID();
 
