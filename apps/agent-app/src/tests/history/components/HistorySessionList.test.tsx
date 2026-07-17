@@ -19,6 +19,7 @@ function makeSession(overrides: Partial<SessionRow> = {}): SessionRow {
     route_name: "North Route",
     session_date: "2026-06-30T12:00:00",
     conducted_by: "agent-1234",
+    conducted_by_name: "Test Agent",
     status: "completed",
     morning_inventory_finished: 1,
     created_at: "2026-06-30T00:00:00.000Z",

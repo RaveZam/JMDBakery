@@ -20,6 +20,7 @@ function seedSession(sessionId: string): void {
       routeName: "Test Route",
       sessionDate: "2026-06-30",
       conductedBy: "user-1",
+      conductedByName: "Test Agent",
       createdAt: "2026-06-30T00:00:00.000Z",
     });
   });
