@@ -39,17 +39,17 @@ export function StoresHeader({ stats }: { stats: StoreStats }): ReactElement {
         </div>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight">Stores</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Every retail account on the route, ranked by revenue.
+          Every retail account on the route, ranked by revenue this month.
         </p>
 
         <dl className="mt-5 grid max-w-xl grid-cols-3 gap-3">
           <StatPill label="Accounts" value={stats.storeCount} />
           <StatPill
-            label="Total revenue"
+            label="Revenue (This Month)"
             value={formatCurrencyPHP(stats.totalRevenue)}
             emphasize
           />
-          <StatPill label="Leading province" value={stats.topProvince ?? "—"} />
+          <StatPill label="Leading province (This Month)" value={stats.topProvince ?? "—"} />
         </dl>
       </div>
     </header>

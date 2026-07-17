@@ -48,7 +48,7 @@ export function StoreTopProductsPanel({
       <div className="mb-3 flex items-center gap-1.5">
         <Trophy className="h-3.5 w-3.5 text-amber-500" />
         <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Top Products
+          Top Products (This Month)
         </h3>
       </div>
 

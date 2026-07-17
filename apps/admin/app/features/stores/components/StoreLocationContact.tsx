@@ -77,9 +77,9 @@ export function StoreLocationContact({ store }: { store: GroupedStoreRow }): Rea
 
       <section>
         <h3 className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Performance
+          Performance (This Month)
         </h3>
-        <StatCard label="Total revenue" value={formatCurrencyPHP(store.totalRevenue)} />
+        <StatCard label="Revenue" value={formatCurrencyPHP(store.totalRevenue)} />
       </section>
     </div>
   );
