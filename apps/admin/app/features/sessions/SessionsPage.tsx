@@ -1,10 +1,13 @@
+"use client";
+
 import type { ReactElement } from "react";
 
-import { getSessions } from "./services/sessionsService";
+import { useSessionsQuery } from "./sessionsQuery";
 import { SessionsList } from "./components/SessionsList";
+import { SessionsBoardSkeleton } from "./components/SessionsBoardSkeleton";
 
-export async function SessionsPage(): Promise<ReactElement> {
-  const sessions = await getSessions();
+export function SessionsPage(): ReactElement {
+  const { data: sessions, isLoading } = useSessionsQuery();
 
   return (
     <>
@@ -19,7 +22,11 @@ export async function SessionsPage(): Promise<ReactElement> {
 
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto w-full max-w-[1200px]">
-          <SessionsList sessions={sessions} />
+          {isLoading ? (
+            <SessionsBoardSkeleton />
+          ) : (
+            <SessionsList sessions={sessions} />
+          )}
         </div>
       </div>
     </>
