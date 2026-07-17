@@ -8,11 +8,12 @@ import { STORES_QUERY_KEY } from "@/app/features/stores/storesQuery";
 
 export default async function Page(): Promise<ReactElement> {
   const queryClient = getQueryClient();
-  // Kick off the fetch but don't block the server render on it. getQueryClient's
-  // dehydrate config streams the still-pending query to the client, which resolves
-  // it via Suspense on first load. On back-navigation the client's 5-min staleTime
+  // Must be awaited: getStoresWithRevenue() reads cookies() via Supabase's
+  // server client, which needs the request scope still open. Firing this
+  // without awaiting lets it resolve after the scope closes, which crashes
+  // prerendering. On back-navigation the client's 5-min staleTime still
   // serves the cached data instantly with no refetch.
-  void queryClient.prefetchQuery({
+  await queryClient.prefetchQuery({
     queryKey: STORES_QUERY_KEY,
     queryFn: getStoresWithRevenue,
   });
