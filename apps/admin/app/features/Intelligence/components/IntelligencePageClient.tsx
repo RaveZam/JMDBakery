@@ -14,15 +14,8 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 export function IntelligencePageClient({ sp }: { sp: SearchParams }) {
   const { data: allData, isLoading } = useSalesDataQuery();
-  const filters = parseRecordsFiltersLast30Days(sp);
 
-  // KPIs use a recent 30-day window; the forecast chart uses the full
-  // available history so it has enough data to fit trends/seasonality.
-  const last30DaysData = useMemo(
-    () => allData.filter((r) => r.date >= filters.dateFrom && r.date <= filters.dateTo),
-    [allData, filters.dateFrom, filters.dateTo],
-  );
-  const kpis = useMemo(() => computeIntelligenceKpis(last30DaysData), [last30DaysData]);
+  const kpis = useMemo(() => computeIntelligenceKpis(allData), [allData]);
 
   if (isLoading) {
     return (
@@ -39,8 +32,8 @@ export function IntelligencePageClient({ sp }: { sp: SearchParams }) {
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto w-full max-w-[1200px] space-y-6">
           <KpiSection kpis={kpis} />
-          <ProductionRecommendations records={last30DaysData} />
-          <ForecastChart records={allData} />
+          <ProductionRecommendations records={allData} />
+          <ForecastChart />
         </div>
       </div>
     </>
