@@ -12,12 +12,16 @@ export function ProductionRecommendationsTable({
       <div className="max-h-[70vh] overflow-auto">
         <table className="w-full border-collapse text-sm">
           <thead className="sticky top-0 z-10 bg-card">
-            <tr className="border-b border-border/70 text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="px-4 py-3 font-medium">Product</th>
-              <th className="px-4 py-3 text-right font-medium">30-day sold</th>
-              <th className="px-4 py-3 text-right font-medium">Avg sold / day</th>
-              <th className="px-4 py-3 text-right font-medium">Avg bad order / day</th>
-              <th className="px-4 py-3 text-right font-medium">Product allocation recommendation</th>
+            <tr className="border-b border-border/70 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+              <th className="px-5 py-3 font-medium">Product</th>
+              <th className="px-5 py-3 text-right font-medium">
+                Sold in 30 days
+              </th>
+              <th className="px-5 py-3 text-right font-medium">Sold per day</th>
+              <th className="px-5 py-3 text-right font-medium">
+                Bad orders per day
+              </th>
+              <th className="px-5 py-3 text-right font-medium">Bake per day</th>
             </tr>
           </thead>
           <tbody className="font-mono tabular-nums">
