@@ -1,54 +1,89 @@
-import { Card } from "@/components/ui/card";
 import type { BoRateRow } from "../helpers/computeBoRateByKey";
+import {
+  badOrderSeverity,
+  type BadOrderSeverity,
+} from "../helpers/badOrderSeverity";
+import { MetricRail } from "./MetricRail";
+import { PanelCard } from "./PanelCard";
 
-function boRateColor(pct: number): string {
-  if (pct >= 20) return "text-red-600 dark:text-red-500";
-  if (pct >= 10) return "text-amber-600 dark:text-amber-500";
-  return "text-muted-foreground";
+function RowMeta({
+  row,
+  severity,
+}: {
+  row: BoRateRow;
+  severity: BadOrderSeverity;
+}) {
+  return (
+    <div className="mt-1 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+      <span className="font-mono tabular-nums">
+        {row.bo.toLocaleString()} bad of {(row.sold + row.bo).toLocaleString()}{" "}
+        units
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span
+          className={`h-1.5 w-1.5 rounded-full ${severity.fillClass}`}
+          aria-hidden
+        />
+        {severity.label}
+      </span>
+    </div>
+  );
+}
+
+function BadOrderRow({
+  row,
+  worstRatePct,
+}: {
+  row: BoRateRow;
+  worstRatePct: number;
+}) {
+  const severity = badOrderSeverity(row.boRatePct);
+
+  return (
+    <li className="border-b border-border/50 py-3 last:border-0">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="truncate text-sm font-medium">{row.key}</span>
+        <span
+          className={`font-mono text-base font-semibold tabular-nums ${severity.textClass}`}
+        >
+          {row.boRatePct.toFixed(1)}%
+        </span>
+      </div>
+      <RowMeta row={row} severity={severity} />
+      <div className="mt-2">
+        <MetricRail
+          fraction={worstRatePct === 0 ? 0 : row.boRatePct / worstRatePct}
+          fillClass={severity.fillClass}
+        />
+      </div>
+    </li>
+  );
 }
 
 export function BoRateTable({
   title,
-  labelHeader,
+  caption,
   rows,
 }: {
   title: string;
-  labelHeader: string;
+  caption: string;
   rows: BoRateRow[];
 }) {
+  const worstRatePct = rows[0]?.boRatePct ?? 0;
+
   return (
-    <Card className="overflow-hidden border-border/70 p-0 shadow-soft dark:shadow-soft-dark">
-      <div className="border-b border-border/70 px-4 py-3">
-        <h3 className="text-sm font-semibold">{title}</h3>
-      </div>
+    <PanelCard title={title} caption={caption}>
       {rows.length === 0 ? (
-        <p className="px-4 py-6 text-sm text-muted-foreground">
+        <p className="py-6 text-sm text-muted-foreground">
           No data for this period.
         </p>
       ) : (
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-border/70 text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="px-4 py-2 font-medium">{labelHeader}</th>
-              <th className="px-4 py-2 text-right font-medium">Sold</th>
-              <th className="px-4 py-2 text-right font-medium">Bad order</th>
-              <th className="px-4 py-2 text-right font-medium">Bad order rate</th>
-            </tr>
-          </thead>
-          <tbody className="font-mono tabular-nums">
-            {rows.map((row) => (
-              <tr key={row.key} className="border-b border-border/50 last:border-0 hover:bg-muted/50">
-                <td className="px-4 py-2 font-sans">{row.key}</td>
-                <td className="px-4 py-2 text-right text-muted-foreground">{row.sold}</td>
-                <td className="px-4 py-2 text-right text-muted-foreground">{row.bo}</td>
-                <td className={`px-4 py-2 text-right font-semibold ${boRateColor(row.boRatePct)}`}>
-                  {row.boRatePct.toFixed(1)}%
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ul>
+          {rows.map((row) => (
+            <BadOrderRow key={row.key} row={row} worstRatePct={worstRatePct} />
+          ))}
+        </ul>
       )}
-    </Card>
+    </PanelCard>
   );
 }

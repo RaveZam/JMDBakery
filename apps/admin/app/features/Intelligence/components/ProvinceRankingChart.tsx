@@ -1,83 +1,45 @@
 "use client";
 
 import type { ReactElement } from "react";
-import {
-  Bar,
-  BarChart,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
-import { formatCurrencyCompact } from "@/app/features/dashboard/helpers/formatCurrencyCompact";
-import { computeProvinceRanking } from "../helpers/computeProvinceRanking";
+import {
+  computeProvinceRanking,
+  type ProvinceRevenue,
+} from "../helpers/computeProvinceRanking";
+import { MetricRail } from "./MetricRail";
+import { PanelCard } from "./PanelCard";
 
-const STRONG_COLOR = "#1f7a44";
-const WEAK_COLOR = "#c76b3a";
-
-function barColor(index: number, total: number): string {
-  if (total <= 1) return STRONG_COLOR;
-  const t = index / (total - 1);
-  return t < 0.5 ? STRONG_COLOR : WEAK_COLOR;
-}
-
-function CustomTooltip({
-  active,
-  payload,
+function ProvinceRow({
+  province,
+  rank,
+  topRevenue,
 }: {
-  active?: boolean;
-  payload?: { payload: { province: string; revenue: number } }[];
-}): ReactElement | null {
-  if (!active || !payload?.length) return null;
-  const { province, revenue } = payload[0].payload;
+  province: ProvinceRevenue;
+  rank: number;
+  topRevenue: number;
+}) {
   return (
-    <div
-      style={{
-        fontSize: 12,
-        borderRadius: 10,
-        border: "1px solid hsl(var(--border))",
-        boxShadow: "0 10px 30px rgba(15,23,42,0.10)",
-        background: "hsl(var(--card))",
-        color: "hsl(var(--foreground))",
-        padding: "6px 10px",
-      }}
-    >
-      <p className="font-medium">{province}</p>
-      <p className="text-muted-foreground">
-        Revenue:{" "}
-        <span className="font-semibold text-foreground">
-          ₱{revenue.toLocaleString()}
+    <li className="border-b border-border/50 py-3 last:border-0">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="flex min-w-0 items-baseline gap-2">
+          <span className="font-mono text-xs tabular-nums text-muted-foreground">
+            {String(rank).padStart(2, "0")}
+          </span>
+          <span className="truncate text-sm font-medium">
+            {province.province}
+          </span>
         </span>
-      </p>
-    </div>
-  );
-}
-
-const AXIS_TICK = { fontSize: 11, fill: "hsl(var(--muted-foreground))" };
-
-function ProvinceBarChart({
-  chartData,
-}: {
-  chartData: { province: string; revenue: number }[];
-}): ReactElement {
-  const chartHeight = Math.max(chartData.length * 36, 120);
-
-  return (
-    <ResponsiveContainer width="100%" height={chartHeight}>
-      <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
-        <XAxis type="number" tickFormatter={formatCurrencyCompact} tick={AXIS_TICK} axisLine={false} tickLine={false} />
-        <YAxis type="category" dataKey="province" width={88} tick={AXIS_TICK} axisLine={false} tickLine={false} />
-        <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }} />
-        <Bar dataKey="revenue" radius={[0, 4, 4, 0]} barSize={22}>
-          {chartData.map((_, i) => (
-            <Cell key={i} fill={barColor(i, chartData.length)} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+        <span className="font-mono text-sm font-semibold tabular-nums">
+          ₱{Math.round(province.revenue).toLocaleString()}
+        </span>
+      </div>
+      <div className="mt-2">
+        <MetricRail
+          fraction={topRevenue === 0 ? 0 : province.revenue / topRevenue}
+          fillClass="bg-primary"
+        />
+      </div>
+    </li>
   );
 }
 
@@ -86,22 +48,30 @@ export function ProvinceRankingChart({
 }: {
   records: SalesRecord[];
 }): ReactElement {
-  const chartData = computeProvinceRanking(records);
+  const ranking = computeProvinceRanking(records);
+  const topRevenue = ranking[0]?.revenue ?? 0;
 
   return (
-    <Card className="border-border/70 shadow-soft dark:shadow-soft-dark">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">Province ranking</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {chartData.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No data for this period.
-          </p>
-        ) : (
-          <ProvinceBarChart chartData={chartData} />
-        )}
-      </CardContent>
-    </Card>
+    <PanelCard
+      title="Province ranking"
+      caption="Total revenue by province, highest first"
+    >
+      {ranking.length === 0 ? (
+        <p className="py-6 text-sm text-muted-foreground">
+          No data for this period.
+        </p>
+      ) : (
+        <ul>
+          {ranking.map((province, index) => (
+            <ProvinceRow
+              key={province.province}
+              province={province}
+              rank={index + 1}
+              topRevenue={topRevenue}
+            />
+          ))}
+        </ul>
+      )}
+    </PanelCard>
   );
 }
