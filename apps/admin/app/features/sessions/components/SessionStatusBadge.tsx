@@ -8,7 +8,7 @@ export function SessionStatusBadge({
 }): ReactElement {
   return (
     <Badge variant={status === "completed" ? "success" : "warning"}>
-      {status === "completed" ? "Completed" : "Ongoing"}
+      {status === "completed" ? "Completed" : "Running"}
     </Badge>
   );
 }
