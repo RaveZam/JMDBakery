@@ -6,6 +6,7 @@ export default function HistoryTabLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        animation: "none",
         contentStyle: { backgroundColor: Colors.light.background },
       }}
     />

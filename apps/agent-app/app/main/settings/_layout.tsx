@@ -6,6 +6,7 @@ export default function SettingsTabLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        animation: "none",
         contentStyle: { backgroundColor: Colors.light.background },
       }}
     />

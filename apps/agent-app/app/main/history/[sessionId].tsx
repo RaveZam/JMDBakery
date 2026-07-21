@@ -4,7 +4,7 @@ import HistorySessionScreen from "@/src/features/history/screens/HistorySessionS
 export default function SessionDetailRoute() {
   return (
     <>
-      <Stack.Screen options={{ animation: "slide_from_right" }} />
+      <Stack.Screen options={{ animation: "none" }} />
       <HistorySessionScreen />
     </>
   );

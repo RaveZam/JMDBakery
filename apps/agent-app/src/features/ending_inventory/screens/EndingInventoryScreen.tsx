@@ -22,7 +22,7 @@ export default function EndingInventoryScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
-      <Stack.Screen options={{ animation: "slide_from_right" }} />
+      <Stack.Screen options={{ animation: "none" }} />
       <ThemedView style={styles.container}>
         <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
           <View style={styles.headerTopRow}>

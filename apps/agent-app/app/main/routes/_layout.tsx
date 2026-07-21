@@ -6,7 +6,7 @@ export default function RoutesTabLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: "fade_from_bottom",
+        animation: "none",
         contentStyle: { backgroundColor: Colors.light.background },
       }}
     />
