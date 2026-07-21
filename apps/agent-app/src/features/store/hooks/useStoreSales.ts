@@ -24,6 +24,16 @@ import {
   updateSale,
 } from "../services/sales-services";
 
+/**
+ * Drives the store distribution log screen: the running sales list for a store visit,
+ * the add/edit order modal, and the remaining-stock numbers shown next to each product.
+ *
+ * Used by the store detail screen so it can read `inventory.*` for the list/modal
+ * without knowing how sales are counted, persisted, or how remaining stock is derived.
+ *
+ * @returns `{ inventory }` — everything the screen needs: sold items, modal form state
+ *          and setters, remaining stock per product, and the add/edit/delete handlers.
+ */
 export function useStoreSales() {
   const { sessionId, sessionStoreId } = useLocalSearchParams<{
     sessionId?: string;
@@ -36,7 +46,7 @@ export function useStoreSales() {
   const [salesCounts, setSalesCounts] = useState<
     Record<string, ProductSalesCount>
   >({});
-
+  //Grabe Sales Count
   const refetchSalesCounts = useCallback(() => {
     if (!sessionId) return;
     setSalesCounts(countSoldByProduct(getSalesByRouteSession(sessionId)));
@@ -46,7 +56,9 @@ export function useStoreSales() {
     refetchSalesCounts();
   }, [refetchSalesCounts]);
 
+  //Remaining stock per product_id, e.g. { "prod_123": 7 } — recomputed whenever salesCounts changes
   const [remaining, setRemaining] = useState<Record<string, number>>({});
+  //All of these mirror the add/edit order modal's form fields
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(0);
   const [boQty, setBoQty] = useState(0);
@@ -54,7 +66,10 @@ export function useStoreSales() {
   const [boReasonType, setBoReasonType] = useState<PresetReason | null>(null);
 
   const [soldItems, setSoldItems] = useState<LoggedItem[]>([]);
+  //Which sale row is being edited, null means the modal is in "add new" mode
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
+  //Snapshot of the sale's qty/boQty before editing, so hasEnoughStock can add it back
+  //before checking stock (otherwise editing an order would count its own old qty against itself)
   const [editingOriginal, setEditingOriginal] = useState<{
     qty: number;
     boQty: number;
@@ -67,8 +82,11 @@ export function useStoreSales() {
     const priceById = new Map(
       ProductsDao.getAllProducts().map((p) => [p.id, p.price]),
     );
+
+    //Grab the morning inventory for the session
     const items = SessionInventoryDao.getBySessionId(sessionId);
 
+    //set it as the current products held with the price (just to display it)
     setProducts(
       items.map((item) => ({
         id: item.productId,
@@ -76,6 +94,7 @@ export function useStoreSales() {
         price: priceById.get(item.productId) ?? 0,
       })),
     );
+    //then we just compute the remaining items based on the sales count, morning inventory - sales per product
     setRemaining(computeRemaining(items, salesCounts));
   }, [visible, sessionId, sessionStoreId, salesCounts]);
 
@@ -103,6 +122,9 @@ export function useStoreSales() {
     setEditingOriginal(null);
   };
 
+  //Saves whatever is in the modal form: either a brand new sale, or an update to
+  //editingSaleId if we got here from onItemPress. Bails out quietly on bad input,
+  //only alerts the user when the stock check specifically fails.
   const addOrder = () => {
     if (!sessionStoreId || !selectedProduct) return;
     const { valid } = validateSaleInput({ qty: quantity, boQty, boReason });
@@ -138,17 +160,22 @@ export function useStoreSales() {
       addSale(saleInput);
     }
 
+    //refresh both the list and the counts so remaining stock reflects this order right away
     reloadSoldItems();
     refetchSalesCounts();
     resetForm();
     setVisible(false);
   };
 
+  //Opens the modal pre-filled with an existing sold item, so the user can edit it.
+  //idx is the row's position in soldItems (comes from the FlatList index).
   const onItemPress = (idx: number) => {
     const item = soldItems[idx];
     if (!item) return;
 
     setSelectedProduct(
+      //prefer today's product list (has the live price), fall back to what was saved on the sale
+      //in case the product was removed/renamed since this sale was logged
       products.find((p) => p.id === item.productId) ?? {
         id: item.productId,
         name: item.productName,

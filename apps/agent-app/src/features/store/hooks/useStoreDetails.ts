@@ -7,6 +7,12 @@ import {
 } from "../services/store-services";
 import type { SessionStoreDetails } from "../types/store-types";
 
+/**
+ * Simply fetches the store details via ID, then returns the confirm visit function which
+ * toggles visited column to true
+ *
+ *  @returns store data and the confirm visit function that connects to the service
+ */
 export function useStoreDetails() {
   const { sessionStoreId } = useLocalSearchParams<{
     sessionStoreId?: string;
