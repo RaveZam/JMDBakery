@@ -2,7 +2,7 @@ export type SessionRow = {
   id: string;
   routeName: string;
   sessionDate: string;
-  status: "ongoing" | "completed";
+  status: "ongoing" | "completed" | "cancelled";
   totalStores: number;
   visitedStores: number;
 };

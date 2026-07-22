@@ -4,6 +4,7 @@ export const SESSION_FILTERS = [
   { label: "All", value: "all" },
   { label: "Running", value: "ongoing" },
   { label: "Completed", value: "completed" },
+  { label: "Cancelled", value: "cancelled" },
 ] as const;
 
 export type SessionFilter = (typeof SESSION_FILTERS)[number]["value"];

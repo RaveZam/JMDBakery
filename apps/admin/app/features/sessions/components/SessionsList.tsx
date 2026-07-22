@@ -23,12 +23,16 @@ function EmptyBoard(): ReactElement {
   );
 }
 
+const EMPTY_FILTER_MESSAGES: Record<Exclude<SessionFilter, "all">, string> = {
+  ongoing: "No route is running right now.",
+  completed: "No completed sessions to show.",
+  cancelled: "No cancelled sessions to show.",
+};
+
 function EmptyFilter({ filter }: { filter: SessionFilter }): ReactElement {
   return (
     <div className="rounded-xl border border-dashed border-border/70 py-12 text-center text-sm text-muted-foreground">
-      {filter === "ongoing"
-        ? "No route is running right now."
-        : "No completed sessions to show."}
+      {filter === "all" ? "No sessions to show." : EMPTY_FILTER_MESSAGES[filter]}
     </div>
   );
 }

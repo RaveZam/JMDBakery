@@ -22,7 +22,7 @@ function mapSessionRow(row: SessionQueryRow): SessionRow {
     id: row.id,
     routeName: row.route_name,
     sessionDate: row.session_date,
-    status: row.status as "ongoing" | "completed",
+    status: row.status as "ongoing" | "completed" | "cancelled",
     totalStores: storeRows.length,
     visitedStores: storeRows.filter((r) => r.visited).length,
   };

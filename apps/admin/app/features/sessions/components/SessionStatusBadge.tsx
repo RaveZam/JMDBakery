@@ -4,11 +4,13 @@ import { Badge } from "@/components/ui/badge";
 export function SessionStatusBadge({
   status,
 }: {
-  status: "ongoing" | "completed";
+  status: "ongoing" | "completed" | "cancelled";
 }): ReactElement {
-  return (
-    <Badge variant={status === "completed" ? "success" : "warning"}>
-      {status === "completed" ? "Completed" : "Running"}
-    </Badge>
-  );
+  if (status === "completed") {
+    return <Badge variant="success">Completed</Badge>;
+  }
+  if (status === "cancelled") {
+    return <Badge variant="destructive">Cancelled</Badge>;
+  }
+  return <Badge variant="warning">Running</Badge>;
 }
