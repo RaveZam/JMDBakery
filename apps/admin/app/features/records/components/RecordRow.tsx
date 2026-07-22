@@ -9,11 +9,20 @@ const STATUS_BAR: Record<RecordStatus, string> = {
   none: "bg-border",
 };
 
-export function RecordRow({ record }: { record: SalesRecord }) {
+export function RecordRow({
+  record,
+  onClick,
+}: {
+  record: SalesRecord;
+  onClick: () => void;
+}) {
   const status = recordStatus(record);
 
   return (
-    <tr className="border-b border-border/50 last:border-0 hover:bg-muted/50">
+    <tr
+      className="cursor-pointer border-b border-border/50 last:border-0 hover:bg-muted/50"
+      onClick={onClick}
+    >
       <td className="w-1 p-0">
         <span className={`block h-full w-1 ${STATUS_BAR[status]}`} />
       </td>

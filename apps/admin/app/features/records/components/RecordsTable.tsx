@@ -1,10 +1,16 @@
+"use client";
+
+import { useState } from "react";
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
 import { Card } from "@/components/ui/card";
 import { RecordRow } from "./RecordRow";
 import { RecordsTableHeader } from "./RecordsTableHeader";
 import { RecordsEmptyState } from "./RecordsEmptyState";
+import { RecordDetailModal } from "./RecordDetailModal";
 
 export function RecordsTable({ records }: { records: SalesRecord[] }) {
+  const [selectedRecord, setSelectedRecord] = useState<SalesRecord | null>(null);
+
   if (records.length === 0) return <RecordsEmptyState />;
 
   return (
@@ -24,11 +30,16 @@ export function RecordsTable({ records }: { records: SalesRecord[] }) {
           <RecordsTableHeader />
           <tbody className="font-mono tabular-nums">
             {records.map((record) => (
-              <RecordRow key={record.id} record={record} />
+              <RecordRow
+                key={record.id}
+                record={record}
+                onClick={() => setSelectedRecord(record)}
+              />
             ))}
           </tbody>
         </table>
       </div>
+      <RecordDetailModal record={selectedRecord} onClose={() => setSelectedRecord(null)} />
     </Card>
   );
 }
