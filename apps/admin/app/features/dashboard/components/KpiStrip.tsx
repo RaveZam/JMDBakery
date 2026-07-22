@@ -1,6 +1,8 @@
-import { Banknote, PackageX, ShoppingBag, Store } from "lucide-react";
+import { Banknote, PackageX, Scale, ShoppingBag, Store } from "lucide-react";
 import { KpiCard } from "./KpiCard";
 import { computeSalesKPI } from "../helpers/computeSalesKPI";
+import { computeVarianceTotal } from "../helpers/computeVarianceTotal";
+import type { VarianceRecord } from "@/app/server/varianceData/getVarianceDataset";
 import { FilterRange, SalesKpiRecord } from "../types/dashboard-types";
 
 const FILTER_LABEL: Record<FilterRange, string> = {
@@ -9,14 +11,23 @@ const FILTER_LABEL: Record<FilterRange, string> = {
   "30days": "Past 30 Days",
 };
 
-export function KpiStrip({ data, filter }: { data: SalesKpiRecord[]; filter: FilterRange }) {
+export function KpiStrip({
+  data,
+  varianceData,
+  filter,
+}: {
+  data: SalesKpiRecord[];
+  varianceData: VarianceRecord[];
+  filter: FilterRange;
+}) {
   const { totalSales, avgPerStore, totalBO, finalBboRate, totalSold } =
     computeSalesKPI(data);
+  const varianceTotal = computeVarianceTotal(varianceData);
 
   const label = FILTER_LABEL[filter];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
       <KpiCard
         title={`Total Sales · ${label}`}
         primary={"₱" + totalSales.toLocaleString()}
@@ -48,6 +59,13 @@ export function KpiStrip({ data, filter }: { data: SalesKpiRecord[]; filter: Fil
         secondary={`${Number(totalBO).toLocaleString()} pieces`}
         accent="red"
         icon={PackageX}
+      />
+      <KpiCard
+        title={`Inventory Variance · ${label}`}
+        primary={varianceTotal.toLocaleString()}
+        unit="pcs"
+        accent="amber"
+        icon={Scale}
       />
     </div>
   );

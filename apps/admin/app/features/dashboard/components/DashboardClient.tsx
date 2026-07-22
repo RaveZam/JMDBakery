@@ -7,14 +7,20 @@ import { TopProductsSoldTable } from "@/app/features/dashboard/components/TopPro
 import { SalesLineChart } from "@/app/features/dashboard/components/SalesLineChart";
 import { DashboardHeader } from "@/app/features/dashboard/components/DashboardHeader";
 import { useSalesDataQuery } from "@/app/server/salesData/useSalesDataQuery";
+import { useVarianceDataQuery } from "@/app/server/varianceData/useVarianceDataQuery";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useDashboardFilter } from "../hooks/useDashboardFilter";
 
 export function DashboardClient() {
   const { data: allData, isLoading } = useSalesDataQuery();
-  const { filter, data, onFilterChange } = useDashboardFilter(allData);
+  const { data: allVarianceData, isLoading: isVarianceLoading } =
+    useVarianceDataQuery();
+  const { filter, data, varianceData, onFilterChange } = useDashboardFilter(
+    allData,
+    allVarianceData,
+  );
 
-  if (isLoading) {
+  if (isLoading || isVarianceLoading) {
     return (
       <>
         <DashboardHeader filter={filter} onFilterChange={onFilterChange} />
@@ -28,7 +34,7 @@ export function DashboardClient() {
       <DashboardHeader filter={filter} onFilterChange={onFilterChange} />
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto w-full max-w-300 space-y-6">
-          <KpiStrip data={data} filter={filter} />
+          <KpiStrip data={data} varianceData={varianceData} filter={filter} />
           <div className="grid gap-6 xl:grid-cols-[7fr_3fr]">
             <SalesLineChart data={data} filter={filter} />
             <TopProductsSoldTable data={data} />
