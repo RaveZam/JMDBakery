@@ -8,7 +8,7 @@ import {
 } from "react-native";
 
 import { useStartSession } from "@/src/features/sessions/hooks/useStartSession";
-import { StartSessionModal } from "./StartSessionModal";
+import { ConfirmActionModal } from "@/src/shared/components/ConfirmActionModal";
 
 export function StartSessionFooter(): React.JSX.Element {
   const { loading, start } = useStartSession();
@@ -28,7 +28,7 @@ export function StartSessionFooter(): React.JSX.Element {
           <Text style={styles.startBtnText}>Start Session</Text>
         )}
       </TouchableOpacity>
-      <StartSessionModal
+      <ConfirmActionModal
         visible={confirmVisible}
         onConfirm={() => {
           setConfirmVisible(false);
