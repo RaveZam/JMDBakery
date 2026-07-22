@@ -15,6 +15,7 @@ import { useColorScheme } from "@/src/shared/hooks/useColorScheme";
 import { Colors } from "@/src/shared/constants/Colors";
 import { useAuthGuard } from "@/src/shared/hooks/useAuthGuard";
 import { useAppReady } from "@/src/shared/hooks/useAppReady";
+import { SnackbarProvider } from "@/src/shared/hooks/useSnackbar";
 import { runOutboxSync } from "@/src/lib/sync/outbox";
 import "react-native-get-random-values";
 
@@ -41,7 +42,10 @@ export default function RootLayout() {
     const subscription = AppState.addEventListener(
       "change",
       (next: AppStateStatus) => {
-        if (appState.current.match(/inactive|background/) && next === "active") {
+        if (
+          appState.current.match(/inactive|background/) &&
+          next === "active"
+        ) {
           runOutboxSync();
         }
         appState.current = next;
@@ -67,20 +71,22 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: "none",
-            contentStyle: {
-              backgroundColor: Colors[colorScheme ?? "light"].background,
-            },
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="auth/sign-in" />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
+        <SnackbarProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: "none",
+              contentStyle: {
+                backgroundColor: Colors[colorScheme ?? "light"].background,
+              },
+            }}
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="auth/sign-in" />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </SnackbarProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
