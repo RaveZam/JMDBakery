@@ -1,5 +1,6 @@
-import { ScrollView, StyleSheet } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import { useHistoryList } from "../hooks/useHistoryList";
+import type { SessionRow } from "../hooks/useHistoryList";
 import { EmptyHistoryList } from "./EmptyHistoryList";
 import { HistorySessionCard } from "./HistorySessionCard";
 
@@ -7,27 +8,23 @@ export function HistorySessionList() {
   const { history } = useHistoryList();
 
   return (
-    <ScrollView
+    <FlatList
       style={styles.scroll}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
-    >
-      {history.sessions.length === 0 ? (
-        <EmptyHistoryList />
-      ) : (
-        history.sessions.map((s) => (
-          <HistorySessionCard
-            key={s.id}
-            session={s}
-            onDeleted={history.refresh}
-          />
-        ))
+      data={history.sessions}
+      keyExtractor={(s: SessionRow) => s.id}
+      renderItem={({ item }) => (
+        <HistorySessionCard session={item} onDeleted={history.refresh} />
       )}
-    </ScrollView>
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      ListEmptyComponent={EmptyHistoryList}
+    />
   );
 }
 
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, gap: 10 },
+  scrollContent: { padding: 16 },
+  separator: { height: 10 },
 });
