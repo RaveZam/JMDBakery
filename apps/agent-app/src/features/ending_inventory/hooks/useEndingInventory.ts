@@ -1,16 +1,32 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
 import EndingInventoryDao from "@/src/lib/dao/ending-inventory-dao";
 import { countSoldByProduct } from "@/src/features/store/core/count-sold-by-product";
 import { computeRemaining } from "@/src/features/store/core/compute-remaining";
 import { getSalesByRouteSession } from "@/src/features/store/services/sales-services";
-import { runOutboxSync } from "@/src/lib/sync/outbox";
 import { upsertEndingInventoryQty } from "../services/ending-inventory-save-service";
 import { mergeEndingInventoryRows } from "../core/merge-ending-inventory-rows";
 import type { EndingInventoryRow } from "../types/ending-inventory-types";
 
+/**
+ * Loads and manages the ending-inventory count screen for the current route
+ * session, read from `sessionId`/`routeName` navigation params.
+ *
+ * @returns `{ endingInventory }` where:
+ *          - `sessionId` / `routeName` — the session being counted, from route params.
+ *          - `items` — current `EndingInventoryRow[]` shown on screen (see
+ *            `mergeEndingInventoryRows` for how a row's initial values are derived).
+ *          - `saving` — true while `save()`'s persistence is in flight.
+ *          - `updateQty(productId, delta)` — adjusts one row's quantity by `delta`
+ *            (e.g. +1/-1 from a stepper) and immediately persists just that row.
+ *          - `save()` — persists every row's current quantity, e.g. for a final
+ *            "Submit" action.
+ * @sideEffects On mount (and whenever `sessionId` changes), reloads rows from the
+ *              local `session_inventory` / `sales` / `ending_inventory` tables.
+ *              `updateQty` and `save` write through to SQLite and the outbox via
+ *              `upsertEndingInventoryQty`.
+ */
 export function useEndingInventory() {
   const params = useLocalSearchParams<{
     sessionId?: string;
@@ -26,8 +42,11 @@ export function useEndingInventory() {
   const load = useCallback(() => {
     if (!sessionId) return;
 
+    // what was stocked on the truck this morning — defines which products get rows
     const morningItems = SessionInventoryDao.getBySessionId(sessionId);
+    // e.g. { "prod_123": { sold: 5, bo: 2 } }, tallied from this session's sales
     const salesCounts = countSoldByProduct(getSalesByRouteSession(sessionId));
+    // expected count left per product: morning qty - sold - bo, e.g. { "prod_123": 4 }
     const remaining = computeRemaining(
       morningItems.map((item) => ({
         productId: item.productId,
@@ -36,6 +55,7 @@ export function useEndingInventory() {
       salesCounts,
     );
 
+    // merges morning stock + expected counts + any already-saved counts into the rows shown on screen
     setItems(
       mergeEndingInventoryRows(
         morningItems,
@@ -55,7 +75,9 @@ export function useEndingInventory() {
       const item = items.find((it) => it.productId === productId);
       if (!item) return;
 
+      // never let a stepper tap push the count below 0
       const quantity = Math.max(0, item.quantity + delta);
+      // persist immediately so a single +/- tap isn't lost if the app closes before "save"
       const id = upsertEndingInventoryQty({
         id: item.id,
         sessionId,
@@ -64,6 +86,7 @@ export function useEndingInventory() {
         quantity,
       });
 
+      // id may have just been generated for the first time (row had no id yet), so store it back
       setItems((prev) =>
         prev.map((it) =>
           it.productId === productId ? { ...it, id, quantity } : it,
@@ -73,7 +96,7 @@ export function useEndingInventory() {
     [sessionId, items],
   );
 
-  const save = useCallback(async () => {
+  const save = useCallback(() => {
     if (!sessionId) return;
     setSaving(true);
     try {
@@ -91,21 +114,6 @@ export function useEndingInventory() {
         }),
       }));
       setItems(persisted);
-
-      const { failed } = await runOutboxSync();
-      if (failed > 0) {
-        Alert.alert(
-          "Some items didn't sync",
-          "They're saved on this device and will retry automatically.",
-        );
-      } else {
-        Alert.alert("Saved", "Ending inventory sent to Supabase.");
-      }
-    } catch {
-      Alert.alert(
-        "Saved locally",
-        "Couldn't reach Supabase right now. It's saved on this device and will retry automatically.",
-      );
     } finally {
       setSaving(false);
     }
