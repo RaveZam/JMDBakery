@@ -16,6 +16,7 @@ function makeRecord(overrides: Partial<SalesRecord> = {}): SalesRecord {
     boQty: 0,
     unitPrice: 10,
     total: 100,
+    boReason: null,
     ...overrides,
   };
 }

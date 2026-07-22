@@ -14,6 +14,7 @@ export type SalesRecord = {
   boQty: number;
   unitPrice: number;
   total: number;
+  boReason: string | null;
 };
 
 type RawSale = {
@@ -24,6 +25,7 @@ type RawSale = {
   quantity_bo: number | null;
   snapshot_price: number | null;
   total: number | null;
+  bo_reason: string | null;
 };
 
 type RawSessionStore = {
@@ -66,6 +68,7 @@ function mapSessionStore(
     boQty: sale.quantity_bo ?? 0,
     unitPrice: sale.snapshot_price ?? 0,
     total: sale.total ?? 0,
+    boReason: sale.bo_reason,
   }));
 }
 

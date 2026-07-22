@@ -17,6 +17,7 @@ function makeRecord(id: string): SalesRecord {
     boQty: 0,
     unitPrice: 10,
     total: 100,
+    boReason: null,
   };
 }
 

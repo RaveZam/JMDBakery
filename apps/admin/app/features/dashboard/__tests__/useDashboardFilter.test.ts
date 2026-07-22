@@ -17,6 +17,7 @@ function makeSale(date: string, overrides: Partial<SalesRecord> = {}): SalesReco
     boQty: 0,
     unitPrice: 10,
     total: 100,
+    boReason: null,
     ...overrides,
   };
 }
