@@ -9,10 +9,12 @@ import { useModalDismiss } from "../hooks/useModalDismiss";
 import { useProductForm } from "../hooks/useProductForm";
 import { ModalDialog } from "./ModalDialog";
 import { ModalFooterActions } from "./ModalFooterActions";
+import { PriceModifierSection } from "./PriceModifierSection";
 import { ProductFormFields } from "./ProductFormFields";
 
 type ProductFormModalProps = {
   title?: string;
+  productId?: string;
   initialValues?: ProductInput;
   onClose: () => void;
   onSubmit: (input: ProductInput) => void;
@@ -20,6 +22,7 @@ type ProductFormModalProps = {
 
 export function ProductFormModal({
   title = "Add Product",
+  productId,
   initialValues,
   onClose,
   onSubmit,
@@ -48,6 +51,7 @@ export function ProductFormModal({
             onPriceChange={form.setPrice}
             error={form.error}
           />
+          {productId ? <PriceModifierSection productId={productId} /> : null}
         </div>
         <ModalFooterActions onCancel={onClose} />
       </form>

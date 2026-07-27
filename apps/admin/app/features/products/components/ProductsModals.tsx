@@ -22,6 +22,7 @@ export function ProductsModals({ state }: ProductsModalsProps): ReactElement {
       {state.editing ? (
         <ProductFormModal
           title="Edit Product"
+          productId={state.editing.id}
           initialValues={{ name: state.editing.name, price: state.editing.price }}
           onClose={() => state.setEditing(null)}
           onSubmit={state.handleSave}
