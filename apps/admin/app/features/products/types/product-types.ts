@@ -14,3 +14,15 @@ export type CatalogSummary = {
   minPrice: number | null;
   maxPrice: number | null;
 };
+
+export type PriceModifier = {
+  id: string;
+  productId: string;
+  keyword: string;
+  modifier: number;
+};
+
+export type PriceModifierInput = {
+  keyword: string;
+  modifier: number;
+};
