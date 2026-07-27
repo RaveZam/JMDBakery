@@ -64,6 +64,13 @@ export async function initDb(): Promise<void> {
       price REAL NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS province_price_modifiers (
+      id               TEXT PRIMARY KEY,
+      product_id       TEXT NOT NULL,
+      province_keyword TEXT NOT NULL,
+      price_modifier   REAL NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS sales (
       id               TEXT PRIMARY KEY,
       session_store_id TEXT NOT NULL REFERENCES session_stores(id),

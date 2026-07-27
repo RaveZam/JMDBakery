@@ -1,6 +1,7 @@
 import { supabase } from "@/src/lib/supabase";
 import { isWifiConnected } from "@/src/lib/network";
 import { ProductsDao } from "@/src/lib/dao/products-dao";
+import { ProvincePriceModifiersDao } from "@/src/lib/dao/province-price-modifiers-dao";
 import RoutesDao from "@/src/lib/dao/routes-dao";
 import ProvincesDao from "@/src/lib/dao/province-dao";
 import StoresDao from "@/src/lib/dao/store-dao";
@@ -22,6 +23,7 @@ export async function runDownloadSync(_userId?: string): Promise<void> {
   if (!(await isWifiConnected())) return;
 
   await downloadProducts();
+  await downloadProvincePriceModifiers();
 }
 
 /**
@@ -65,6 +67,28 @@ async function downloadProducts(): Promise<void> {
       product.id,
       product.product_name,
       product.product_price,
+    );
+  }
+}
+
+async function downloadProvincePriceModifiers(): Promise<void> {
+  const { data, error } = await supabase
+    .from("province_price_modifiers")
+    .select("*");
+  if (error || !data) {
+    console.warn(
+      "[download] failed to fetch province price modifiers:",
+      error?.message,
+    );
+    return;
+  }
+
+  for (const modifier of data) {
+    ProvincePriceModifiersDao.upsertProvincePriceModifier(
+      modifier.id,
+      modifier.product_id,
+      modifier.province_keyword,
+      modifier.price_modifier,
     );
   }
 }
