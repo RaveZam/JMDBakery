@@ -94,7 +94,6 @@ test("enqueues route_session + session_store outbox rows", async () => {
   expect(storeRows).toHaveLength(1);
   expect(JSON.parse(storeRows[0].payload)).toMatchObject({
     route_session_id: sessionId,
-    province_id: provinceId,
     visited: false,
   });
 });

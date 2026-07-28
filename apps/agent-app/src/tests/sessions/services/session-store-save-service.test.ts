@@ -55,7 +55,12 @@ test("inserts a session_stores row with province_id", () => {
   });
 });
 
-test("enqueues a session_store create outbox row with province_id in payload", () => {
+// province_id is deliberately left out of the remote payload: the server's
+// session_stores_province_id_fkey rejects any province the device knows about
+// but the server does not (deleted route/province), which blocks the row —
+// and every sale hanging off it — forever. Nothing reads the column remotely;
+// the province is reachable through store_id.
+test("enqueues a session_store create outbox row without province_id in payload", () => {
   const routeId = seedRoute();
   const provinceId = seedProvince(routeId);
   const storeId = seedStore(provinceId);
@@ -76,7 +81,7 @@ test("enqueues a session_store create outbox row with province_id in payload", (
   expect(payload).toMatchObject({
     route_session_id: sessionId,
     store_id: storeId,
-    province_id: provinceId,
     visited: false,
   });
+  expect(payload).not.toHaveProperty("province_id");
 });

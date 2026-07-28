@@ -23,6 +23,10 @@ export function insertSessionStore(input: InsertSessionStoreInput): void {
     provinceId: input.store.province_id,
     id,
   });
+  // province_id stays local. Remotely it is redundant (reachable through
+  // store_id) but carries session_stores_province_id_fkey, which rejects any
+  // province this device still knows about after it was deleted server-side —
+  // stranding the row and every sale that references it.
   enqueueOutbox({
     entityType: "session_store",
     entityId: id,
@@ -31,7 +35,6 @@ export function insertSessionStore(input: InsertSessionStoreInput): void {
       id,
       route_session_id: input.sessionId,
       store_id: input.store.id,
-      province_id: input.store.province_id,
       visited: false,
       created_at: input.createdAt,
     },
