@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
+import { ProvincePriceModifiersDao } from "@/src/lib/dao/province-price-modifiers-dao";
 import {
   PRESET_REASONS,
   type LoggedItem,
@@ -15,6 +16,7 @@ import {
 import { computeRemaining } from "../core/compute-remaining";
 import { validateSaleInput } from "../core/validate-sale-input";
 import { hasEnoughStock } from "../core/has-enough-stock";
+import { applyProvincePriceModifier } from "../core/apply-province-price-modifier";
 import {
   addSale,
   getSalesByRouteSession,
@@ -22,6 +24,7 @@ import {
   removeSale,
   updateSale,
 } from "../services/sales-services";
+import { getSessionStoreById } from "../services/store-services";
 
 /**
  * Drives the store distribution log screen: the running sales list for a store visit,
@@ -82,11 +85,23 @@ export function useStoreSales() {
     //products table. That also means a product deleted mid-session still prices.
     const items = SessionInventoryDao.getBySessionId(sessionId);
 
+    //Province price modifiers (e.g. a keyword like "tuguegarao" knocking a peso
+    //off product X) apply on top of that snapshotted price, based on this
+    //session store's province.
+    const storeProvince =
+      getSessionStoreById(sessionStoreId)?.store_province ?? null;
+    const modifiers = ProvincePriceModifiersDao.getAllProvincePriceModifiers();
+
     setProducts(
       items.map((item) => ({
         id: item.productId,
         name: item.productName,
-        price: item.price,
+        price: applyProvincePriceModifier(
+          item.price,
+          item.productId,
+          storeProvince,
+          modifiers,
+        ),
       })),
     );
     //then we just compute the remaining items based on the sales count, morning inventory - sales per product

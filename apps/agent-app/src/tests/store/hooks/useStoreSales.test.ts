@@ -38,6 +38,17 @@ jest.mock("@/src/features/store/services/sales-services");
 const mockedByRoute = getSalesByRouteSession as jest.Mock;
 const mockedByStore = getSalesBySessionStore as jest.Mock;
 
+// This session store has no province modifiers in play by default.
+jest.mock("@/src/features/store/services/store-services", () => ({
+  getSessionStoreById: jest.fn(() => ({ store_province: null })),
+}));
+
+jest.mock("@/src/lib/dao/province-price-modifiers-dao", () => ({
+  ProvincePriceModifiersDao: {
+    getAllProvincePriceModifiers: jest.fn(() => []),
+  },
+}));
+
 function makeSold(overrides: Partial<LoggedItem> = {}): LoggedItem {
   return {
     saleId: "sale-1",
@@ -68,6 +79,23 @@ test("exposes products with prices and remaining stock net of session sales", ()
   ]);
   // 10 stocked - 2 sold - 1 bad order
   expect(result.current.inventory.remaining).toEqual({ p1: 7 });
+});
+
+test("applies a matching province price modifier to the product's price", () => {
+  jest
+    .requireMock("@/src/features/store/services/store-services")
+    .getSessionStoreById.mockReturnValue({ store_province: "Isabela - Tuguegarao" });
+  jest
+    .requireMock("@/src/lib/dao/province-price-modifiers-dao")
+    .ProvincePriceModifiersDao.getAllProvincePriceModifiers.mockReturnValue([
+      { product_id: "p1", province_keyword: "tuguegarao", price_modifier: -1 },
+    ]);
+
+  const { result } = renderHook(() => useStoreSales());
+
+  expect(result.current.inventory.products).toEqual([
+    { id: "p1", name: "Pandesal", price: 9 },
+  ]);
 });
 
 test("addOrder saves the sale, resets the form, and closes the modal", () => {

@@ -29,6 +29,14 @@ jest.mock("@/src/lib/dao/session-inventory-dao", () => ({
 
 jest.mock("@/src/features/store/services/sales-services");
 
+jest.mock("@/src/features/store/services/store-services", () => ({
+  getSessionStoreById: () => ({ store_province: null }),
+}));
+
+jest.mock("@/src/lib/dao/province-price-modifiers-dao", () => ({
+  ProvincePriceModifiersDao: { getAllProvincePriceModifiers: () => [] },
+}));
+
 beforeEach(() => {
   jest.clearAllMocks();
   (getSalesByRouteSession as jest.Mock).mockReturnValue([]);
