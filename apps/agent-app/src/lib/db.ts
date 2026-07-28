@@ -58,6 +58,8 @@ export async function initDb(): Promise<void> {
       UNIQUE(route_session_id, store_id)
     );
 
+    -- No deleted_at here: the server soft-deletes so the change can travel in an
+    -- incremental pull, but locally the row is simply removed on arrival.
     CREATE TABLE IF NOT EXISTS products (
       id    TEXT PRIMARY KEY,
       name  TEXT NOT NULL,
@@ -69,6 +71,13 @@ export async function initDb(): Promise<void> {
       product_id       TEXT NOT NULL,
       province_keyword TEXT NOT NULL,
       price_modifier   REAL NOT NULL
+    );
+
+    -- One row per server table we pull incrementally, holding the newest
+    -- updated_at we've already applied. See src/lib/sync/download.ts.
+    CREATE TABLE IF NOT EXISTS sync_state (
+      table_name     TEXT PRIMARY KEY,
+      last_synced_at TEXT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS sales (

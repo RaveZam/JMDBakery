@@ -32,6 +32,7 @@ export function resetDb(): void {
   const db = getDb();
   // Children before parents — foreign_keys is ON in initDb().
   db.runSync("DELETE FROM outbox");
+  db.runSync("DELETE FROM sync_state");
   db.runSync("DELETE FROM sales");
   db.runSync("DELETE FROM session_inventory");
   db.runSync("DELETE FROM ending_inventory");

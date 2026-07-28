@@ -17,6 +17,7 @@ import { useAuthGuard } from "@/src/shared/hooks/useAuthGuard";
 import { useAppReady } from "@/src/shared/hooks/useAppReady";
 import { SnackbarProvider } from "@/src/shared/hooks/useSnackbar";
 import { runOutboxSync } from "@/src/lib/sync/outbox";
+import { runDownloadSync } from "@/src/lib/sync/download";
 import "react-native-get-random-values";
 
 const SYNC_INTERVAL_MS = 5_000;
@@ -33,7 +34,8 @@ export default function RootLayout() {
   useAppReady(checkingSession);
 
   // Drain the outbox once the DB + session are ready: on launch, on return to
-  // foreground, and on a periodic interval while the app is active.
+  // foreground, and on a periodic interval while the app is active. Returning
+  // to foreground also pulls server-side changes back down.
   useEffect(() => {
     if (checkingSession) return;
 
@@ -48,6 +50,10 @@ export default function RootLayout() {
           next === "active"
         ) {
           runOutboxSync();
+          // Also pull down admin-side edits (product prices, deletions). Cheap:
+          // it only fetches rows newer than the last sync. Launch is already
+          // covered by useAuthGuard.
+          runDownloadSync();
         }
         appState.current = next;
       },

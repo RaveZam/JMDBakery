@@ -21,4 +21,9 @@ export const ProvincePriceModifiersDao = {
       [id, productId, provinceKeyword, priceModifier],
     );
   },
+
+  /** Removes a modifier the server has deleted. Nothing references it. */
+  deleteProvincePriceModifier(id: string): void {
+    getDb().runSync(`DELETE FROM province_price_modifiers WHERE id = ?`, [id]);
+  },
 };

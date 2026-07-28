@@ -21,4 +21,11 @@ export const ProductsDao = {
       [id, name, price],
     );
   },
+
+  /**
+   * This only runs when a soft deletion occurs from the download.ts
+   */
+  deleteProduct(id: string): void {
+    getDb().runSync(`DELETE FROM products WHERE id = ?`, [id]);
+  },
 };
