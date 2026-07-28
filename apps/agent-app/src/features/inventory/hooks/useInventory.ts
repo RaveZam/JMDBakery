@@ -47,6 +47,7 @@ export function useInventory(): { inventory: Inventory } {
           sessionId,
           productId,
           productName: product.name,
+          price: product.price,
           qty: delta,
         });
         refreshInventory();
@@ -68,6 +69,7 @@ export function useInventory(): { inventory: Inventory } {
           sessionId,
           productId,
           productName: product.name,
+          price: product.price,
           qty,
         });
       }

@@ -23,6 +23,7 @@ function seedInventoryItem(sessionId: string, productId: string, qty = 10): stri
     sessionId,
     productId,
     snapshotName: "Pandesal",
+    snapshotPrice: 10,
     quantity: qty,
     createdAt: "2026-06-30T00:00:00.000Z",
     id,
@@ -38,6 +39,7 @@ test("add inserts the item and enqueues a create with the snake_case payload", (
     sessionId,
     productId,
     productName: "Pandesal",
+    price: 10,
     qty: 12,
   });
 
@@ -46,6 +48,7 @@ test("add inserts the item and enqueues a create with the snake_case payload", (
   expect(items[0]).toMatchObject({
     productId,
     productName: "Pandesal",
+    price: 10,
     qty: 12,
   });
 

@@ -24,6 +24,7 @@ function makeItem(overrides: Partial<InventoryItem> = {}): InventoryItem {
     inventoryId: "inv-1",
     productId: "prod-1",
     productName: "Pandesal",
+    price: 10,
     qty: 12,
     ...overrides,
   };

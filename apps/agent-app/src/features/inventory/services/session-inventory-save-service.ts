@@ -8,6 +8,7 @@ type AddInventoryInput = {
   sessionId: string;
   productId: string;
   productName: string;
+  price: number;
   qty: number;
 };
 
@@ -46,6 +47,7 @@ export function addMorningInventoryItem(input: AddInventoryInput): void {
       sessionId: input.sessionId,
       productId: input.productId,
       snapshotName: input.productName,
+      snapshotPrice: input.price,
       quantity: input.qty,
       createdAt,
       id,
@@ -59,6 +61,7 @@ export function addMorningInventoryItem(input: AddInventoryInput): void {
         route_session_id: input.sessionId,
         product_id: input.productId,
         snapshot_product_name: input.productName,
+        snapshot_price: input.price,
         quantity: input.qty,
         created_at: createdAt,
       },

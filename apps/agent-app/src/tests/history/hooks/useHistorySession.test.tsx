@@ -52,6 +52,7 @@ function seedSessionDetail() {
     sessionId,
     productId,
     snapshotName: "Pandesal",
+    snapshotPrice: 10,
     quantity: 20,
     createdAt: "2026-06-30T00:00:00.000Z",
   });

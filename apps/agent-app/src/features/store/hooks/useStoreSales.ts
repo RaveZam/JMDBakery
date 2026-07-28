@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
-import { ProductsDao } from "@/src/lib/dao/products-dao";
 import {
   PRESET_REASONS,
   type LoggedItem,
@@ -78,20 +77,16 @@ export function useStoreSales() {
   useEffect(() => {
     if (!sessionStoreId || !sessionId) return;
 
-    //maps out the price for each product since we dont store price in session inventory
-    const priceById = new Map(
-      ProductsDao.getAllProducts().map((p) => [p.id, p.price]),
-    );
-
-    //Grab the morning inventory for the session
+    //Grab the morning inventory for the session — it already carries the name and
+    //price snapshotted when the stock was loaded, so nothing here needs the
+    //products table. That also means a product deleted mid-session still prices.
     const items = SessionInventoryDao.getBySessionId(sessionId);
 
-    //set it as the current products held with the price (just to display it)
     setProducts(
       items.map((item) => ({
         id: item.productId,
         name: item.productName,
-        price: priceById.get(item.productId) ?? 0,
+        price: item.price,
       })),
     );
     //then we just compute the remaining items based on the sales count, morning inventory - sales per product

@@ -17,7 +17,8 @@ jest.mock("expo-router", () => ({
   }),
 }));
 
-// Morning truck stock: 10 Pandesal. Prices come from the products table.
+// Morning truck stock: 10 Pandesal at ₱10. Name and price both come from the
+// inventory snapshot — the hook never reads the products table.
 jest.mock("@/src/lib/dao/session-inventory-dao", () => ({
   __esModule: true,
   default: {
@@ -26,14 +27,10 @@ jest.mock("@/src/lib/dao/session-inventory-dao", () => ({
         inventoryId: "inv-1",
         productId: "p1",
         productName: "Pandesal",
+        price: 10,
         qty: 10,
       },
     ],
-  },
-}));
-jest.mock("@/src/lib/dao/products-dao", () => ({
-  ProductsDao: {
-    getAllProducts: () => [{ id: "p1", name: "Pandesal", price: 10 }],
   },
 }));
 

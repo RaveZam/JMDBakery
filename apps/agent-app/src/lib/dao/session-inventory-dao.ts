@@ -6,6 +6,8 @@ export type InventoryItem = {
   inventoryId: string;
   productId: string;
   productName: string;
+  /** Price when the item was loaded; 0 for rows written before it was recorded. */
+  price: number;
   qty: number;
 };
 
@@ -15,9 +17,10 @@ const SessionInventoryDao = {
       id: string;
       product_id: string;
       snapshot_product_name: string;
+      snapshot_price: number | null;
       quantity: number;
     }>(
-      `SELECT id, product_id, snapshot_product_name, quantity
+      `SELECT id, product_id, snapshot_product_name, snapshot_price, quantity
        FROM session_inventory
        WHERE route_session_id = ?
        ORDER BY created_at ASC`,
@@ -27,6 +30,7 @@ const SessionInventoryDao = {
       inventoryId: r.id,
       productId: r.product_id,
       productName: r.snapshot_product_name,
+      price: r.snapshot_price ?? 0,
       qty: r.quantity,
     }));
   },
@@ -56,14 +60,23 @@ const SessionInventoryDao = {
     sessionId: string;
     productId: string;
     snapshotName: string;
+    snapshotPrice: number;
     quantity: number;
     createdAt: string;
     id?: string;
   }) {
     const id = input.id ?? generateUUID();
     getDb().runSync(
-      `INSERT INTO session_inventory (id, route_session_id, product_id, snapshot_product_name, quantity, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
-      [id, input.sessionId, input.productId, input.snapshotName, input.quantity, input.createdAt],
+      `INSERT INTO session_inventory (id, route_session_id, product_id, snapshot_product_name, snapshot_price, quantity, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        input.sessionId,
+        input.productId,
+        input.snapshotName,
+        input.snapshotPrice,
+        input.quantity,
+        input.createdAt,
+      ],
     );
     return id;
   },
@@ -85,6 +98,7 @@ const SessionInventoryDao = {
       route_session_id: string;
       product_id: string;
       snapshot_product_name: string;
+      snapshot_price: number | null;
       quantity: number;
       created_at: string;
     }>(`SELECT * FROM session_inventory`);
