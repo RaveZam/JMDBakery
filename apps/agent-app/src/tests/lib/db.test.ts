@@ -1,5 +1,15 @@
-import { createSchema, resetDb } from "@/src/test-utils/db-test-helpers";
-import { getDb } from "@/src/lib/db";
+import {
+  createSchema,
+  resetDb,
+  seedProduct,
+  seedProvince,
+  seedRoute,
+  seedRouteSession,
+  seedSessionStore,
+  seedStore,
+} from "@/src/test-utils/db-test-helpers";
+import { getDb, initDb } from "@/src/lib/db";
+import SalesDao from "@/src/lib/dao/sales-dao";
 import { generateUUID } from "@/src/lib/uuid";
 
 function insertSession(status: string): string {
@@ -10,6 +20,63 @@ function insertSession(status: string): string {
     [id, status],
   );
   return id;
+}
+
+/** Puts back the pre-migration sales table, FK to products included. */
+function restoreLegacySalesTable(): void {
+  getDb().runSync("DROP TABLE sales");
+  getDb().runSync(`
+    CREATE TABLE sales (
+      id               TEXT PRIMARY KEY,
+      session_store_id TEXT NOT NULL REFERENCES session_stores(id),
+      product_id       TEXT NOT NULL REFERENCES products(id),
+      snapshot_name    TEXT NOT NULL,
+      snapshot_price   REAL NOT NULL,
+      quantity_sold    INTEGER NOT NULL DEFAULT 0,
+      quantity_bo      INTEGER NOT NULL DEFAULT 0,
+      bo_reason        TEXT,
+      total            REAL GENERATED ALWAYS AS (snapshot_price * quantity_sold) VIRTUAL,
+      created_at       TEXT NOT NULL
+    )
+  `);
+}
+
+/**
+ * Puts back the pre-migration session_inventory table — no snapshot_price — so
+ * the ALTER actually fires and its one-shot backfill runs with it.
+ */
+function restoreLegacySessionInventoryTable(): void {
+  getDb().runSync("DROP TABLE session_inventory");
+  getDb().runSync(`
+    CREATE TABLE session_inventory (
+      id                    TEXT PRIMARY KEY,
+      route_session_id      TEXT NOT NULL REFERENCES route_sessions(id) ON DELETE CASCADE,
+      product_id            TEXT NOT NULL,
+      snapshot_product_name TEXT NOT NULL,
+      quantity              INTEGER NOT NULL DEFAULT 0,
+      created_at            TEXT NOT NULL,
+      UNIQUE(route_session_id, product_id)
+    )
+  `);
+}
+
+function seedLegacySale(): void {
+  const sessionStoreId = seedSessionStore(
+    seedRouteSession(),
+    seedStore(seedProvince(seedRoute())),
+  );
+  seedProduct("prod-legacy", "Ensaymada", 15);
+  SalesDao.insertSale({
+    id: "sale-legacy",
+    sessionStoreId,
+    productId: "prod-legacy",
+    snapshotName: "Ensaymada",
+    snapshotPrice: 15,
+    quantitySold: 3,
+    quantityBo: 0,
+    boReason: "",
+    createdAt: "2026-07-27T11:00:00.000Z",
+  });
 }
 
 beforeAll(async () => {
@@ -40,6 +107,99 @@ test("allows a new ongoing session once the previous is cancelled", () => {
     [first],
   );
   expect(() => insertSession("ongoing")).not.toThrow();
+});
+
+test("sales has no foreign key to products, so a sold product stays deletable", () => {
+  const foreignKeys = getDb().getAllSync<{ table: string }>(
+    "PRAGMA foreign_key_list(sales)",
+  );
+  expect(foreignKeys.map((foreignKey) => foreignKey.table)).toEqual([
+    "session_stores",
+  ]);
+});
+
+test("rebuilding sales drops the old products FK and keeps the rows", async () => {
+  restoreLegacySalesTable();
+  seedLegacySale();
+
+  await initDb();
+
+  expect(
+    getDb()
+      .getAllSync<{ table: string }>("PRAGMA foreign_key_list(sales)")
+      .map((foreignKey) => foreignKey.table),
+  ).toEqual(["session_stores"]);
+  // Rows survive the rebuild, generated column included.
+  expect(
+    getDb().getFirstSync<{ total: number }>(
+      "SELECT total FROM sales WHERE id = 'sale-legacy'",
+    )?.total,
+  ).toBe(45);
+  // And the product it points at is now deletable.
+  expect(() =>
+    getDb().runSync("DELETE FROM products WHERE id = 'prod-legacy'"),
+  ).not.toThrow();
+});
+
+test("backfills snapshot_price on inventory rows written before the column", async () => {
+  const sessionId = seedRouteSession();
+  seedProduct("prod-priced", "Ensaymada", 15);
+  restoreLegacySessionInventoryTable();
+  getDb().runSync(
+    `INSERT INTO session_inventory
+       (id, route_session_id, product_id, snapshot_product_name, quantity, created_at)
+     VALUES ('inv-legacy', ?, 'prod-priced', 'Ensaymada', 4, '2026-07-27T00:00:00Z')`,
+    [sessionId],
+  );
+
+  await initDb();
+
+  expect(
+    getDb().getFirstSync<{ snapshot_price: number | null }>(
+      "SELECT snapshot_price FROM session_inventory WHERE id = 'inv-legacy'",
+    )?.snapshot_price,
+  ).toBe(15);
+});
+
+test("leaves snapshot_price null when the product is already gone", async () => {
+  const sessionId = seedRouteSession();
+  restoreLegacySessionInventoryTable();
+  getDb().runSync(
+    `INSERT INTO session_inventory
+       (id, route_session_id, product_id, snapshot_product_name, quantity, created_at)
+     VALUES ('inv-orphan', ?, 'prod-deleted', 'Ensaymada', 4, '2026-07-27T00:00:00Z')`,
+    [sessionId],
+  );
+
+  await initDb();
+
+  expect(
+    getDb().getFirstSync<{ snapshot_price: number | null }>(
+      "SELECT snapshot_price FROM session_inventory WHERE id = 'inv-orphan'",
+    )?.snapshot_price,
+  ).toBeNull();
+});
+
+// A NULL price on a later launch means the product is gone, not that the
+// migration is pending — stamping today's price on it would contradict
+// "price at load time".
+test("does not re-run the backfill once the column exists", async () => {
+  const sessionId = seedRouteSession();
+  seedProduct("prod-priced", "Ensaymada", 15);
+  getDb().runSync(
+    `INSERT INTO session_inventory
+       (id, route_session_id, product_id, snapshot_product_name, quantity, created_at)
+     VALUES ('inv-null', ?, 'prod-priced', 'Ensaymada', 4, '2026-07-27T00:00:00Z')`,
+    [sessionId],
+  );
+
+  await initDb();
+
+  expect(
+    getDb().getFirstSync<{ snapshot_price: number | null }>(
+      "SELECT snapshot_price FROM session_inventory WHERE id = 'inv-null'",
+    )?.snapshot_price,
+  ).toBeNull();
 });
 
 test("route_sessions has conducted_by_name column", () => {
