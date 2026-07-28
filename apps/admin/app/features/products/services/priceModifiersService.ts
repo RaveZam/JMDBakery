@@ -47,6 +47,7 @@ export async function getPriceModifiers(
     .from("province_price_modifiers")
     .select("id, product_id, province_keyword, price_modifier")
     .eq("product_id", productId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: true });
 
   if (error) throw new Error(error.message);
@@ -111,16 +112,20 @@ export async function updatePriceModifier(
 }
 
 /**
- * Permanently deletes a price modifier.
+ * Soft-deletes a price modifier by stamping deleted_at. The row stays in the
+ * table so the agent app's incremental pull (which fetches rows by updated_at)
+ * can see the deletion and drop its local copy. Every read here filters
+ * deleted_at, so a soft-deleted modifier is invisible to callers, and the
+ * keyword uniqueness index ignores it — the same keyword can be re-added.
  *
  * @param id - The price modifier's own id.
- * @throws Error with the raw Supabase message if the delete fails.
+ * @throws Error with the raw Supabase message if the update fails.
  */
 export async function deletePriceModifier(id: string): Promise<void> {
   const supabase = await createClient();
   const { error } = await supabase
     .from("province_price_modifiers")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) throw new Error(error.message);

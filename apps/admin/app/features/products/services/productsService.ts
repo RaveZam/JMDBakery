@@ -8,6 +8,7 @@ export async function getProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
     .select("id, product_name, product_price")
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -46,9 +47,26 @@ export async function updateProduct(id: string, input: ProductInput): Promise<vo
   if (error) throw new Error(error.message);
 }
 
+// Soft delete, not a real delete: the agent app pulls changed rows by
+// updated_at, and a row that vanishes outright never shows up in that pull, so
+// the product would stay on agents' phones forever. Its price modifiers go with
+// it so they don't outlive the product they belong to.
 export async function deleteProduct(id: string): Promise<void> {
   const supabase = await createClient();
-  const { error } = await supabase.from("products").delete().eq("id", id);
+  const deletedAt = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("products")
+    .update({ deleted_at: deletedAt })
+    .eq("id", id);
 
   if (error) throw new Error(error.message);
+
+  const { error: modifiersError } = await supabase
+    .from("province_price_modifiers")
+    .update({ deleted_at: deletedAt })
+    .eq("product_id", id)
+    .is("deleted_at", null);
+
+  if (modifiersError) throw new Error(modifiersError.message);
 }
