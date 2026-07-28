@@ -30,7 +30,7 @@ export default function SettingsScreen() {
   const handleClearSessionData = () => {
     Alert.alert(
       "Clear Session Data",
-      "This will delete all sales, session_stores, route_sessions, and outbox records. Continue?",
+      "This will delete all local data — routes, provinces, stores, sessions, sales, inventory, products, and unsynced outbox records. You stay signed in. Continue?",
       [
         { text: "Cancel", style: "cancel" },
         {
