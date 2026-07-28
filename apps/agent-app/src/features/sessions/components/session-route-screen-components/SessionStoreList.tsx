@@ -11,9 +11,14 @@ export function SessionStoreList() {
   const { session } = useSessionRoute();
 
   if (session.sections.length === 0) {
+    // An active search means the session does have stores, none of them matching.
+    const message = session.searchQuery.trim()
+      ? `No stores match "${session.searchQuery.trim()}".`
+      : "No stores in this session.";
+
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyText}>No stores in this session.</Text>
+        <Text style={styles.emptyText}>{message}</Text>
       </View>
     );
   }

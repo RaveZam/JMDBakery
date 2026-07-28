@@ -7,6 +7,7 @@ import {
   cancelSession,
 } from "../services/sessionLocalService";
 import { groupStoresByProvince } from "../core/group-stores-by-province";
+import { filterStoresByName } from "../core/filter-stores-by-name";
 import { computeSessionProgress } from "../core/compute-session-progress";
 import type { RouteSession, SessionStore } from "../types/session-types";
 import { useLocalSearchParams } from "expo-router";
@@ -15,6 +16,7 @@ export function useSession() {
   const [session, setSession] = useState<RouteSession | null>(null);
   const [sessionStores, setSessionStores] = useState<SessionStore[]>([]);
   const [isEndModalOpen, setIsEndModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
 
   useFocusEffect(
@@ -36,9 +38,12 @@ export function useSession() {
     [sessionStores],
   );
 
+  // Filter first, then group, so a province with no matches drops out on its own.
+  // progress above stays on the unfiltered list, so the header keeps reporting
+  // the whole session while a search narrows the list.
   const sections = useMemo(
-    () => groupStoresByProvince(sessionStores),
-    [sessionStores],
+    () => groupStoresByProvince(filterStoresByName(sessionStores, searchQuery)),
+    [sessionStores, searchQuery],
   );
 
   const openEndModal = useCallback(() => setIsEndModalOpen(true), []);
@@ -68,13 +73,14 @@ export function useSession() {
     router.push("/main/routes");
   }, [sessionId]);
 
-  const actions = { openStore, endRoute, cancelRoute };
+  const actions = { openStore, endRoute, cancelRoute, setSearchQuery };
 
   return {
     session: {
       session,
       sections,
       progress,
+      searchQuery,
       isEndModalOpen,
       openEndModal,
       closeEndModal,
