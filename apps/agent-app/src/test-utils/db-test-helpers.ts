@@ -10,9 +10,14 @@ import { getDb, initDb } from "@/src/lib/db";
 import RoutesDao from "@/src/lib/dao/routes-dao";
 import ProvincesDao from "@/src/lib/dao/province-dao";
 import StoresDao from "@/src/lib/dao/store-dao";
+import ProvinceStoresDao from "@/src/lib/dao/province-stores-dao";
 import RouteSessionsDao from "@/src/lib/dao/route-sessions-dao";
 import SessionStoresDao from "@/src/lib/dao/session-stores-dao";
 import { ProductsDao } from "@/src/lib/dao/products-dao";
+import { setCurrentUserId } from "@/src/lib/current-user";
+
+/** Fixed timestamp for seeded rows, so nothing under test depends on the clock. */
+const SEEDED_AT = "2026-06-30T00:00:00.000Z";
 
 export type OutboxRow = {
   id: string;
@@ -28,9 +33,13 @@ export async function createSchema(): Promise<void> {
   await initDb();
 }
 
+/** Every write path in the app runs as a signed-in agent, so tests do too. */
+export const TEST_AGENT_ID = "user-1";
+
 export function resetDb(): void {
   const db = getDb();
   // Children before parents — foreign_keys is ON in initDb().
+  db.runSync("DELETE FROM app_settings");
   db.runSync("DELETE FROM outbox");
   db.runSync("DELETE FROM sync_state");
   db.runSync("DELETE FROM sales");
@@ -39,9 +48,11 @@ export function resetDb(): void {
   db.runSync("DELETE FROM session_stores");
   db.runSync("DELETE FROM products");
   db.runSync("DELETE FROM route_sessions");
+  db.runSync("DELETE FROM province_stores");
   db.runSync("DELETE FROM stores");
   db.runSync("DELETE FROM provinces");
   db.runSync("DELETE FROM routes");
+  setCurrentUserId(TEST_AGENT_ID);
 }
 
 /** Insert a route directly (no outbox row) and return its id. */
@@ -54,9 +65,49 @@ export function seedProvince(routeId: string, name = "Bulacan"): string {
   return ProvincesDao.insertProvince(routeId, name);
 }
 
-/** Insert a store under a province directly (no outbox row) and return its id. */
-export function seedStore(provinceId: string, name = "Store A"): string {
-  return StoresDao.insertStore({ provinceId, name, province: "", city: "", barangay: "" });
+/**
+ * Insert a store under a province directly (no outbox row) and return its id.
+ * Links it to the province too, since reads go through province_stores and an
+ * unlinked store is invisible to every query.
+ */
+export function seedStore(
+  provinceId: string,
+  name = "Store A",
+  createdBy: string | null = null,
+): string {
+  const id = StoresDao.insertStore({
+    provinceId,
+    name,
+    province: "",
+    city: "",
+    barangay: "",
+    createdBy,
+  });
+  ProvinceStoresDao.insertLink(provinceId, id, SEEDED_AT);
+  return id;
+}
+
+/**
+ * A store another agent registered: it lives under `foreignProvinceId` (a
+ * province this device does not have) but is linked onto `provinceId`.
+ */
+export function seedAdoptedStore(
+  provinceId: string,
+  name = "Colleague Store",
+  foreignProvinceId = "foreign-province",
+  createdByName = "Agent A",
+): string {
+  const id = StoresDao.insertStore({
+    provinceId: foreignProvinceId,
+    name,
+    province: "",
+    city: "",
+    barangay: "",
+    createdBy: "user-2",
+    createdByName,
+  });
+  ProvinceStoresDao.insertLink(provinceId, id, SEEDED_AT);
+  return id;
 }
 
 /** Insert a route session directly (no outbox row) and return its id. */
