@@ -4,7 +4,8 @@ import { generateUUID } from "@/src/lib/uuid";
 
 type StoreRef = {
   id: string;
-  province_id: string;
+  /** The province this store sits on for the route being started. */
+  link_province_id: string;
 };
 
 type InsertSessionStoreInput = {
@@ -20,7 +21,7 @@ export function insertSessionStore(input: InsertSessionStoreInput): void {
     routeSessionId: input.sessionId,
     storeId: input.store.id,
     createdAt: input.createdAt,
-    provinceId: input.store.province_id,
+    provinceId: input.store.link_province_id,
     id,
   });
   // province_id stays local. Remotely it is redundant (reachable through

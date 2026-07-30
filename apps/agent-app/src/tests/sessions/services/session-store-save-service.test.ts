@@ -36,7 +36,7 @@ test("inserts a session_stores row with province_id", () => {
   getDb().withTransactionSync(() => {
     insertSessionStore({
       sessionId,
-      store: { id: storeId, province_id: provinceId },
+      store: { id: storeId, link_province_id: provinceId },
       createdAt: "2026-06-30T00:00:00.000Z",
     });
   });
@@ -70,7 +70,7 @@ test("enqueues a session_store create outbox row without province_id in payload"
   getDb().withTransactionSync(() => {
     insertSessionStore({
       sessionId,
-      store: { id: storeId, province_id: provinceId },
+      store: { id: storeId, link_province_id: provinceId },
       createdAt: "2026-06-30T00:00:00.000Z",
     });
   });

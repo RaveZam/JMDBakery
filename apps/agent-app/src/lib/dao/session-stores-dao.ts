@@ -15,12 +15,13 @@ type SessionStoreRow = {
   created_at: string;
 };
 
+//This gets the stores from the session_stores table, then links the province name from the store_province table
 const SESSION_STORE_SELECT = `SELECT ss.*, s.name as store_name, s.province as store_province,
               s.city as store_city, s.barangay as store_barangay,
               s.contact_name as store_contact_name, p.name as province_name
        FROM session_stores ss
        INNER JOIN stores s ON ss.store_id = s.id
-       LEFT JOIN provinces p ON s.province_id = p.id`;
+       LEFT JOIN provinces p ON ss.province_id = p.id`;
 
 const SessionStoresDao = {
   insert(input: {
@@ -33,7 +34,13 @@ const SessionStoresDao = {
     const id = input.id ?? generateUUID();
     getDb().runSync(
       `INSERT INTO session_stores (id, route_session_id, store_id, province_id, created_at) VALUES (?, ?, ?, ?, ?)`,
-      [id, input.routeSessionId, input.storeId, input.provinceId ?? null, input.createdAt],
+      [
+        id,
+        input.routeSessionId,
+        input.storeId,
+        input.provinceId ?? null,
+        input.createdAt,
+      ],
     );
     return id;
   },
