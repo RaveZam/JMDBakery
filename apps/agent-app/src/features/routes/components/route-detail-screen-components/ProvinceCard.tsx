@@ -6,6 +6,7 @@ import { useStores } from "../../hooks/useStores";
 import { useStoreDetail } from "../../hooks/useStoreDetail";
 import { StoreListRow } from "./StoreListRow";
 import { AddStoreModal } from "./AddStoreModal";
+import { AddStoreChoiceModal, AddExistingStoreModal } from "./addstore";
 import { ViewStoreModal } from "./storemodal";
 
 type Props = {
@@ -13,10 +14,13 @@ type Props = {
   onEditProvince: (province: ProvinceRow) => void;
 };
 
+/** Which step of the add-store flow is on screen, if any. */
+type AddStoreStep = "choice" | "new" | "existing" | null;
+
 export function ProvinceCard({ province, onEditProvince }: Props) {
   const { stores, loadStores } = useStores(province.id);
   const { store, openStore, closeStore } = useStoreDetail();
-  const [showAddStore, setShowAddStore] = useState(false);
+  const [addStoreStep, setAddStoreStep] = useState<AddStoreStep>(null);
 
   return (
     <View style={styles.provincePanel} testID={`province-item-${province.id}`}>
@@ -44,7 +48,7 @@ export function ProvinceCard({ province, onEditProvince }: Props) {
         <TouchableOpacity
           style={styles.addStoreButton}
           activeOpacity={0.7}
-          onPress={() => setShowAddStore(true)}
+          onPress={() => setAddStoreStep("choice")}
           testID={`province-add-store-${province.id}`}
           accessibilityLabel="add-store"
         >
@@ -65,19 +69,38 @@ export function ProvinceCard({ province, onEditProvince }: Props) {
         </View>
       )}
 
+      <AddStoreChoiceModal
+        provinceName={province.name}
+        visible={addStoreStep === "choice"}
+        onRegisterNew={() => setAddStoreStep("new")}
+        onAddExisting={() => setAddStoreStep("existing")}
+        onClose={() => setAddStoreStep(null)}
+      />
+
       <AddStoreModal
         provinceId={province.id}
         provinceName={province.name}
-        visible={showAddStore}
-        onClose={() => setShowAddStore(false)}
+        visible={addStoreStep === "new"}
+        onClose={() => setAddStoreStep(null)}
         onAdded={() => {
-          setShowAddStore(false);
+          setAddStoreStep(null);
           loadStores();
         }}
       />
 
+      {/* Stays open after each add so the agent can take several stores from
+          one search, and refreshes the list underneath as they go. */}
+      <AddExistingStoreModal
+        provinceId={province.id}
+        provinceName={province.name}
+        visible={addStoreStep === "existing"}
+        onClose={() => setAddStoreStep(null)}
+        onAdded={loadStores}
+      />
+
       <ViewStoreModal
         store={store}
+        provinceId={province.id}
         onClose={closeStore}
         onChanged={loadStores}
       />

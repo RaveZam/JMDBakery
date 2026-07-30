@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { getStoresForProvince } from "../services/store-services";
-import { StoreRow } from "../types/db-rows";
+import { Store } from "../types/db-rows";
 
 export function useStores(provinceId: string) {
-  const [stores, setStores] = useState<StoreRow[]>([]);
+  const [stores, setStores] = useState<Store[]>([]);
 
   const loadStores = useCallback(() => {
     if (!provinceId) return;

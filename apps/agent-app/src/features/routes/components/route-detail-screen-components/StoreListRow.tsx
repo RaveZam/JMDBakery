@@ -1,9 +1,9 @@
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { StoreRow } from "../../types/db-rows";
+import { Store } from "../../types/db-rows";
 
 type Props = {
-  store: StoreRow;
+  store: Store;
   onPress: (storeId: string) => void;
 };
 
@@ -29,6 +29,9 @@ export function StoreListRow({ store, onPress }: Props) {
             {address}
           </Text>
         ) : null}
+        {!store.isOwn && !!store.created_by_name && (
+          <Text style={styles.storeOwner}>From {store.created_by_name}</Text>
+        )}
       </View>
       <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
     </TouchableOpacity>
@@ -63,5 +66,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "300",
     color: "#64748B",
+  },
+  storeOwner: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#B8923F",
   },
 });

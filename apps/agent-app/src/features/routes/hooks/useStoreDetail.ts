@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
 
 import { getStoreById } from "../services/store-services";
-import { StoreRow } from "../types/db-rows";
+import { Store } from "../types/db-rows";
 
 export function useStoreDetail() {
-  const [store, setStore] = useState<StoreRow | null>(null);
+  const [store, setStore] = useState<Store | null>(null);
 
   const openStore = useCallback((id: string) => {
     setStore(getStoreById(id) ?? null);

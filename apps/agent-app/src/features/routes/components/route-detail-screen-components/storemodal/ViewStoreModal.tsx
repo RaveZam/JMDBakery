@@ -10,6 +10,7 @@ import { StoreEditForm } from "./StoreEditForm";
 import {
   updateStore,
   deleteStore,
+  removeStoreFromProvince,
   StoreFields,
 } from "../../../services/store-save-service";
 import { DeleteStoreModal } from "../DeleteStoreModal";
@@ -17,11 +18,14 @@ import { styles } from "./styles";
 
 export function ViewStoreModal({
   store,
+  provinceId,
   onClose,
   onChanged,
 }: ViewStoreModalProps) {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const isOwn = store?.isOwn === true;
 
   const close = () => {
     setEditing(false);
@@ -30,15 +34,21 @@ export function ViewStoreModal({
   };
 
   const handleSave = (fields: StoreFields) => {
-    if (!store) return;
+    if (!store?.province_id) return;
     updateStore(store.id, store.province_id, fields);
     onChanged?.();
     close();
   };
 
+  // Deleting someone else's store would take it off their route too, so for an
+  // adopted store this only cuts the link to this province.
   const handleDelete = () => {
     if (!store) return;
-    deleteStore(store.id);
+    if (isOwn) {
+      deleteStore(store.id);
+    } else {
+      removeStoreFromProvince(provinceId, store.id);
+    }
     onChanged?.();
     close();
   };
@@ -74,6 +84,7 @@ export function ViewStoreModal({
               <StoreHeader store={store} />
               <ContactCard store={store} />
               <StoreActions
+                isOwnStore={isOwn}
                 onEdit={() => setEditing(true)}
                 onDelete={() => setConfirmDelete(true)}
               />
@@ -84,6 +95,7 @@ export function ViewStoreModal({
 
       <DeleteStoreModal
         store={confirmDelete ? store : null}
+        isOwnStore={isOwn}
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
       />
