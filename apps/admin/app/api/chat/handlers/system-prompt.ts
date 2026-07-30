@@ -29,7 +29,7 @@ products (alias: p)
 
 stores (alias: st)
   id text PK, store_name text, contact_number text, contact_name text,
-  tendered_by uuid, barangay text, city text, province text,
+  barangay text, city text, province text,
   created_at timestamptz, updated_at timestamptz
 
 route_sessions (alias: rs)
