@@ -3,6 +3,7 @@ import { router, useSegments } from "expo-router";
 import { supabase } from "@/src/lib/supabase";
 import { initDb } from "@/src/lib/db";
 import { runDownloadSync } from "@/src/lib/sync/download";
+import { setCurrentUserId } from "@/src/lib/current-user";
 import { isWifiConnected } from "@/src/lib/network";
 import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
 import SalesDao from "@/src/lib/dao/sales-dao";
@@ -31,11 +32,15 @@ async function runAuthCheck(
   await initDb();
   const { data } = await supabase.auth.getSession();
   const session = data?.session ?? null;
+  // Before any screen renders, so a sync read can tell this agent's own stores
+  // from a colleague's. Sign-in and sign-out both land back here via a route
+  // change, so this is the only place that has to set it.
+  setCurrentUserId(session?.user.id ?? null);
   if (!isMounted()) return;
 
   if (session && !downloaded.current) {
-    downloaded.current = true;
     await runDownloadSync(session.user.id);
+    downloaded.current = true;
   }
 
   const onAuthRoute = segments[0] === "auth";
@@ -51,7 +56,7 @@ export function useAuthGuard(setCheckingSession: (value: boolean) => void) {
   useEffect(() => {
     let mounted = true;
     runAuthCheck(segments, downloaded, () => mounted)
-      .catch(() => {})
+      .catch((error) => console.warn("[useAuthGuard] auth check failed:", error))
       .finally(() => {
         if (mounted) setCheckingSession(false);
       });
