@@ -5,6 +5,7 @@ import { ProvincePriceModifiersDao } from "@/src/lib/dao/province-price-modifier
 import RoutesDao from "@/src/lib/dao/routes-dao";
 import ProvincesDao from "@/src/lib/dao/province-dao";
 import StoresDao from "@/src/lib/dao/store-dao";
+import ProvinceStoresDao from "@/src/lib/dao/province-stores-dao";
 import RouteSessionsDao from "../dao/route-sessions-dao";
 import { SyncStateDao } from "@/src/lib/dao/sync-state-dao";
 import { collapseOngoingSessions } from "./collapse-ongoing-sessions";
@@ -21,19 +22,28 @@ export type DownloadResult = {
  * Pulls server-owned reference data into the local DB. Runs on sign-in and
  * whenever the app returns to the foreground.
  *
- * Incremental: each table's cursor lives in `sync_state`, so a run that finds
- * nothing new costs one empty query per table.
+ * `products` and `province_price_modifiers` are incremental: each table's
+ * cursor lives in `sync_state`, so a run that finds nothing new costs one
+ * empty query per table. `routes`/`provinces`/`stores`/`province_stores`/
+ * `sessions` are a full pull each time (not yet incremental), run in
+ * FK-safe order: routes → provinces → stores+links → sessions. `stores` is
+ * scoped to only what's linked via this agent's own province_stores rows,
+ * not every store in the system.
  */
 export async function runDownloadSync(_userId?: string): Promise<void> {
   if (!(await isWifiConnected())) return;
 
   await downloadProducts();
   await downloadProvincePriceModifiers();
+  await downloadRoutes();
+  await downloadProvinces();
+  await downloadAgentStoresAndLinks();
+  await downloadSessions();
 }
 
 /**
  * Manual pull of agent-owned reference data (routes, provinces, stores).
- * Runs in FK-safe order: routes → provinces → stores.
+ * Runs in FK-safe order: routes → provinces → stores → links.
  * Aborts if routes fail — provinces and stores depend on them via FK.
  */
 export async function downloadReferenceData(): Promise<DownloadResult> {
@@ -49,7 +59,7 @@ export async function downloadReferenceData(): Promise<DownloadResult> {
       "Failed to download routes. Check your connection and try again.",
     );
   const provinces = await downloadProvinces();
-  const stores = await downloadStores();
+  const stores = await downloadAgentStoresAndLinks();
   const sessions = await downloadSessions();
 
   return {
@@ -159,29 +169,89 @@ async function downloadProvinces(): Promise<number | null> {
   return data.length;
 }
 
-async function downloadStores(): Promise<number | null> {
+//Downloads store via checking from agent's route's province_stores, and only downloading the id's found in the link
+async function downloadStores(storeIds: string[]): Promise<number | null> {
+  if (storeIds.length === 0) return 0;
+
   const { data, error } = await supabase
     .from("stores")
     .select(
-      "id, store_name, province_id, province, city, barangay, contact_number, contact_name",
-    );
+      "id, store_name, province_id, province, city, barangay, contact_number, contact_name, created_by, created_by_name",
+    )
+    .in("id", storeIds);
   if (error || !data) {
     console.warn("[download] failed to fetch stores:", error?.message);
     return null;
   }
   for (const row of data) {
-    StoresDao.upsertStore({
-      id: row.id,
-      provinceId: row.province_id,
-      name: row.store_name,
-      province: row.province ?? "",
-      city: row.city ?? "",
-      barangay: row.barangay ?? "",
-      contactName: row.contact_name ?? "",
-      contactPhone: row.contact_number ?? "",
-    });
+    StoresDao.upsertStore(toLocalStore(row));
   }
   return data.length;
+}
+
+type RemoteStoreRow = {
+  id: string;
+  store_name: string;
+  province_id: string | null;
+  province: string | null;
+  city: string | null;
+  barangay: string | null;
+  contact_number: string | null;
+  contact_name: string | null;
+  created_by: string | null;
+  created_by_name: string | null;
+};
+
+function toLocalStore(row: RemoteStoreRow) {
+  return {
+    id: row.id,
+    provinceId: row.province_id,
+    name: row.store_name,
+    province: row.province ?? "",
+    city: row.city ?? "",
+    barangay: row.barangay ?? "",
+    contactName: row.contact_name ?? "",
+    contactPhone: row.contact_number ?? "",
+    createdBy: row.created_by,
+    createdByName: row.created_by_name,
+  };
+}
+
+//download agent's provinces (RLS Scoped by what is in province_id that they own in their routes)
+//and grabs the list of storeIds that exists in the store links from province_stores
+async function downloadAgentStoresAndLinks(): Promise<number | null> {
+  const { data: links, error } = await supabase
+    .from("province_stores")
+    .select("id, province_id, store_id, created_at");
+  if (error || !links) {
+    console.warn("[download] failed to fetch store links:", error?.message);
+    return null;
+  }
+
+  const storeIds = [...new Set(links.map((link) => link.store_id))];
+  const stores = await downloadStores(storeIds);
+  if (stores === null) return null;
+
+  for (const link of links) {
+    try {
+      // The server's created_at, not this device's clock — the link already
+      // happened somewhere else and this is only a copy of it.
+      ProvinceStoresDao.upsertLink(
+        link.id,
+        link.province_id,
+        link.store_id,
+        link.created_at,
+      );
+    } catch (linkError) {
+      // A store row missing locally (e.g. a partial prior sync) FK-fails this
+      // one link; skip it instead of losing the rest of the batch.
+      console.warn(
+        `[download] failed to link store ${link.store_id} to province ${link.province_id}:`,
+        linkError,
+      );
+    }
+  }
+  return stores;
 }
 
 async function downloadSessions(): Promise<number | null> {

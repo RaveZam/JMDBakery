@@ -14,6 +14,7 @@ const ENTITY_TABLE: Record<string, string> = {
   route: "agent_routes",
   province: "agent_provinces",
   store: "stores",
+  province_store: "province_stores",
   planned_route: "planned_routes",
   route_session: "route_sessions",
   session_store: "session_stores",
