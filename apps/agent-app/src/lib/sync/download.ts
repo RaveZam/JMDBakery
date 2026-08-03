@@ -8,6 +8,7 @@ import StoresDao from "@/src/lib/dao/store-dao";
 import ProvinceStoresDao from "@/src/lib/dao/province-stores-dao";
 import RouteSessionsDao from "../dao/route-sessions-dao";
 import { SyncStateDao } from "@/src/lib/dao/sync-state-dao";
+import StoreCreditDao from "@/src/lib/dao/store-credit-dao";
 import { collapseOngoingSessions } from "./collapse-ongoing-sessions";
 import { latestUpdatedAt } from "./latest-updated-at";
 
@@ -39,6 +40,7 @@ export async function runDownloadSync(_userId?: string): Promise<void> {
   await downloadProvinces();
   await downloadAgentStoresAndLinks();
   await downloadSessions();
+  await downloadStoreCreditEntries();
 }
 
 /**
@@ -73,7 +75,7 @@ export async function downloadReferenceData(): Promise<DownloadResult> {
 // Grabs the products from supabase, and checks for new data. compared from sync_state date.
 // if a date is greater than the synced_state queries for the updated data and upserts it.
 
-async function downloadProducts(): Promise<void> {
+export async function downloadProducts(): Promise<void> {
   const lastSynced = SyncStateDao.getLastSyncedAt("products");
   let query = supabase
     .from("products")
@@ -275,4 +277,105 @@ async function downloadSessions(): Promise<number | null> {
     });
   }
   return data.length;
+}
+
+const STORE_CREDIT_SELECT =
+  "id, store_id, session_store_id, entry_type, amount, note, recorded_by, recorded_by_name, created_at, deleted_at, updated_at";
+
+type RemoteStoreCreditRow = {
+  id: string;
+  store_id: string;
+  session_store_id: string | null;
+  entry_type: "credit" | "payment";
+  amount: number;
+  note: string | null;
+  recorded_by: string;
+  recorded_by_name: string | null;
+  created_at: string;
+  deleted_at: string | null;
+  updated_at: string;
+};
+
+function applyStoreCreditRows(rows: RemoteStoreCreditRow[]): void {
+  for (const row of rows) {
+    if (row.deleted_at) {
+      StoreCreditDao.deleteEntry(row.id);
+      continue;
+    }
+    StoreCreditDao.upsertEntry({
+      id: row.id,
+      store_id: row.store_id,
+      session_store_id: row.session_store_id,
+      entry_type: row.entry_type,
+      amount: row.amount,
+      note: row.note,
+      recorded_by: row.recorded_by,
+      recorded_by_name: row.recorded_by_name,
+      created_at: row.created_at,
+    });
+  }
+}
+
+/**
+ * A store newly linked to this agent needs its *entire* credit history, not
+ * just entries newer than the shared cursor — otherwise its balance would
+ * render short of debt it already had before this agent ever saw it. Scoped
+ * only to store ids that have never been pulled; unfiltered by updated_at.
+ */
+async function backfillNewStoreCreditHistory(
+  unsyncedStoreIds: string[],
+): Promise<void> {
+  const { data, error } = await supabase
+    .from("store_credit_entries")
+    .select(STORE_CREDIT_SELECT)
+    .in("store_id", unsyncedStoreIds);
+
+  if (error || !data) {
+    console.warn(
+      "[download] failed to backfill store credit entries:",
+      error?.message,
+    );
+    return;
+  }
+  applyStoreCreditRows(data);
+  StoreCreditDao.markStoresSynced(unsyncedStoreIds);
+}
+
+async function pullStoreCreditEntriesSince(storeIds: string[]): Promise<void> {
+  const lastSynced = SyncStateDao.getLastSyncedAt("store_credit_entries");
+  let query = supabase
+    .from("store_credit_entries")
+    .select(STORE_CREDIT_SELECT)
+    .in("store_id", storeIds);
+  if (lastSynced) query = query.gte("updated_at", lastSynced);
+
+  const { data, error } = await query;
+  if (error || !data) {
+    console.warn(
+      "[download] failed to fetch store credit entries:",
+      error?.message,
+    );
+    return;
+  }
+
+  applyStoreCreditRows(data);
+  const newCursor = latestUpdatedAt(data);
+  if (newCursor) SyncStateDao.setLastSyncedAt("store_credit_entries", newCursor);
+}
+
+/**
+ * Pulls store credit entries for every store this agent has locally: a
+ * one-time backfill for stores never synced before, then the normal
+ * incremental leg for everyone, including those same stores, going forward.
+ */
+async function downloadStoreCreditEntries(): Promise<void> {
+  const storeIds = StoresDao.getAllStoreIds();
+  if (storeIds.length === 0) return;
+
+  const unsyncedStoreIds = StoreCreditDao.getUnsyncedStoreIds(storeIds);
+  if (unsyncedStoreIds.length > 0) {
+    await backfillNewStoreCreditHistory(unsyncedStoreIds);
+  }
+
+  await pullStoreCreditEntriesSince(storeIds);
 }

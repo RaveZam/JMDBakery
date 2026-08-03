@@ -45,6 +45,8 @@ export function resetDb(): void {
   db.runSync("DELETE FROM sales");
   db.runSync("DELETE FROM session_inventory");
   db.runSync("DELETE FROM ending_inventory");
+  db.runSync("DELETE FROM store_credit_entries");
+  db.runSync("DELETE FROM store_credit_synced_stores");
   db.runSync("DELETE FROM session_stores");
   db.runSync("DELETE FROM products");
   db.runSync("DELETE FROM route_sessions");

@@ -38,6 +38,9 @@ type MockBuilder = {
   select: () => MockBuilder;
   is: () => Promise<MockQueryResult>;
   gte: (column: string, value: string) => MockBuilder;
+  // runDownloadSync also pulls store_credit_entries; unused by these tests
+  // but the chain must resolve when a test happens to seed a local store.
+  in: () => MockBuilder;
   then: (
     resolve: (value: MockQueryResult) => unknown,
     reject: (reason: unknown) => unknown,
@@ -58,6 +61,7 @@ jest.mock("@/src/lib/supabase", () => ({
           mock.gteCalls.push({ table, column, value });
           return builder;
         },
+        in: () => builder,
         then: (resolve, reject) =>
           Promise.resolve(result).then(resolve, reject),
       };
