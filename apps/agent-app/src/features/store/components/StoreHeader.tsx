@@ -1,16 +1,35 @@
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 
 import { useStoreDetails } from "../hooks/useStoreDetails";
+import { useCheckVisit } from "../hooks/useCheckVisit";
+import { ConfirmActionModal } from "@/src/shared/components/ConfirmActionModal";
 
 const HEADER_BG = "#0b4c29";
 
+function VisitReminderModal({
+  checkVisit,
+}: {
+  checkVisit: ReturnType<typeof useCheckVisit>;
+}) {
+  return (
+    <ConfirmActionModal
+      visible={checkVisit.isReminderVisible}
+      onConfirm={checkVisit.leaveAnyway}
+      onCancel={checkVisit.stay}
+      title="Not marked as visited"
+      body="You haven't confirmed this visit yet. Leave without marking it visited?"
+      confirmLabel="Leave anyway"
+      icon="alert-circle"
+    />
+  );
+}
+
 export function StoreHeader() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { store } = useStoreDetails();
+  const checkVisit = useCheckVisit();
 
   return (
     <View
@@ -22,7 +41,7 @@ export function StoreHeader() {
       <View style={styles.headerRow}>
         <TouchableOpacity
           style={styles.backBtn}
-          onPress={() => router.back()}
+          onPress={checkVisit.requestBack}
           activeOpacity={0.7}
         >
           <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
@@ -39,6 +58,7 @@ export function StoreHeader() {
           <Text style={styles.inProgressText}>In progress</Text>
         </View>
       </View>
+      <VisitReminderModal checkVisit={checkVisit} />
     </View>
   );
 }
