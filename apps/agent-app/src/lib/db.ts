@@ -139,6 +139,31 @@ export async function initDb(): Promise<void> {
       UNIQUE(route_session_id, product_id)
     );
 
+    -- No FK on store_id/session_store_id, same reasoning as sales.product_id:
+    -- session_stores cascade-deletes with its route_sessions, and a cancelled
+    -- or deleted session must not silently erase a debt the store still owes.
+    -- Both are grouping keys only. No local deleted_at — an arriving
+    -- deleted_at deletes the row, matching products.
+    CREATE TABLE IF NOT EXISTS store_credit_entries (
+      id               TEXT PRIMARY KEY,
+      store_id         TEXT NOT NULL,
+      session_store_id TEXT,
+      entry_type       TEXT NOT NULL CHECK(entry_type IN ('credit','payment')),
+      amount           REAL NOT NULL,
+      note             TEXT,
+      recorded_by      TEXT NOT NULL,
+      recorded_by_name TEXT,
+      created_at       TEXT NOT NULL
+    );
+
+    -- Stores whose full credit history has already been pulled once. Without
+    -- this a store linked to the agent after the cursor moved on would only
+    -- ever receive entries newer than the cursor, and its balance would
+    -- render short. See src/lib/sync/download.ts.
+    CREATE TABLE IF NOT EXISTS store_credit_synced_stores (
+      store_id TEXT PRIMARY KEY
+    );
+
     CREATE TABLE IF NOT EXISTS outbox (
       id          TEXT PRIMARY KEY,
       entity_type TEXT NOT NULL,
@@ -159,6 +184,9 @@ export async function initDb(): Promise<void> {
     CREATE INDEX IF NOT EXISTS session_inventory_session_idx ON session_inventory(route_session_id);
     CREATE INDEX IF NOT EXISTS ending_inventory_session_idx ON ending_inventory(route_session_id);
     CREATE INDEX IF NOT EXISTS outbox_pending_idx ON outbox(synced_at) WHERE synced_at IS NULL;
+    CREATE INDEX IF NOT EXISTS store_credit_entries_store_idx ON store_credit_entries(store_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS store_credit_entries_session_store_idx
+      ON store_credit_entries(session_store_id) WHERE session_store_id IS NOT NULL;
     CREATE UNIQUE INDEX IF NOT EXISTS idx_route_sessions_one_ongoing ON route_sessions(status) WHERE status = 'ongoing';
     CREATE INDEX IF NOT EXISTS route_sessions_created_at_idx ON route_sessions(created_at DESC);
   `);
@@ -211,6 +239,9 @@ const ADDED_COLUMNS: [addColumn: string, followUp?: string][] = [
   ],
   [`ALTER TABLE stores ADD COLUMN created_by TEXT`, BACKFILL_PROVINCE_STORES],
   [`ALTER TABLE stores ADD COLUMN created_by_name TEXT`],
+  [
+    `ALTER TABLE session_stores ADD COLUMN payment_type TEXT NOT NULL DEFAULT 'cash'`,
+  ],
 ];
 
 /** Brings an existing install up to the schema `initDb()` just declared. */

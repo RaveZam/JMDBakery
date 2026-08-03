@@ -12,6 +12,7 @@ type SessionStoreRow = {
   store_contact_name: string | null;
   province_name: string | null;
   visited: number;
+  payment_type: "cash" | "credit";
   created_at: string;
 };
 
@@ -63,6 +64,13 @@ const SessionStoresDao = {
     getDb().runSync(`UPDATE session_stores SET visited = 1 WHERE id = ?`, [
       sessionStoreId,
     ]);
+  },
+
+  setPaymentType(sessionStoreId: string, paymentType: "cash" | "credit") {
+    getDb().runSync(
+      `UPDATE session_stores SET payment_type = ? WHERE id = ?`,
+      [paymentType, sessionStoreId],
+    );
   },
 };
 

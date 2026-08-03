@@ -60,6 +60,12 @@ const StoresDao = {
     );
   },
 
+  getAllStoreIds(): string[] {
+    return getDb()
+      .getAllSync<{ id: string }>(`SELECT id FROM stores`)
+      .map((row) => row.id);
+  },
+
   upsertStore(input: InsertStoreInput & { id: string }) {
     getDb().runSync(
       `INSERT INTO stores (id, province_id, name, province, city, barangay, contact_number, contact_name, created_by, created_by_name)
