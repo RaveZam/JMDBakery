@@ -8,10 +8,11 @@ import {
 import type { SessionStoreDetails } from "../types/store-types";
 
 /**
- * Simply fetches the store details via ID, then returns the confirm visit function which
- * toggles visited column to true
+ * Fetches the store details via ID, holds the payment-type choice for this
+ * visit (cash/credit), and returns the confirm visit function that marks the
+ * visit done and, if credit, records the debt.
  *
- *  @returns store data and the confirm visit function that connects to the service
+ *  @returns store data, payment type state, and the confirm visit function
  */
 export function useStoreDetails() {
   const { sessionStoreId } = useLocalSearchParams<{
@@ -19,17 +20,22 @@ export function useStoreDetails() {
   }>();
   const router = useRouter();
   const [store, setStore] = useState<SessionStoreDetails | null>(null);
+  const [paymentType, setPaymentType] = useState<"cash" | "credit">("cash");
 
   useEffect(() => {
     if (!sessionStoreId) return;
-    setStore(getSessionStoreById(sessionStoreId));
+    const details = getSessionStoreById(sessionStoreId);
+    setStore(details);
+    // A visit already confirmed as credit must reopen showing credit, not
+    // silently reset to the cash default.
+    if (details) setPaymentType(details.payment_type);
   }, [sessionStoreId]);
 
-  const confirmVisit = () => {
+  const confirmVisit = (netTotal: number) => {
     if (!sessionStoreId) return;
-    confirmSessionStoreVisit(sessionStoreId);
+    confirmSessionStoreVisit(sessionStoreId, paymentType, netTotal);
     router.back();
   };
 
-  return { store, confirmVisit };
+  return { store, paymentType, setPaymentType, confirmVisit };
 }
