@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AdderModal } from "../components/AdderModal";
 import { OrdersSection } from "../components/OrdersSection";
+import { StoreCreditSection } from "../components/StoreCreditSection";
 import { StoreHeader } from "../components/StoreHeader";
 import { VisitFooter } from "../components/VisitFooter";
 
@@ -17,6 +18,7 @@ export default function StorePage() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <StoreCreditSection />
         <OrdersSection />
         <AdderModal />
       </ScrollView>

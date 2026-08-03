@@ -1,5 +1,4 @@
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { useStoreDetails } from "../hooks/useStoreDetails";
 import { useNetTotal } from "../hooks/useNetTotal";
 import { useProductQuantity } from "../context/useProductQuantity";
 
@@ -8,8 +7,7 @@ const CARD_BG = "#FFFFFF";
 const BORDER = "#E2E8F0";
 
 export function VisitFooter() {
-  const { adderModal } = useProductQuantity();
-  const { confirmVisit } = useStoreDetails();
+  const { adderModal, storeDetails } = useProductQuantity();
   const netTotal = useNetTotal(adderModal.inventory.soldItems);
   return (
     <View style={styles.footer}>
@@ -20,7 +18,7 @@ export function VisitFooter() {
       <TouchableOpacity
         style={styles.confirmBtn}
         activeOpacity={0.8}
-        onPress={confirmVisit}
+        onPress={() => storeDetails.confirmVisit(netTotal)}
       >
         <Text style={styles.confirmBtnText}>Confirm visit</Text>
       </TouchableOpacity>
