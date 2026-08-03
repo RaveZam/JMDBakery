@@ -9,6 +9,31 @@ const STATUS_BAR: Record<RecordStatus, string> = {
   none: "bg-border",
 };
 
+function PaymentBadge({ paymentType }: { paymentType: SalesRecord["paymentType"] }) {
+  const isCredit = paymentType === "credit";
+  return (
+    <span
+      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+        isCredit ? "bg-gold/15 text-gold" : "bg-primary/10 text-primary"
+      }`}
+    >
+      {isCredit ? "Credit" : "Cash"}
+    </span>
+  );
+}
+
+function BadOrderQtyCell({ boQty }: { boQty: number }) {
+  return (
+    <td
+      className={`px-4 py-3 text-right ${
+        boQty > 0 ? "font-semibold text-destructive" : "text-muted-foreground"
+      }`}
+    >
+      {boQty}
+    </td>
+  );
+}
+
 export function RecordRow({
   record,
   onClick,
@@ -31,14 +56,11 @@ export function RecordRow({
       <td className="px-4 py-3 font-sans">{record.store}</td>
       <td className="px-4 py-3 font-sans text-muted-foreground">{record.province}</td>
       <td className="px-4 py-3 font-sans">{record.product}</td>
-      <td className="px-4 py-3 text-right text-primary">{record.soldQty}</td>
-      <td
-        className={`px-4 py-3 text-right ${
-          record.boQty > 0 ? "font-semibold text-destructive" : "text-muted-foreground"
-        }`}
-      >
-        {record.boQty}
+      <td className="px-4 py-3 font-sans">
+        <PaymentBadge paymentType={record.paymentType} />
       </td>
+      <td className="px-4 py-3 text-right text-primary">{record.soldQty}</td>
+      <BadOrderQtyCell boQty={record.boQty} />
       <td className="px-4 py-3 text-right text-muted-foreground">
         {formatCurrencyPHP(record.unitPrice)}
       </td>

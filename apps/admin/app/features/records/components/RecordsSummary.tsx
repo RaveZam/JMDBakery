@@ -1,6 +1,7 @@
 import { Receipt, PackageCheck, PackageX, Percent } from "lucide-react";
 import { KpiCard } from "@/app/features/dashboard/components/KpiCard";
 import type { RecordsStats } from "../helpers/computeRecordsSummary";
+import { RecordsPaymentSummary } from "./RecordsPaymentSummary";
 
 export function RecordsSummary({ summary }: { summary: RecordsStats }) {
   return (
@@ -29,6 +30,7 @@ export function RecordsSummary({ summary }: { summary: RecordsStats }) {
         accent="amber"
         icon={Percent}
       />
+      <RecordsPaymentSummary summary={summary} />
     </div>
   );
 }

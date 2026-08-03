@@ -1,4 +1,4 @@
-const COLUMNS = ["Date", "Agent", "Store", "Province", "Product"];
+const COLUMNS = ["Date", "Agent", "Store", "Province", "Product", "Payment"];
 
 export function RecordsTableHeader() {
   return (
