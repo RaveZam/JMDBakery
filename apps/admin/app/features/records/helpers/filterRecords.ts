@@ -11,6 +11,7 @@ export function filterRecords(
   return records.filter((record) => {
     if (view === "sales" && record.soldQty <= 0) return false;
     if (view === "bad-orders" && record.boQty <= 0) return false;
+    if (view === "credits" && record.paymentType !== "credit") return false;
     if (!query) return true;
 
     return (

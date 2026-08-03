@@ -18,6 +18,7 @@ function makeRecord(id: string): SalesRecord {
     unitPrice: 10,
     total: 100,
     boReason: null,
+    paymentType: "cash",
   };
 }
 

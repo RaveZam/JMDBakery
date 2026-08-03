@@ -17,6 +17,7 @@ function makeRecord(overrides: Partial<SalesRecord> = {}): SalesRecord {
     unitPrice: 10,
     total: 100,
     boReason: null,
+    paymentType: "cash",
     ...overrides,
   };
 }
@@ -43,6 +44,15 @@ describe("filterRecords", () => {
     const result = filterRecords([soldOnly, badOrderOnly, split, empty], "bad-orders", "");
 
     expect(result.map((r) => r.id)).toEqual(["bad", "split"]);
+  });
+
+  test("keeps only credit records on the credits view", () => {
+    const cashRecord = makeRecord({ id: "cash", paymentType: "cash" });
+    const creditRecord = makeRecord({ id: "credit", paymentType: "credit" });
+
+    const result = filterRecords([cashRecord, creditRecord], "credits", "");
+
+    expect(result.map((r) => r.id)).toEqual(["credit"]);
   });
 
   test("matches the search against agent, store, province, and product", () => {

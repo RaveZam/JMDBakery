@@ -17,6 +17,7 @@ function makeRecord(overrides: Partial<SalesRecord> = {}): SalesRecord {
     unitPrice: 10,
     total: 100,
     boReason: null,
+    paymentType: "cash",
     ...overrides,
   };
 }
@@ -54,7 +55,22 @@ describe("computeRecordsSummary", () => {
       totalSoldQty: 0,
       totalBoQty: 0,
       boRate: 0,
+      cashTotal: 0,
+      creditTotal: 0,
     });
+  });
+
+  test("splits total sales value between cash and credit records", () => {
+    const records = [
+      makeRecord({ paymentType: "cash", total: 100 }),
+      makeRecord({ paymentType: "cash", total: 50 }),
+      makeRecord({ paymentType: "credit", total: 75 }),
+    ];
+
+    const summary = computeRecordsSummary(records);
+
+    expect(summary.cashTotal).toBe(150);
+    expect(summary.creditTotal).toBe(75);
   });
 
   test("keeps BO rate at zero when no units moved at all", () => {

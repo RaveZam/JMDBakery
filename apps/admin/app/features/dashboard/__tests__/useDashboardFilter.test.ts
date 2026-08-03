@@ -18,6 +18,7 @@ function makeSale(date: string, overrides: Partial<SalesRecord> = {}): SalesReco
     unitPrice: 10,
     total: 100,
     boReason: null,
+    paymentType: "cash",
     ...overrides,
   };
 }

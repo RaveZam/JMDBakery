@@ -17,6 +17,7 @@ function makeRecord(overrides: Partial<SalesRecord> = {}): SalesRecord {
     unitPrice: 10,
     total: 100,
     boReason: null,
+    paymentType: "cash",
     ...overrides,
   };
 }
