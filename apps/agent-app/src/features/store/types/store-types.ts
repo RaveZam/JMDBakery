@@ -4,7 +4,13 @@ export type Product = {
   price: number;
 };
 
-export const PRESET_REASONS = ["Rotten", "Damaged", "Lost", "Custom"] as const;
+export const PRESET_REASONS = [
+  "Rotten",
+  "Damaged",
+  "Lost",
+  "Returned",
+  "Custom",
+] as const;
 export type PresetReason = (typeof PRESET_REASONS)[number];
 
 export type SessionStoreDetails = {
@@ -18,7 +24,19 @@ export type SessionStoreDetails = {
   store_contact_name: string | null;
   province_name: string | null;
   visited: number;
+  payment_type: "cash" | "credit";
   created_at: string;
+};
+
+export type CreditEntry = {
+  id: string;
+  storeId: string;
+  sessionStoreId: string | null;
+  entryType: "credit" | "payment";
+  amount: number;
+  note: string | null;
+  recordedByName: string | null;
+  createdAt: string;
 };
 
 export type LoggedItem = {
@@ -43,4 +61,3 @@ export type SectionRowProps = {
   buttonLabel: string;
   onToggle: () => void;
 };
-

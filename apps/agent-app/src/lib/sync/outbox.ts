@@ -21,6 +21,7 @@ const ENTITY_TABLE: Record<string, string> = {
   sale: "sales",
   session_inventory: "session_inventory",
   ending_inventory: "ending_inventory",
+  store_credit_entry: "store_credit_entries",
 };
 
 type OutboxRow = {
