@@ -113,12 +113,22 @@ export function seedAdoptedStore(
   return id;
 }
 
-/** Insert a route session directly (no outbox row) and return its id. */
-export function seedRouteSession(routeName = "North Route"): string {
+/**
+ * Insert a route session directly (no outbox row) and return its id.
+ *
+ * conductedBy defaults to TEST_AGENT_ID, the agent resetDb signs in. Pass a
+ * different one to set up a session being run by a colleague.
+ */
+export function seedRouteSession(
+  routeName = "North Route",
+  conductedBy: string = TEST_AGENT_ID,
+  conductedByName: string | null = null,
+): string {
   return RouteSessionsDao.insert({
     routeName,
     sessionDate: "2026-06-30",
-    conductedBy: "user-1",
+    conductedBy,
+    conductedByName,
     createdAt: "2026-06-30T00:00:00.000Z",
   });
 }
@@ -138,7 +148,11 @@ export function seedSessionStore(
 }
 
 /** Insert a product directly (no outbox row) and return its id. */
-export function seedProduct(id = "prod-1", name = "Pandesal", price = 10): string {
+export function seedProduct(
+  id = "prod-1",
+  name = "Pandesal",
+  price = 10,
+): string {
   ProductsDao.insertProduct(id, name, price);
   return id;
 }
