@@ -9,6 +9,8 @@ import ProvinceStoresDao from "@/src/lib/dao/province-stores-dao";
 import RouteSessionsDao from "../dao/route-sessions-dao";
 import { SyncStateDao } from "@/src/lib/dao/sync-state-dao";
 import StoreCreditDao from "@/src/lib/dao/store-credit-dao";
+import CreditEntrySalesDao from "@/src/lib/dao/credit-entry-sales-dao";
+import SessionStoresDao from "@/src/lib/dao/session-stores-dao";
 import { collapseOngoingSessions } from "./collapse-ongoing-sessions";
 import { latestUpdatedAt } from "./latest-updated-at";
 
@@ -322,9 +324,17 @@ function applyStoreCreditRows(rows: RemoteStoreCreditRow[]): void {
  * render short of debt it already had before this agent ever saw it. Scoped
  * only to store ids that have never been pulled; unfiltered by updated_at.
  */
+// Session store ids a credit entry points at, excluding deletes (nothing to
+// pull sales for) and entries with no visit behind them.
+function sessionStoreIdsFrom(rows: RemoteStoreCreditRow[]): string[] {
+  return rows
+    .filter((row) => !row.deleted_at && row.session_store_id)
+    .map((row) => row.session_store_id as string);
+}
+
 async function backfillNewStoreCreditHistory(
   unsyncedStoreIds: string[],
-): Promise<void> {
+): Promise<string[]> {
   const { data, error } = await supabase
     .from("store_credit_entries")
     .select(STORE_CREDIT_SELECT)
@@ -335,13 +345,16 @@ async function backfillNewStoreCreditHistory(
       "[download] failed to backfill store credit entries:",
       error?.message,
     );
-    return;
+    return [];
   }
   applyStoreCreditRows(data);
   StoreCreditDao.markStoresSynced(unsyncedStoreIds);
+  return sessionStoreIdsFrom(data);
 }
 
-async function pullStoreCreditEntriesSince(storeIds: string[]): Promise<void> {
+async function pullStoreCreditEntriesSince(
+  storeIds: string[],
+): Promise<string[]> {
   const lastSynced = SyncStateDao.getLastSyncedAt("store_credit_entries");
   let query = supabase
     .from("store_credit_entries")
@@ -355,27 +368,85 @@ async function pullStoreCreditEntriesSince(storeIds: string[]): Promise<void> {
       "[download] failed to fetch store credit entries:",
       error?.message,
     );
-    return;
+    return [];
   }
 
   applyStoreCreditRows(data);
   const newCursor = latestUpdatedAt(data);
-  if (newCursor) SyncStateDao.setLastSyncedAt("store_credit_entries", newCursor);
+  if (newCursor)
+    SyncStateDao.setLastSyncedAt("store_credit_entries", newCursor);
+  return sessionStoreIdsFrom(data);
 }
 
-/**
- * Pulls store credit entries for every store this agent has locally: a
- * one-time backfill for stores never synced before, then the normal
- * incremental leg for everyone, including those same stores, going forward.
- */
-async function downloadStoreCreditEntries(): Promise<void> {
-  const storeIds = StoresDao.getAllStoreIds();
-  if (storeIds.length === 0) return;
+type RemoteSaleRow = {
+  id: string;
+  session_store_id: string;
+  product_id: string;
+  snapshot_product_name: string;
+  snapshot_price: number;
+  quantity_sold: number;
+  quantity_bo: number;
+  bo_reason: string | null;
+  created_at: string;
+};
 
-  const unsyncedStoreIds = StoreCreditDao.getUnsyncedStoreIds(storeIds);
-  if (unsyncedStoreIds.length > 0) {
-    await backfillNewStoreCreditHistory(unsyncedStoreIds);
+//We separate the sales table and the credit entry sales here in the local app, due to if we want to keep it at the same table, given how our current structure is
+//we would need to backfill session_store -> route_session details just in order to read the sales data.
+
+async function downloadCreditEntrySales(
+  sessionStoreIds: string[],
+): Promise<void> {
+  if (sessionStoreIds.length === 0) return;
+
+  const { data, error } = await supabase
+    .from("sales")
+    .select(
+      "id, session_store_id, product_id, snapshot_product_name, snapshot_price, quantity_sold, quantity_bo, bo_reason, created_at",
+    )
+    .in("session_store_id", sessionStoreIds);
+
+  if (error || !data) {
+    console.warn(
+      "[download] failed to fetch credit entry sales:",
+      error?.message,
+    );
+    return;
   }
 
-  await pullStoreCreditEntriesSince(storeIds);
+  for (const row of data as RemoteSaleRow[]) {
+    CreditEntrySalesDao.insert({
+      id: row.id,
+      sessionStoreId: row.session_store_id,
+      productId: row.product_id,
+      productName: row.snapshot_product_name,
+      price: row.snapshot_price,
+      qty: row.quantity_sold,
+      boQty: row.quantity_bo,
+      boReason: row.bo_reason,
+      createdAt: row.created_at,
+    });
+  }
+}
+
+// Runs the backfill leg (stores never pulled before, unfiltered) and the
+// incremental leg (every known store, filtered by the shared cursor), then
+// pulls the sale lines for any session_store_id either leg surfaced that
+// this device doesn't already have.
+async function downloadStoreCreditEntries(): Promise<void> {
+  const allStoreIds = StoresDao.getAllStoreIds();
+  if (allStoreIds.length === 0) return;
+
+  const unsyncedStoreIds = StoreCreditDao.getUnsyncedStoreIds(allStoreIds);
+  const backfilledSessionStoreIds =
+    unsyncedStoreIds.length > 0
+      ? await backfillNewStoreCreditHistory(unsyncedStoreIds)
+      : [];
+  const incrementalSessionStoreIds =
+    await pullStoreCreditEntriesSince(allStoreIds);
+
+  const sessionStoreIdsToFetch = [
+    ...new Set([...backfilledSessionStoreIds, ...incrementalSessionStoreIds]),
+  ].filter((id) => !CreditEntrySalesDao.hasSessionStoreId(id));
+
+  await downloadCreditEntrySales(sessionStoreIdsToFetch);
 }

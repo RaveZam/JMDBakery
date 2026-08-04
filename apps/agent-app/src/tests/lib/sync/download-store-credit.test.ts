@@ -11,6 +11,7 @@ import {
   seedStore,
 } from "@/src/test-utils/db-test-helpers";
 import StoreCreditDao from "@/src/lib/dao/store-credit-dao";
+import CreditEntrySalesDao from "@/src/lib/dao/credit-entry-sales-dao";
 import { SyncStateDao } from "@/src/lib/dao/sync-state-dao";
 import { runDownloadSync } from "@/src/lib/sync/download";
 
@@ -187,4 +188,75 @@ test("a newly-linked store is backfilled unfiltered on the run it first appears"
     column: "updated_at",
     value: "2026-07-29T08:00:00+00:00",
   });
+});
+
+// The visit behind a credit taken on another agent's device isn't on this
+// phone, so its items have to come down with the entry — into
+// credit_entry_sales, never into sales, which stock math reads.
+test("pulls the sale lines of a credit whose visit this device doesn't have", async () => {
+  const storeId = seedLocalStore();
+  mock.rowsByTable.store_credit_entries = [
+    { ...creditRowFor(storeId), session_store_id: "session-store-elsewhere" },
+  ];
+  mock.rowsByTable.sales = [
+    {
+      id: "sale-1",
+      session_store_id: "session-store-elsewhere",
+      product_id: "prod-1",
+      snapshot_product_name: "Ensaymada",
+      snapshot_price: 15,
+      quantity_sold: 4,
+      quantity_bo: 1,
+      bo_reason: "Damaged",
+      created_at: "2026-07-29T08:00:00+00:00",
+    },
+  ];
+
+  await runDownloadSync();
+
+  expect(mock.inCalls).toContainEqual({
+    table: "sales",
+    column: "session_store_id",
+    values: ["session-store-elsewhere"],
+  });
+  const items = CreditEntrySalesDao.getBySessionStoreId(
+    "session-store-elsewhere",
+  );
+  expect(items).toHaveLength(1);
+  expect(items[0]).toMatchObject({ productName: "Ensaymada", qty: 4 });
+});
+
+test("a visit whose items are already down is not pulled again", async () => {
+  const storeId = seedLocalStore();
+  mock.rowsByTable.store_credit_entries = [
+    { ...creditRowFor(storeId), session_store_id: "session-store-elsewhere" },
+  ];
+  mock.rowsByTable.sales = [
+    {
+      id: "sale-1",
+      session_store_id: "session-store-elsewhere",
+      product_id: "prod-1",
+      snapshot_product_name: "Ensaymada",
+      snapshot_price: 15,
+      quantity_sold: 4,
+      quantity_bo: 0,
+      bo_reason: null,
+      created_at: "2026-07-29T08:00:00+00:00",
+    },
+  ];
+  await runDownloadSync();
+
+  mock.inCalls.length = 0;
+  await runDownloadSync();
+
+  expect(mock.inCalls.some((call) => call.table === "sales")).toBe(false);
+});
+
+test("an entry with no visit behind it queries no sales at all", async () => {
+  const storeId = seedLocalStore();
+  mock.rowsByTable.store_credit_entries = [creditRowFor(storeId)];
+
+  await runDownloadSync();
+
+  expect(mock.inCalls.some((call) => call.table === "sales")).toBe(false);
 });

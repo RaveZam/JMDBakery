@@ -164,6 +164,23 @@ export async function initDb(): Promise<void> {
       store_id TEXT PRIMARY KEY
     );
 
+    -- Sale lines behind a credit entry recorded on a visit this device
+    -- doesn't have locally (another agent's session_stores row). Kept
+    -- separate from sales, which stock math reads — these lines belong to
+    -- a visit this device never ran and must not affect its own stock count.
+    -- No FK to session_stores: that row deliberately never arrives here.
+    CREATE TABLE IF NOT EXISTS credit_entry_sales (
+      id                    TEXT PRIMARY KEY,
+      session_store_id      TEXT NOT NULL,
+      product_id            TEXT NOT NULL,
+      snapshot_product_name TEXT NOT NULL,
+      snapshot_price        REAL NOT NULL,
+      quantity_sold         INTEGER NOT NULL DEFAULT 0,
+      quantity_bo           INTEGER NOT NULL DEFAULT 0,
+      bo_reason             TEXT,
+      created_at            TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS outbox (
       id          TEXT PRIMARY KEY,
       entity_type TEXT NOT NULL,
@@ -187,6 +204,7 @@ export async function initDb(): Promise<void> {
     CREATE INDEX IF NOT EXISTS store_credit_entries_store_idx ON store_credit_entries(store_id);
     CREATE UNIQUE INDEX IF NOT EXISTS store_credit_entries_session_store_idx
       ON store_credit_entries(session_store_id) WHERE session_store_id IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS credit_entry_sales_session_store_idx ON credit_entry_sales(session_store_id);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_route_sessions_one_ongoing ON route_sessions(status) WHERE status = 'ongoing';
     CREATE INDEX IF NOT EXISTS route_sessions_created_at_idx ON route_sessions(created_at DESC);
   `);
@@ -194,12 +212,6 @@ export async function initDb(): Promise<void> {
   await runMigrations(database);
 }
 
-// Pricing reads snapshot_price alone, so rows loaded before the column existed
-// would price at 0 — including sessions an agent is in the middle of running.
-// Take the current product price as the best available stand-in; rows whose
-// product is already gone stay NULL and fall back to 0 as before. Runs only on
-// the launch that adds the column: later, a row is NULL because its product is
-// gone, and stamping today's price on it would contradict "price at load time".
 const BACKFILL_SNAPSHOT_PRICE = `
   UPDATE session_inventory
   SET snapshot_price = (
@@ -208,19 +220,6 @@ const BACKFILL_SNAPSHOT_PRICE = `
   WHERE snapshot_price IS NULL
 `;
 
-/**
- * Columns added after the fact; SQLite has no "ADD COLUMN IF NOT EXISTS". The
- * optional second statement is a one-shot follow-up for the new column — it runs
- * on the launch that adds it and never again.
- */
-// Reads moved off stores.province_id and onto province_stores, so every store
-// already on the device needs the link its province_id used to imply — without
-// it the route detail list and every session would come up empty.
-//
-// This has to run exactly once, which is why it rides along with created_by
-// rather than standing on its own: "unlinked from every province" is a state an
-// agent can reach deliberately by removing a store from their route, and a
-// re-runnable backfill would resurrect it on the next launch.
 const BACKFILL_PROVINCE_STORES = `
   INSERT OR IGNORE INTO province_stores (id, province_id, store_id, created_at)
   SELECT lower(hex(randomblob(16))), province_id, id, datetime('now')
