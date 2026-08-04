@@ -3,12 +3,14 @@ import { router, useSegments } from "expo-router";
 import { supabase } from "@/src/lib/supabase";
 import { initDb } from "@/src/lib/db";
 import { runDownloadSync } from "@/src/lib/sync/download";
-import { setCurrentUserId } from "@/src/lib/current-user";
+import { setCurrentUserId, setCurrentUserName } from "@/src/lib/current-user";
 import { isWifiConnected } from "@/src/lib/network";
 import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
 import SalesDao from "@/src/lib/dao/sales-dao";
 
-type Session = { user: { id: string } } | null;
+type Session = {
+  user: { id: string; email?: string; user_metadata?: { name?: string } };
+} | null;
 
 // getSession() reports session:null both when truly signed out and when a
 // token refresh failed due to being offline. Only trust a null session as
@@ -36,6 +38,13 @@ async function runAuthCheck(
   // from a colleague's. Sign-in and sign-out both land back here via a route
   // change, so this is the only place that has to set it.
   setCurrentUserId(session?.user.id ?? null);
+  // Same name sessionLocalService stamps on a route session, kept here so a
+  // sync write can name the agent without awaiting getSession().
+  setCurrentUserName(
+    session
+      ? (session.user.user_metadata?.name ?? session.user.email ?? null)
+      : null,
+  );
   if (!isMounted()) return;
 
   if (session && !downloaded.current) {
@@ -56,7 +65,9 @@ export function useAuthGuard(setCheckingSession: (value: boolean) => void) {
   useEffect(() => {
     let mounted = true;
     runAuthCheck(segments, downloaded, () => mounted)
-      .catch((error) => console.warn("[useAuthGuard] auth check failed:", error))
+      .catch((error) =>
+        console.warn("[useAuthGuard] auth check failed:", error),
+      )
       .finally(() => {
         if (mounted) setCheckingSession(false);
       });
