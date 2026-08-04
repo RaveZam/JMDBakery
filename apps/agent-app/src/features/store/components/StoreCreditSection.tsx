@@ -19,9 +19,11 @@ export function StoreCreditSection() {
       <View style={styles.card}>
         <View style={styles.balanceRow}>
           <View>
-            <Text style={styles.balanceLabel}>Outstanding</Text>
+            <Text style={styles.balanceLabel}>
+              {credit.balance < 0 ? "Credit on account" : "Outstanding"}
+            </Text>
             <Text style={styles.balanceValue}>
-              ₱{credit.balance.toLocaleString()}
+              ₱{Math.abs(credit.balance).toLocaleString()}
             </Text>
           </View>
           {credit.balance > 0 && (
@@ -37,6 +39,7 @@ export function StoreCreditSection() {
           <CreditEntryRow
             key={entry.id}
             item={entry}
+            remaining={credit.remainingByEntryId[entry.id]}
             onPress={credit.modal.openEntry}
           />
         ))}

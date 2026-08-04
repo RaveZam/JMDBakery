@@ -4,12 +4,13 @@ import { useLocalSearchParams } from "expo-router";
 import { getSessionStoreById } from "../services/store-services";
 import { getCreditEntriesForStore } from "../services/store-credit-service";
 import { computeCreditBalance } from "../core/compute-credit-balance";
+import { allocateCreditPayments } from "../core/allocate-credit-payments";
 import type { CreditEntry } from "../types/store-types";
 
 /**
  * Drives the store credit section on the store page: the store's outstanding
- * balance and its credit/payment history, read fresh whenever the visit is
- * confirmed.
+ * balance, how much of each credit is still owed, and the credit/payment
+ * history, read fresh whenever the visit is confirmed.
  */
 export function useStoreCredit() {
   const { sessionStoreId } = useLocalSearchParams<{
@@ -28,5 +29,11 @@ export function useStoreCredit() {
     reload();
   }, [reload]);
 
-  return { entries, balance: computeCreditBalance(entries), reload };
+  return {
+    sessionStoreId,
+    entries,
+    balance: computeCreditBalance(entries),
+    remainingByEntryId: allocateCreditPayments(entries),
+    reload,
+  };
 }

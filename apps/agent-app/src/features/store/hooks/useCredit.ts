@@ -1,6 +1,9 @@
 import { useState } from "react";
 
-import { getSalesBySessionStore } from "../services/sales-services";
+import {
+  getCreditEntryItems,
+  recordStorePayment,
+} from "../services/store-credit-service";
 import { clampPaymentAmount } from "../core/clamp-payment-amount";
 import { useStoreCredit } from "./useStoreCredit";
 import type { CreditEntry, LoggedItem } from "../types/store-types";
@@ -24,7 +27,7 @@ function useCreditModal(): {
     setEntry(selected);
     setItems(
       selected.sessionStoreId
-        ? getSalesBySessionStore(selected.sessionStoreId)
+        ? getCreditEntryItems(selected.sessionStoreId)
         : [],
     );
     setMode("entry");
@@ -66,14 +69,6 @@ function usePaymentDraft(outstandingBalance: number): {
   };
 }
 
-/**
- * Drives the credit modal: the detail behind each ledger entry and the payment
- * the agent is drafting against the store's balance. The ledger itself — the
- * entries and the outstanding balance — comes from useStoreCredit.
- *
- * The screen reads `credit.*` without knowing how the visit's items are looked
- * up or how the payable amount is capped.
- */
 export function useCredit() {
   const storeCredit = useStoreCredit();
   const modal = useCreditModal();
@@ -84,9 +79,13 @@ export function useCredit() {
     payment.reset();
   };
 
-  // TODO: write the payment entry + outbox row once the payment service lands.
   const recordPayment = (): void => {
     if (payment.amount <= 0) return;
+    if (!storeCredit.sessionStoreId) return;
+    recordStorePayment({
+      sessionStoreId: storeCredit.sessionStoreId,
+      amount: payment.amount,
+    });
     close();
     storeCredit.reload();
   };
@@ -94,6 +93,7 @@ export function useCredit() {
   return {
     entries: storeCredit.entries,
     balance: storeCredit.balance,
+    remainingByEntryId: storeCredit.remainingByEntryId,
     reload: storeCredit.reload,
     modal: { ...modal, close },
     payment: { ...payment, record: recordPayment },
