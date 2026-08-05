@@ -7,7 +7,7 @@ import StoreCreditDao from "@/src/lib/dao/store-credit-dao";
 import CreditEntrySalesDao from "@/src/lib/dao/credit-entry-sales-dao";
 import SessionStoresDao from "@/src/lib/dao/session-stores-dao";
 import RouteSessionsDao from "@/src/lib/dao/route-sessions-dao";
-import type { LoggedItem } from "@/src/lib/dao/sales-dao";
+import SalesDao, { type LoggedItem } from "@/src/lib/dao/sales-dao";
 import {
   buildVisitCreditEntry,
   type VisitCreditEntry,
@@ -17,8 +17,8 @@ import {
   type StorePaymentEntry,
 } from "../core/build-store-payment-entry";
 import { computeCreditBalance } from "../core/compute-credit-balance";
+import { canModifyCreditEntry } from "../core/can-modify-credit-entry";
 import type { CreditEntry } from "../types/store-types";
-import { getSalesBySessionStore } from "./sales-services";
 
 function toCreditEntry(
   row: ReturnType<typeof StoreCreditDao.getByStoreId>[number],
@@ -30,6 +30,7 @@ function toCreditEntry(
     entryType: row.entry_type,
     amount: row.amount,
     note: row.note,
+    recordedBy: row.recorded_by,
     recordedByName: row.recorded_by_name,
     createdAt: row.created_at,
   };
@@ -39,29 +40,43 @@ export function getCreditEntriesForStore(storeId: string): CreditEntry[] {
   return StoreCreditDao.getByStoreId(storeId).map(toCreditEntry);
 }
 
-//This is where we get the sessionstore-id and grab the sales from credit_entry_sales table that we downloaded from download,ts upon app load
+/**
+ * The order lines behind a visit's debt — only the ones taken on credit, since
+ * a stop can settle some orders in cash and those aren't part of what's owed.
+ *
+ * Own visits read straight from sales. For a visit another agent ran, this
+ * device has no sales rows, so it falls back to credit_entry_sales: the copy
+ * download.ts pulled from the server on app load.
+ */
 export function getCreditEntryItems(sessionStoreId: string): LoggedItem[] {
-  const ownSales = getSalesBySessionStore(sessionStoreId);
-  if (ownSales.length > 0) return ownSales;
-  return CreditEntrySalesDao.getBySessionStoreId(sessionStoreId);
+  const ownSales = SalesDao.getBySessionStoreId(sessionStoreId);
+  const items =
+    ownSales.length > 0
+      ? ownSales
+      : CreditEntrySalesDao.getBySessionStoreId(sessionStoreId);
+  return items.filter((item) => item.paymentType === "credit");
 }
 
-// What confirmSessionStoreVisit passes in. Example:
-// {
-//   sessionStoreId: "sstore_1", storeId: "store_9",
-//   paymentType: "credit", netTotal: 750,
-//   recordedBy: "user_5", recordedByName: "Juan",
-//   createdAt: "2026-07-28T00:00:00.000Z",
-// }
-type ApplyVisitCreditInput = {
-  sessionStoreId: string; // which visit this is for
-  storeId: string; // which store owes the money
-  paymentType: "cash" | "credit"; // what the agent picked
-  netTotal: number; // visit total, becomes the debt amount
-  recordedBy: string; // agent's user id
-  recordedByName: string; // agent's display name
-  createdAt: string; // when the visit was confirmed
-};
+// The last word before a write leaves this device. The UI already hides edit
+// and delete on a colleague's entry, but a stale screen or a downloaded row
+// arriving mid-edit must not get as far as the outbox: Supabase would reject
+// the push and retry it forever.
+function isOwnedByCurrentUser(entryId: string): boolean {
+  const entry = StoreCreditDao.getById(entryId);
+  if (!entry) return false;
+  // No visit is open down here, so the "derived credit reverts" half of the
+  // rule doesn't apply — that's a question about what the screen should offer,
+  // and a write that reached this far already answered it.
+  return canModifyCreditEntry(
+    {
+      recordedBy: entry.recorded_by,
+      entryType: entry.entry_type,
+      sessionStoreId: entry.session_store_id,
+    },
+    getCurrentUserId(),
+    null,
+  );
+}
 
 function removeExistingCreditEntry(entryId: string): void {
   StoreCreditDao.deleteEntry(entryId);
@@ -119,28 +134,94 @@ function writeCreditEntry(entry: WritableEntry): void {
   });
 }
 
-// Saves or removes this visit's credit entry, based on ApplyVisitCreditInput above.
-export function applyVisitCredit(input: ApplyVisitCreditInput): void {
-  const existing = StoreCreditDao.getBySessionStoreId(input.sessionStoreId);
+/**
+ * Brings this visit's `store_credit_entries` row in line with its orders: the
+ * debt is the sum of the ones taken on credit, so the entry is written, raised,
+ * lowered or dropped entirely from whatever the sales table currently says.
+ *
+ * Derived rather than accumulated, which makes it safe to run after any sale
+ * write — adding, editing and deleting all land on the right number, and
+ * running it twice changes nothing.
+ *
+ * A no-op for an unknown visit or a session that isn't on this device.
+ *
+ * Writes without opening a transaction of its own: `sales-services` calls this
+ * inside the same transaction as the sale it belongs to, so the order and the
+ * debt it creates commit together or not at all.
+ */
+export function syncVisitCredit(sessionStoreId: string): void {
+  const sessionStore = SessionStoresDao.getById(sessionStoreId);
+  if (!sessionStore) return;
+
+  const session = RouteSessionsDao.getById(sessionStore.route_session_id);
+  if (!session) return;
+
+  const existing = StoreCreditDao.getBySessionStoreId(sessionStoreId);
 
   const entry = buildVisitCreditEntry({
     id: existing?.id ?? generateUUID(),
-    sessionStoreId: input.sessionStoreId,
-    storeId: input.storeId,
-    paymentType: input.paymentType,
-    netTotal: input.netTotal,
-    recordedBy: input.recordedBy,
-    recordedByName: input.recordedByName,
-    createdAt: input.createdAt,
+    sessionStoreId,
+    storeId: sessionStore.store_id,
+    creditTotal: SalesDao.getCreditTotal(sessionStoreId),
+    recordedBy: session.conducted_by,
+    recordedByName: session.conducted_by_name ?? "Unknown",
+    createdAt: existing?.created_at ?? getPhTime().toISOString(),
   });
 
   if (!entry) {
-    // cash, or nothing owed — drop any old credit entry for this visit
+    // all cash, or nothing owed — drop any old credit entry for this visit
     if (existing) removeExistingCreditEntry(existing.id);
     return;
   }
 
   writeCreditEntry(entry);
+}
+
+/**
+ * Corrects the amount on a ledger entry, credit or payment, for the times the
+ * ledger and what happened disagree — a line the agent never logged, or a
+ * figure the store and the agent settled on by hand.
+ *
+ * A no-op for an amount of zero or less: the server rejects those, and a
+ * rejected row would jam the outbox retrying forever. Deleting is how an entry
+ * goes to nothing.
+ *
+ * A payment correction is permanent. A **credit** correction is not, for the
+ * visit currently open: that amount is derived from the visit's credit orders,
+ * so the next add/edit/delete on the order log recomputes it and replaces the
+ * correction. Credits from past visits and from other agents' visits are never
+ * re-derived here, so a correction to those stands.
+ */
+export function updateCreditEntryAmount(entryId: string, amount: number): void {
+  if (amount <= 0) return;
+  if (!isOwnedByCurrentUser(entryId)) return;
+
+  getDb().withTransactionSync(() => {
+    StoreCreditDao.updateAmount(entryId, amount);
+    enqueueOutbox({
+      entityType: "store_credit_entry",
+      entityId: entryId,
+      operation: "update",
+      payload: { id: entryId, amount },
+    });
+  });
+}
+
+/**
+ * Removes a ledger entry, credit or payment, locally and on the server.
+ * Deleting a payment puts its amount back onto what the store owes, since the
+ * balance is the running sum of the entries.
+ *
+ * Same caveat as updateCreditEntryAmount: a **credit** on the visit currently
+ * open comes back the next time an order on it changes, because it is derived
+ * from the credit orders. Deleting the orders is what removes it for good.
+ */
+export function deleteCreditEntry(entryId: string): void {
+  if (!isOwnedByCurrentUser(entryId)) return;
+
+  getDb().withTransactionSync(() => {
+    removeExistingCreditEntry(entryId);
+  });
 }
 
 /**

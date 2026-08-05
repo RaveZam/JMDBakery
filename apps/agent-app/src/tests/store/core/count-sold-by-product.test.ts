@@ -8,6 +8,7 @@ const item = (over: Partial<LoggedItem>): LoggedItem => ({
   price: 5,
   qty: 0,
   boQty: 0,
+  paymentType: "cash",
   ...over,
 });
 

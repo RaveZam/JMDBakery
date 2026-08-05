@@ -24,7 +24,6 @@ export type SessionStoreDetails = {
   store_contact_name: string | null;
   province_name: string | null;
   visited: number;
-  payment_type: "cash" | "credit";
   created_at: string;
 };
 
@@ -35,6 +34,9 @@ export type CreditEntry = {
   entryType: "credit" | "payment";
   amount: number;
   note: string | null;
+  // Who owns the row as far as Supabase is concerned: only this agent may edit
+  // or delete it, even though every agent can read it.
+  recordedBy: string;
   recordedByName: string | null;
   createdAt: string;
 };
@@ -47,6 +49,7 @@ export type LoggedItem = {
   qty: number;
   boQty: number;
   boReason?: string;
+  paymentType: "cash" | "credit";
 };
 
 export type SoldRowProps = {

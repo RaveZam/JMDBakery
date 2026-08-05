@@ -51,6 +51,7 @@ function makeSaleInput(
     qty: 3,
     boQty: 1,
     boReason: "Damaged",
+    paymentType: "cash" as const,
     ...overrides,
   };
 }
@@ -101,6 +102,7 @@ test("addSale enqueues a remote-shaped create outbox row in the same write", () 
     quantity_sold: 3,
     quantity_bo: 1,
     bo_reason: "Damaged",
+    payment_type: "cash",
     created_at: expect.any(String),
   });
 });

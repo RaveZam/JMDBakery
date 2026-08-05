@@ -10,10 +10,15 @@ import {
 } from "@/src/test-utils/db-test-helpers";
 import { getDb } from "@/src/lib/db";
 import {
-  applyVisitCredit,
   getCreditEntriesForStore,
+  getCreditEntryItems,
   recordStorePayment,
+  syncVisitCredit,
 } from "@/src/features/store/services/store-credit-service";
+import {
+  addSale,
+  removeSale,
+} from "@/src/features/store/services/sales-services";
 import { computeCreditBalance } from "@/src/features/store/core/compute-credit-balance";
 import { setCurrentUserName } from "@/src/lib/current-user";
 
@@ -33,26 +38,39 @@ function seedVisit() {
   return { sessionStoreId, storeId };
 }
 
-const CREATED_AT = "2026-07-28T00:00:00.000Z";
+/** Log one order worth `amount` against a visit, priced as a single unit. */
+function seedOrder(
+  sessionStoreId: string,
+  amount: number,
+  paymentType: "cash" | "credit",
+  productId = "prod-1",
+) {
+  addSale({
+    sessionStoreId,
+    productId,
+    productName: "Pandesal",
+    price: amount,
+    qty: 1,
+    boQty: 0,
+    boReason: "",
+    paymentType,
+  });
+}
+
+function creditEntryFor(storeId: string) {
+  return getCreditEntriesForStore(storeId).find(
+    (entry) => entry.entryType === "credit",
+  );
+}
 
 test("getCreditEntriesForStore returns nothing for a store with no history", () => {
   expect(getCreditEntriesForStore("unknown-store")).toEqual([]);
 });
 
-test("applyVisitCredit writes a credit entry for a credit visit", () => {
+test("logging a credit order records what the visit owes", () => {
   const { sessionStoreId, storeId } = seedVisit();
 
-  getDb().withTransactionSync(() => {
-    applyVisitCredit({
-      sessionStoreId,
-      storeId,
-      paymentType: "credit",
-      netTotal: 750,
-      recordedBy: "user-1",
-      recordedByName: "Raven",
-      createdAt: CREATED_AT,
-    });
-  });
+  seedOrder(sessionStoreId, 750, "credit");
 
   const entries = getCreditEntriesForStore(storeId);
   expect(entries).toHaveLength(1);
@@ -61,88 +79,96 @@ test("applyVisitCredit writes a credit entry for a credit visit", () => {
     sessionStoreId,
     entryType: "credit",
     amount: 750,
-    recordedByName: "Raven",
   });
 });
 
-test("re-applying the same visit updates the existing entry instead of duplicating", () => {
+test("a second credit order raises the same entry instead of adding another", () => {
   const { sessionStoreId, storeId } = seedVisit();
 
-  getDb().withTransactionSync(() => {
-    applyVisitCredit({
-      sessionStoreId,
-      storeId,
-      paymentType: "credit",
-      netTotal: 750,
-      recordedBy: "user-1",
-      recordedByName: "Raven",
-      createdAt: CREATED_AT,
-    });
-  });
-  getDb().withTransactionSync(() => {
-    applyVisitCredit({
-      sessionStoreId,
-      storeId,
-      paymentType: "credit",
-      netTotal: 900,
-      recordedBy: "user-1",
-      recordedByName: "Raven",
-      createdAt: CREATED_AT,
-    });
-  });
+  seedOrder(sessionStoreId, 750, "credit");
+  seedOrder(sessionStoreId, 150, "credit", "prod-2");
 
   const entries = getCreditEntriesForStore(storeId);
   expect(entries).toHaveLength(1);
   expect(entries[0].amount).toBe(900);
 });
 
-test("applying cash after a credit entry exists deletes it", () => {
+test("a mixed visit owes only its credit orders", () => {
   const { sessionStoreId, storeId } = seedVisit();
 
-  getDb().withTransactionSync(() => {
-    applyVisitCredit({
-      sessionStoreId,
-      storeId,
-      paymentType: "credit",
-      netTotal: 750,
-      recordedBy: "user-1",
-      recordedByName: "Raven",
-      createdAt: CREATED_AT,
-    });
-  });
-  getDb().withTransactionSync(() => {
-    applyVisitCredit({
-      sessionStoreId,
-      storeId,
-      paymentType: "cash",
-      netTotal: 750,
-      recordedBy: "user-1",
-      recordedByName: "Raven",
-      createdAt: CREATED_AT,
-    });
-  });
+  seedOrder(sessionStoreId, 250, "credit");
+  seedOrder(sessionStoreId, 500, "cash", "prod-2");
+
+  expect(creditEntryFor(storeId)!.amount).toBe(250);
+});
+
+test("logging a cash order does not wipe an existing debt", () => {
+  // The bug this whole design exists to prevent: the payment type used to live
+  // on the visit, so a later cash order rewrote it and the debt vanished.
+  const { sessionStoreId, storeId } = seedVisit();
+
+  seedOrder(sessionStoreId, 750, "credit");
+  seedOrder(sessionStoreId, 300, "cash", "prod-2");
+
+  expect(creditEntryFor(storeId)!.amount).toBe(750);
+});
+
+test("a later order keeps the timestamp from when the debt was first recorded", () => {
+  const { sessionStoreId, storeId } = seedVisit();
+
+  seedOrder(sessionStoreId, 750, "credit");
+  const firstCreatedAt = creditEntryFor(storeId)!.createdAt;
+
+  seedOrder(sessionStoreId, 150, "credit", "prod-2");
+
+  expect(creditEntryFor(storeId)!.createdAt).toBe(firstCreatedAt);
+});
+
+test("deleting the last credit order clears the entry", () => {
+  const { sessionStoreId, storeId } = seedVisit();
+
+  seedOrder(sessionStoreId, 750, "credit");
+
+  const sale = getDb().getFirstSync<{ id: string }>(
+    "SELECT id FROM sales WHERE session_store_id = ?",
+    [sessionStoreId],
+  );
+  removeSale(sale!.id);
+  expect(getCreditEntriesForStore(storeId)).toEqual([]);
+});
+
+test("an all-cash visit records no credit, however much is ordered", () => {
+  const { sessionStoreId, storeId } = seedVisit();
+
+  seedOrder(sessionStoreId, 750, "cash");
 
   expect(getCreditEntriesForStore(storeId)).toEqual([]);
 });
 
-function seedCreditVisit(netTotal: number, sessionId?: string) {
+test("getCreditEntryItems lists only the credit lines of a mixed visit", () => {
+  const { sessionStoreId } = seedVisit();
+
+  seedOrder(sessionStoreId, 250, "credit");
+  seedOrder(sessionStoreId, 500, "cash", "prod-2");
+
+  const items = getCreditEntryItems(sessionStoreId);
+  expect(items).toHaveLength(1);
+  expect(items[0]).toMatchObject({ productId: "prod-1", price: 250 });
+});
+
+test("syncVisitCredit does nothing for an unknown visit", () => {
+  expect(() => syncVisitCredit("missing-id")).not.toThrow();
+  expect(getCreditEntriesForStore("unknown-store")).toEqual([]);
+});
+
+function seedCreditVisit(creditTotal: number, sessionId?: string) {
   const routeId = seedRoute();
   const provinceId = seedProvince(routeId);
   const storeId = seedStore(provinceId);
   const session = sessionId ?? seedRouteSession();
   const sessionStoreId = seedSessionStore(session, storeId, provinceId);
 
-  getDb().withTransactionSync(() => {
-    applyVisitCredit({
-      sessionStoreId,
-      storeId,
-      paymentType: "credit",
-      netTotal,
-      recordedBy: TEST_AGENT_ID,
-      recordedByName: "Raven",
-      createdAt: CREATED_AT,
-    });
-  });
+  seedOrder(sessionStoreId, creditTotal, "credit");
 
   return { sessionStoreId, storeId };
 }

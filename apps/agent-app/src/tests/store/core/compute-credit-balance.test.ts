@@ -9,6 +9,7 @@ function entry(overrides: Partial<CreditEntry>): CreditEntry {
     entryType: "credit",
     amount: 0,
     note: null,
+    recordedBy: "agent-1",
     recordedByName: "Raven",
     createdAt: "2026-07-28T00:00:00.000Z",
     ...overrides,

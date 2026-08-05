@@ -9,6 +9,7 @@ function credit(id: string, amount: number, createdAt: string): CreditEntry {
     entryType: "credit",
     amount,
     note: null,
+    recordedBy: "agent-1",
     recordedByName: "Raven",
     createdAt,
   };
@@ -22,6 +23,7 @@ function payment(id: string, amount: number, createdAt: string): CreditEntry {
     entryType: "payment",
     amount,
     note: null,
+    recordedBy: "agent-1",
     recordedByName: "Raven",
     createdAt,
   };

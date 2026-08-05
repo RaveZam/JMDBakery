@@ -3,6 +3,7 @@ import { generateUUID } from "@/src/lib/uuid";
 import SalesDao, { type LoggedItem } from "@/src/lib/dao/sales-dao";
 import { enqueueOutbox } from "@/src/lib/sync/outbox";
 import { getPhTime } from "@/src/shared/helpers/getPhTime";
+import { syncVisitCredit } from "./store-credit-service";
 
 type AddSaleInput = {
   sessionStoreId: string;
@@ -12,6 +13,7 @@ type AddSaleInput = {
   qty: number;
   boQty: number;
   boReason: string;
+  paymentType: "cash" | "credit";
 };
 
 // Reads the raw sale rows logged for one session store.
@@ -40,6 +42,7 @@ function toSalePayload(id: string, input: AddSaleInput) {
     quantity_sold: input.qty,
     quantity_bo: input.boQty,
     bo_reason: input.boReason,
+    payment_type: input.paymentType,
   };
 }
 
@@ -56,6 +59,7 @@ export function addSale(input: AddSaleInput): void {
       quantitySold: input.qty,
       quantityBo: input.boQty,
       boReason: input.boReason,
+      paymentType: input.paymentType,
       createdAt,
     });
     enqueueOutbox({
@@ -64,6 +68,9 @@ export function addSale(input: AddSaleInput): void {
       operation: "create",
       payload: { ...toSalePayload(id, input), created_at: createdAt },
     });
+    // A sale and the debt it creates are one fact, so they commit together. The
+    // caller never has to remember to reconcile the ledger afterwards.
+    syncVisitCredit(input.sessionStoreId);
   });
 }
 
@@ -79,6 +86,7 @@ export function updateSale(input: UpdateSaleInput): void {
       quantitySold: input.qty,
       quantityBo: input.boQty,
       boReason: input.boReason,
+      paymentType: input.paymentType,
     });
     enqueueOutbox({
       entityType: "sale",
@@ -86,10 +94,16 @@ export function updateSale(input: UpdateSaleInput): void {
       operation: "update",
       payload: toSalePayload(input.saleId, input),
     });
+    // Editing a credit order down to cash has to lower the debt too.
+    syncVisitCredit(input.sessionStoreId);
   });
 }
 
 export function removeSale(saleId: string): void {
+  // Read before the delete: afterwards there's no row left to say which visit
+  // the debt belonged to.
+  const sessionStoreId = SalesDao.getSessionStoreId(saleId);
+
   getDb().withTransactionSync(() => {
     SalesDao.deleteSale(saleId);
     enqueueOutbox({
@@ -98,5 +112,8 @@ export function removeSale(saleId: string): void {
       operation: "delete",
       payload: { id: saleId },
     });
+    // Dropping a credit order lowers what's owed — and clears the entry
+    // entirely if it was the last one.
+    if (sessionStoreId) syncVisitCredit(sessionStoreId);
   });
 }

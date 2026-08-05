@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import { SoldOrderRow } from "@/src/features/store/components/SoldOrderRow";
-import type { LoggedItem } from "@/src/features/store/hooks/useDistributionLog";
+import type { LoggedItem } from "@/src/features/store/types/store-types";
 
 function makeItem(overrides: Partial<LoggedItem> = {}): LoggedItem {
   return {
@@ -10,6 +10,7 @@ function makeItem(overrides: Partial<LoggedItem> = {}): LoggedItem {
     price: 10,
     qty: 5,
     boQty: 0,
+    paymentType: "cash",
     ...overrides,
   };
 }
