@@ -19,7 +19,12 @@ test("matches the keyword as a case-insensitive substring of storeProvince", () 
     { product_id: "p12", province_keyword: "tuguegarao", price_modifier: -1 },
   ];
   expect(
-    applyProvincePriceModifier(55, "p12", "Cagayan - TUGUEGARAO City", modifiers),
+    applyProvincePriceModifier(
+      55,
+      "p12",
+      "Cagayan - TUGUEGARAO City",
+      modifiers,
+    ),
   ).toBe(54);
 });
 
@@ -28,7 +33,12 @@ test("only applies a modifier scoped to the matching product_id", () => {
     { product_id: "other", province_keyword: "tuguegarao", price_modifier: -1 },
   ];
   expect(
-    applyProvincePriceModifier(55, "p12", "Cagayan - Tuguegarao City", modifiers),
+    applyProvincePriceModifier(
+      55,
+      "p12",
+      "Cagayan - Tuguegarao City",
+      modifiers,
+    ),
   ).toBe(55);
 });
 

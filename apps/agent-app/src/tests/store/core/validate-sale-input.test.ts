@@ -22,13 +22,15 @@ test("positive BO qty without a reason needs a reason and is invalid", () => {
 });
 
 test("positive BO qty with a reason is valid", () => {
-  expect(
-    validateSaleInput({ qty: 0, boQty: 2, boReason: "Damaged" }),
-  ).toEqual({ valid: true, needsReason: false });
+  expect(validateSaleInput({ qty: 0, boQty: 2, boReason: "Damaged" })).toEqual({
+    valid: true,
+    needsReason: false,
+  });
 });
 
 test("sale qty and BO qty together are valid once reason is set", () => {
-  expect(
-    validateSaleInput({ qty: 5, boQty: 2, boReason: "Lost" }),
-  ).toEqual({ valid: true, needsReason: false });
+  expect(validateSaleInput({ qty: 5, boQty: 2, boReason: "Lost" })).toEqual({
+    valid: true,
+    needsReason: false,
+  });
 });

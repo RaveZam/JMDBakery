@@ -1,18 +1,18 @@
 export type StockCheckInput = {
-  qty: number;
+  quantity: number;
   boQty: number;
   remaining: number;
-  editingOriginal?: { qty: number; boQty: number };
+  editingOriginal?: { quantity: number; boQty: number };
 };
 
 /**
  * validates the input if there is enough amount to complete the log.
  *
  * @params input : StockCheckInput
- *  qty: number;
+ *  quantity: number;
  *  boQty: number;
  *  remaining: number;
- *  editingOriginal?: { qty: number; boQty: number };
+ *  editingOriginal?: { quantity: number; boQty: number };
  *
  *
  *   combines the sold quantity + bo quantity, available is derived from remaining + the original amount that was sold (if its in editing mode)
@@ -23,11 +23,11 @@ export type StockCheckInput = {
  */
 
 export function hasEnoughStock(input: StockCheckInput): boolean {
-  const requested = input.qty + input.boQty;
+  const requested = input.quantity + input.boQty;
   const available =
     input.remaining +
     (input.editingOriginal
-      ? input.editingOriginal.qty + input.editingOriginal.boQty
+      ? input.editingOriginal.quantity + input.editingOriginal.boQty
       : 0);
   return requested <= available;
 }

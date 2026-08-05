@@ -7,7 +7,7 @@ type StockedItem = { productId: string; qty: number };
  *
  * Morning inventory - Sold - BO = Remaining Inventory which is displayed
  *
- *   Return Example: (Product.id - item quantity)
+ *   Return Example: (Product.id -> remaining quantity)
  *        {
  *            "tasty_bread": 6,
  *            "delicious_cake": 25
