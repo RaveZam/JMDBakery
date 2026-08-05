@@ -32,7 +32,7 @@ export type StorePaymentEntry = {
 // shrink a payment two agents recorded against the same balance offline.
 //
 // sessionStoreId is always null. A payment settles the store's running
-// balance, not one visit, and that null is what keeps applyVisitCredit — which
+// balance, not one visit, and that null is what keeps syncVisitCredit — which
 // looks entries up by session_store_id — from ever touching a payment.
 export function buildStorePaymentEntry(
   input: StorePaymentEntryInput,

@@ -9,25 +9,13 @@ const BASE = {
   createdAt: "2026-07-28T00:00:00.000Z",
 };
 
-test("cash visits write no credit entry", () => {
-  expect(
-    buildVisitCreditEntry({ ...BASE, paymentType: "cash", netTotal: 750 }),
-  ).toBeNull();
+test("a visit with no credit orders writes no entry", () => {
+  expect(buildVisitCreditEntry({ ...BASE, creditTotal: 0 })).toBeNull();
+  expect(buildVisitCreditEntry({ ...BASE, creditTotal: -5 })).toBeNull();
 });
 
-test("a credit visit with nothing owed writes no entry", () => {
-  expect(
-    buildVisitCreditEntry({ ...BASE, paymentType: "credit", netTotal: 0 }),
-  ).toBeNull();
-  expect(
-    buildVisitCreditEntry({ ...BASE, paymentType: "credit", netTotal: -5 }),
-  ).toBeNull();
-});
-
-test("a credit visit with a positive net total builds a credit entry", () => {
-  expect(
-    buildVisitCreditEntry({ ...BASE, paymentType: "credit", netTotal: 750 }),
-  ).toEqual({
+test("a positive credit total builds a credit entry for that amount", () => {
+  expect(buildVisitCreditEntry({ ...BASE, creditTotal: 750 })).toEqual({
     id: "entry-1",
     storeId: "store-1",
     sessionStoreId: "session-store-1",
@@ -39,12 +27,18 @@ test("a credit visit with a positive net total builds a credit entry", () => {
   });
 });
 
-test("reuses the given id, so re-confirming a visit updates instead of duplicating", () => {
+test("the amount is the credit total, not the visit's whole net total", () => {
+  // A stop that took ₱250 on credit and ₱500 in cash owes only the ₱250.
+  expect(buildVisitCreditEntry({ ...BASE, creditTotal: 250 })?.amount).toBe(
+    250,
+  );
+});
+
+test("reuses the given id, so re-syncing a visit updates instead of duplicating", () => {
   const entry = buildVisitCreditEntry({
     ...BASE,
     id: "existing-entry",
-    paymentType: "credit",
-    netTotal: 500,
+    creditTotal: 500,
   });
   expect(entry?.id).toBe("existing-entry");
 });
