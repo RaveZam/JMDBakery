@@ -109,6 +109,7 @@ function seedSaleFor(productId: string): void {
     quantitySold: 2,
     quantityBo: 0,
     boReason: "",
+    paymentType: "cash",
     createdAt: "2026-07-27T11:00:00.000Z",
   });
 }

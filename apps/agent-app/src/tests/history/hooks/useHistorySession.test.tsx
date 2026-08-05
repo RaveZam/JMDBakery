@@ -65,6 +65,7 @@ function seedSessionDetail() {
     quantitySold: 5,
     quantityBo: 0,
     boReason: "",
+    paymentType: "cash",
     createdAt: "2026-06-30T01:00:00.000Z",
   });
 

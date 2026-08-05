@@ -11,12 +11,13 @@ const CreditEntrySalesDao = {
     qty: number;
     boQty: number;
     boReason: string | null;
+    paymentType: "cash" | "credit";
     createdAt: string;
   }) {
     getDb().runSync(
       `INSERT OR REPLACE INTO credit_entry_sales
-         (id, session_store_id, product_id, snapshot_product_name, snapshot_price, quantity_sold, quantity_bo, bo_reason, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, session_store_id, product_id, snapshot_product_name, snapshot_price, quantity_sold, quantity_bo, bo_reason, payment_type, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         input.id,
         input.sessionStoreId,
@@ -26,6 +27,7 @@ const CreditEntrySalesDao = {
         input.qty,
         input.boQty,
         input.boReason,
+        input.paymentType,
         input.createdAt,
       ],
     );
@@ -40,9 +42,10 @@ const CreditEntrySalesDao = {
       quantity_sold: number;
       quantity_bo: number;
       bo_reason: string | null;
+      payment_type: "cash" | "credit";
     }>(
       `SELECT id, product_id, snapshot_product_name, snapshot_price,
-              quantity_sold, quantity_bo, bo_reason
+              quantity_sold, quantity_bo, bo_reason, payment_type
        FROM credit_entry_sales
        WHERE session_store_id = ?
        ORDER BY created_at ASC`,
@@ -56,6 +59,7 @@ const CreditEntrySalesDao = {
       qty: r.quantity_sold,
       boQty: r.quantity_bo,
       boReason: r.bo_reason ?? undefined,
+      paymentType: r.payment_type,
     }));
   },
 

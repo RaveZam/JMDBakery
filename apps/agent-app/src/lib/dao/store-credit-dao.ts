@@ -32,6 +32,22 @@ const StoreCreditDao = {
     );
   },
 
+  getById(id: string): StoreCreditEntryRow | null {
+    return (
+      getDb().getFirstSync<StoreCreditEntryRow>(
+        `SELECT * FROM store_credit_entries WHERE id = ?`,
+        [id],
+      ) ?? null
+    );
+  },
+
+  updateAmount(id: string, amount: number): void {
+    getDb().runSync(`UPDATE store_credit_entries SET amount = ? WHERE id = ?`, [
+      amount,
+      id,
+    ]);
+  },
+
   deleteEntry(id: string): void {
     getDb().runSync(`DELETE FROM store_credit_entries WHERE id = ?`, [id]);
   },

@@ -387,6 +387,7 @@ type RemoteSaleRow = {
   quantity_sold: number;
   quantity_bo: number;
   bo_reason: string | null;
+  payment_type: "cash" | "credit" | null;
   created_at: string;
 };
 
@@ -401,7 +402,7 @@ async function downloadCreditEntrySales(
   const { data, error } = await supabase
     .from("sales")
     .select(
-      "id, session_store_id, product_id, snapshot_product_name, snapshot_price, quantity_sold, quantity_bo, bo_reason, created_at",
+      "id, session_store_id, product_id, snapshot_product_name, snapshot_price, quantity_sold, quantity_bo, bo_reason, payment_type, created_at",
     )
     .in("session_store_id", sessionStoreIds);
 
@@ -423,6 +424,8 @@ async function downloadCreditEntrySales(
       qty: row.quantity_sold,
       boQty: row.quantity_bo,
       boReason: row.bo_reason,
+      // Null until the server migration lands; cash is what those rows meant.
+      paymentType: row.payment_type ?? "cash",
       createdAt: row.created_at,
     });
   }
