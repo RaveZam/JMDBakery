@@ -1,15 +1,21 @@
+import { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AdderModal } from "../components/AdderModal";
 import { OrdersSection } from "../components/OrdersSection";
+import { StoreBodyTabs, type StoreBodyTab } from "../components/StoreBodyTabs";
 import { StoreCreditSection } from "../components/StoreCreditSection";
 import { StoreHeader } from "../components/StoreHeader";
 import { VisitFooter } from "../components/VisitFooter";
+import { useProductQuantity } from "../context/useProductQuantity";
 
 const HEADER_BG = "#0b4c29";
 const BODY_BG = "#F0F0EB";
 
 export default function StorePage() {
+  const { credit } = useProductQuantity();
+  const [activeTab, setActiveTab] = useState<StoreBodyTab>("orders");
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
       <StoreHeader />
@@ -18,8 +24,16 @@ export default function StorePage() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <StoreCreditSection />
-        <OrdersSection />
+        <StoreBodyTabs
+          active={activeTab}
+          onChange={setActiveTab}
+          outstandingBalance={credit.balance}
+        />
+        {activeTab === "orders" ? (
+          <OrdersSection />
+        ) : (
+          <StoreCreditSection credit={credit} />
+        )}
         <AdderModal />
       </ScrollView>
       <VisitFooter />

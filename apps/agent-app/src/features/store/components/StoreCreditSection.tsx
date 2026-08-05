@@ -1,49 +1,56 @@
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { useCredit } from "../hooks/useCredit";
+import type { CreditController } from "../hooks/useCredit";
 import { CreditEntryRow } from "./CreditEntryRow";
 import { CreditPaymentModal } from "./CreditPaymentModal";
 
 const CARD_BG = "#FFFFFF";
 const BORDER = "#E2E8F0";
 
-// A store with no credit history has no debt to show, so the section is
-// hidden entirely rather than rendering an empty card.
-export function StoreCreditSection() {
-  const credit = useCredit();
+// A negative balance means the store has paid past what it owed, so the label
+// flips rather than showing a minus sign the agent has to interpret.
+function BalanceRow({ credit }: { credit: CreditController }) {
+  return (
+    <View style={styles.balanceRow}>
+      <View>
+        <Text style={styles.balanceLabel}>
+          {credit.balance < 0 ? "Credit on account" : "Outstanding"}
+        </Text>
+        <Text style={styles.balanceValue}>
+          ₱{Math.abs(credit.balance).toLocaleString()}
+        </Text>
+      </View>
+      {credit.balance > 0 && (
+        <TouchableOpacity
+          style={styles.payButton}
+          onPress={credit.modal.openPayment}
+        >
+          <Text style={styles.payButtonText}>Record payment</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
 
-  if (credit.entries.length === 0) return null;
-
+export function StoreCreditSection({ credit }: { credit: CreditController }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionLabel}>STORE CREDIT</Text>
-      <View style={styles.card}>
-        <View style={styles.balanceRow}>
-          <View>
-            <Text style={styles.balanceLabel}>
-              {credit.balance < 0 ? "Credit on account" : "Outstanding"}
-            </Text>
-            <Text style={styles.balanceValue}>
-              ₱{Math.abs(credit.balance).toLocaleString()}
-            </Text>
-          </View>
-          {credit.balance > 0 && (
-            <TouchableOpacity
-              style={styles.payButton}
-              onPress={credit.modal.openPayment}
-            >
-              <Text style={styles.payButtonText}>Record payment</Text>
-            </TouchableOpacity>
-          )}
+      {credit.entries.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>No credit history yet.</Text>
         </View>
-        {credit.entries.map((entry) => (
-          <CreditEntryRow
-            key={entry.id}
-            item={entry}
-            remaining={credit.remainingByEntryId[entry.id]}
-            onPress={credit.modal.openEntry}
-          />
-        ))}
-      </View>
+      ) : (
+        <View style={styles.card}>
+          <BalanceRow credit={credit} />
+          {credit.entries.map((entry) => (
+            <CreditEntryRow
+              key={entry.id}
+              item={entry}
+              remaining={credit.remainingByEntryId[entry.id]}
+              onPress={credit.modal.openEntry}
+            />
+          ))}
+        </View>
+      )}
       <CreditPaymentModal credit={credit} />
     </View>
   );
@@ -51,12 +58,6 @@ export function StoreCreditSection() {
 
 const styles = StyleSheet.create({
   section: { gap: 8 },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#64748B",
-    letterSpacing: 0.8,
-  },
   card: {
     backgroundColor: CARD_BG,
     borderRadius: 12,
@@ -83,4 +84,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   payButtonText: { fontSize: 12, fontWeight: "700", color: "#FFFFFF" },
+  emptyCard: {
+    backgroundColor: CARD_BG,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER,
+    borderStyle: "dashed",
+    padding: 24,
+    alignItems: "center",
+  },
+  emptyText: { fontSize: 14, color: "#94A3B8" },
 });
