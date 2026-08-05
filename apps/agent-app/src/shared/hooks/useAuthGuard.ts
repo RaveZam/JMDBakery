@@ -12,10 +12,6 @@ type Session = {
   user: { id: string; email?: string; user_metadata?: { name?: string } };
 } | null;
 
-// getSession() reports session:null both when truly signed out and when a
-// token refresh failed due to being offline. Only trust a null session as
-// "signed out" while online, so an expired-token agent isn't locked out
-// mid-route with no connectivity to sign back in with.
 function resolveAuthRedirect(
   session: Session,
   onAuthRoute: boolean,
@@ -34,12 +30,7 @@ async function runAuthCheck(
   await initDb();
   const { data } = await supabase.auth.getSession();
   const session = data?.session ?? null;
-  // Before any screen renders, so a sync read can tell this agent's own stores
-  // from a colleague's. Sign-in and sign-out both land back here via a route
-  // change, so this is the only place that has to set it.
   setCurrentUserId(session?.user.id ?? null);
-  // Same name sessionLocalService stamps on a route session, kept here so a
-  // sync write can name the agent without awaiting getSession().
   setCurrentUserName(
     session
       ? (session.user.user_metadata?.name ?? session.user.email ?? null)
