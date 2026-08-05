@@ -8,6 +8,7 @@ import {
 import { modalStyles as m } from "@/src/shared/styles/modalStyles";
 import type { CreditController } from "../hooks/useCredit";
 import { CreditDetailView } from "./credit-modal-components/CreditDetailView";
+import { CreditEditView } from "./credit-modal-components/CreditEditView";
 import { PaymentFormView } from "./credit-modal-components/PaymentFormView";
 import { creditModalStyles as s } from "./credit-modal-components/creditModalStyles";
 
@@ -33,9 +34,13 @@ export function CreditPaymentModal({ credit }: { credit: CreditController }) {
         <Pressable style={m.backdrop} onPress={credit.modal.close}>
           <Pressable style={s.card} onPress={() => {}}>
             <View>
-              {credit.modal.mode === "payment" ? (
+              {credit.modal.mode === "payment" && (
                 <PaymentFormView credit={credit} />
-              ) : (
+              )}
+              {credit.modal.mode === "edit" && (
+                <CreditEditView credit={credit} />
+              )}
+              {credit.modal.mode === "entry" && (
                 <CreditDetailView credit={credit} />
               )}
             </View>

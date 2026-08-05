@@ -114,6 +114,15 @@ export const creditModalStyles = StyleSheet.create({
     paddingBottom: 20,
     paddingTop: 4,
   },
+  // Same footer, stacked: one row of buttons per tier, so a slip with edit and
+  // delete on it doesn't have to fit four pills across a phone.
+  actionStack: {
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 4,
+  },
+  actionRow: { flexDirection: "row", gap: 10 },
   secondaryButton: {
     flex: 1,
     height: 44,
@@ -124,6 +133,7 @@ export const creditModalStyles = StyleSheet.create({
     justifyContent: "center",
   },
   secondaryText: { fontSize: 14, fontWeight: "500", color: INK },
+  destructiveText: { fontSize: 14, fontWeight: "500", color: "#EF4444" },
   primaryButton: {
     flex: 1,
     height: 44,

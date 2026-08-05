@@ -58,6 +58,30 @@ function DetailItems({ items }: { items: LoggedItem[] }) {
   );
 }
 
+// Correcting an entry is only offered on the agent's own. Supabase scopes the
+// update and delete policies to recorded_by, so on a colleague's entry these
+// buttons would produce a write the server refuses.
+//
+// Kept on their own row: with Close and Record payment beside them, four pills
+// sharing one row squeezed the primary label until it wrapped out of its pill.
+function OwnerActions({ credit }: { credit: CreditController }) {
+  if (!credit.edit.canModify) return null;
+
+  return (
+    <View style={s.actionRow}>
+      <TouchableOpacity style={s.secondaryButton} onPress={credit.edit.remove}>
+        <Text style={s.destructiveText}>Delete</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={s.secondaryButton}
+        onPress={credit.modal.openEdit}
+      >
+        <Text style={s.secondaryText}>Edit</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 // The credit ledger entry behind a row: what was taken, by whom, when, and the
 // items it paid for. Only an unpaid store can go straight to recording payment.
 export function CreditDetailView({ credit }: { credit: CreditController }) {
@@ -71,21 +95,26 @@ export function CreditDetailView({ credit }: { credit: CreditController }) {
       <DetailHead entry={entry} />
       <View style={s.tornEdge} />
       <DetailItems items={credit.modal.items} />
-      <View style={s.actions}>
-        <TouchableOpacity
-          style={s.secondaryButton}
-          onPress={credit.modal.close}
-        >
-          <Text style={s.secondaryText}>Close</Text>
-        </TouchableOpacity>
-        {canPay && (
+      <View style={s.actionStack}>
+        <OwnerActions credit={credit} />
+        <View style={s.actionRow}>
           <TouchableOpacity
-            style={s.primaryButton}
-            onPress={credit.modal.openPayment}
+            style={s.secondaryButton}
+            onPress={credit.modal.close}
           >
-            <Text style={s.primaryText}>Record payment</Text>
+            <Text style={s.secondaryText}>Close</Text>
           </TouchableOpacity>
-        )}
+          {canPay && (
+            <TouchableOpacity
+              style={s.primaryButton}
+              onPress={credit.modal.openPayment}
+            >
+              <Text style={s.primaryText} numberOfLines={1}>
+                Record payment
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </>
   );
