@@ -27,11 +27,11 @@ type RawSale = {
   snapshot_price: number | null;
   total: number | null;
   bo_reason: string | null;
+  payment_type: "cash" | "credit" | null;
 };
 
 type RawSessionStore = {
   stores: { store_name: string | null; province: string | null } | null;
-  payment_type: "cash" | "credit" | null;
   sales: RawSale[];
 };
 
@@ -56,7 +56,6 @@ function mapSessionStore(
 ): SalesRecord[] {
   const store = sessionStore.stores?.store_name ?? "";
   const province = sessionStore.stores?.province ?? "";
-  const paymentType = sessionStore.payment_type ?? "cash";
 
   return sessionStore.sales.map((sale) => ({
     id: sale.id,
@@ -72,7 +71,9 @@ function mapSessionStore(
     unitPrice: sale.snapshot_price ?? 0,
     total: sale.total ?? 0,
     boReason: sale.bo_reason,
-    paymentType,
+    // Per order, not per visit: one stop can take some goods on credit and be
+    // paid cash for the rest.
+    paymentType: sale.payment_type ?? "cash",
   }));
 }
 
@@ -91,8 +92,7 @@ export const getSalesDataset = async (): Promise<SalesRecord[]> => {
       id, session_date, conducted_by_name,
       session_stores!inner(
         sales(*),
-        stores(store_name, province),
-        payment_type
+        stores(store_name, province)
       )
     `,
     )
