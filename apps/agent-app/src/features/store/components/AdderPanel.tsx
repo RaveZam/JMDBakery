@@ -8,31 +8,27 @@ import { PaymentTypeToggle } from "./PaymentTypeToggle";
 import { useProductQuantity } from "../context/useProductQuantity";
 
 export function AdderPanel() {
-  const { adderModal, storeDetails } = useProductQuantity();
+  const { sales } = useProductQuantity();
 
   return (
     <View style={styles.panel}>
       <ProductSelector />
-      {!!adderModal.inventory.selectedProduct && (
+      {!!sales.adder.catalog.selected && (
         <>
           <View style={styles.stepperSection}>
             <QtyStepper
-              value={adderModal.inventory.quantity}
-              onChange={adderModal.inventory.setQuantity}
+              value={sales.adder.form.quantity}
+              onChange={sales.adder.form.setQuantity}
             />
           </View>
 
-          <BadOrderSection
-            value={adderModal.inventory.boQty}
-            onChange={adderModal.inventory.setBoQty}
-            needsReason={adderModal.inventory.needsReason}
-          />
+          <BadOrderSection badOrder={sales.adder.form.badOrder} />
 
           <ReasonPicker />
 
           <PaymentTypeToggle
-            value={storeDetails.paymentType}
-            onChange={storeDetails.setPaymentType}
+            value={sales.adder.payment.type}
+            onChange={sales.adder.payment.setType}
           />
 
           <AddButton />

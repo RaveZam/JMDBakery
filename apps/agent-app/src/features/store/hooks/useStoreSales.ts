@@ -27,14 +27,13 @@ import {
 import { getSessionStoreById } from "../services/store-services";
 
 /**
- * Drives the store distribution log screen: the running sales list for a store visit,
- * the add/edit order modal, and the remaining-stock numbers shown next to each product.
+ * Everything the store screen's order log needs: the product list priced for
+ * this store, the add/edit modal's form state, and the orders already logged.
  *
- * Used by the store detail screen so it can read `inventory.*` for the list/modal
- * without knowing how sales are counted, persisted, or how remaining stock is derived.
- *
- * @returns `{ inventory }` — everything the screen needs: sold items, modal form state
- *          and setters, remaining stock per product, and the add/edit/delete handlers.
+ * Each order carries how it was settled, so one stop can take some goods on
+ * credit and be paid cash for the rest. The debt is recorded as the orders are
+ * logged rather than at confirm time, so an agent who forgets to confirm the
+ * visit still leaves it on record.
  */
 export function useStoreSales() {
   const { sessionId, sessionStoreId } = useLocalSearchParams<{
@@ -67,13 +66,17 @@ export function useStoreSales() {
   const [boReason, setBoReason] = useState("");
   const [boReasonType, setBoReasonType] = useState<PresetReason | null>(null);
 
+  //How this one order is being settled. A stop can mix the two, so it's a
+  //field on the order like any other, not a setting for the whole visit.
+  const [paymentType, setPaymentType] = useState<"cash" | "credit">("cash");
+
   const [soldItems, setSoldItems] = useState<LoggedItem[]>([]);
   //Which sale row is being edited, null means the modal is in "add new" mode
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null);
   //Snapshot of the sale's qty/boQty before editing, so hasEnoughStock can add it back
   //before checking stock (otherwise editing an order would count its own old qty against itself)
   const [editingOriginal, setEditingOriginal] = useState<{
-    qty: number;
+    quantity: number;
     boQty: number;
   } | null>(null);
 
@@ -104,7 +107,8 @@ export function useStoreSales() {
         ),
       })),
     );
-    //then we just compute the remaining items based on the sales count, morning inventory - sales per product
+
+    //remaining is morning inventory minus what's been sold across the whole route session
     setRemaining(computeRemaining(items, salesCounts));
   }, [visible, sessionId, sessionStoreId, salesCounts]);
 
@@ -128,20 +132,20 @@ export function useStoreSales() {
     setBoQty(0);
     setBoReason("");
     setBoReasonType(null);
+    //Back to cash every time: an agent who forgets the toggle should log a
+    //plain sale, not silently put the store into debt.
+    setPaymentType("cash");
     setEditingSaleId(null);
     setEditingOriginal(null);
   };
 
-  //Saves whatever is in the modal form: either a brand new sale, or an update to
-  //editingSaleId if we got here from onItemPress. Bails out quietly on bad input,
-  //only alerts the user when the stock check specifically fails.
   const addOrder = () => {
     if (!sessionStoreId || !selectedProduct) return;
     const { valid } = validateSaleInput({ qty: quantity, boQty, boReason });
     if (!valid) return;
 
     const enough = hasEnoughStock({
-      qty: quantity,
+      quantity,
       boQty,
       remaining: remaining[selectedProduct.id] ?? 0,
       editingOriginal: editingOriginal ?? undefined,
@@ -162,6 +166,7 @@ export function useStoreSales() {
       qty: quantity,
       boQty,
       boReason,
+      paymentType,
     };
 
     if (editingSaleId) {
@@ -202,8 +207,9 @@ export function useStoreSales() {
           ? "Custom"
           : null,
     );
+    setPaymentType(item.paymentType);
     setEditingSaleId(item.saleId);
-    setEditingOriginal({ qty: item.qty, boQty: item.boQty });
+    setEditingOriginal({ quantity: item.qty, boQty: item.boQty });
     setVisible(true);
   };
 
@@ -232,33 +238,48 @@ export function useStoreSales() {
   const { needsReason } = validateSaleInput({ qty: quantity, boQty, boReason });
 
   return {
-    inventory: {
-      soldItems,
-      reloadSoldItems,
-      selectedProduct,
-      setSelectedProduct,
-      quantity,
-      setQuantity,
-      boQty,
-      setBoQty,
-      boReason,
-      setBoReason,
-      boReasonType,
-      selectReason,
-      salesCounts,
-      remaining,
-      visible,
-      products,
-      editingSaleId,
-      needsReason,
+    //The log itself: what's been ordered at this stop and how to act on a row.
+    orders: {
+      items: soldItems,
       open: () => setVisible(true),
+      onItemPress,
+      onDeleteItem,
+    },
+    //The add/edit modal, in the shape the panel reads it: the modal itself,
+    //what's pickable, the form, and how the order settles.
+    adder: {
+      visible,
       close: () => {
         setVisible(false);
         resetForm();
       },
-      addOrder,
-      onItemPress,
-      onDeleteItem,
+      submit: addOrder,
+      //Whether this is a new order or a correction to one already logged. The
+      //sale's id is the hook's business; the panel only changes its wording.
+      mode: editingSaleId ? ("edit" as const) : ("add" as const),
+      //What can be ordered, priced for this store, with what's left of each.
+      catalog: {
+        products,
+        remaining,
+        selected: selectedProduct,
+        select: setSelectedProduct,
+      },
+      form: {
+        quantity,
+        setQuantity,
+        //Damaged or expired stock going back on the truck. Its own group
+        //because the reason only exists once there's a quantity to explain.
+        badOrder: {
+          quantity: boQty,
+          setQuantity: setBoQty,
+          reason: boReason,
+          setReason: setBoReason,
+          reasonType: boReasonType,
+          selectReason,
+          needsReason,
+        },
+      },
+      payment: { type: paymentType, setType: setPaymentType },
     },
   };
 }

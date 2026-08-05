@@ -7,8 +7,8 @@ const CARD_BG = "#FFFFFF";
 const BORDER = "#E2E8F0";
 
 export function VisitFooter() {
-  const { adderModal, storeDetails } = useProductQuantity();
-  const netTotal = useNetTotal(adderModal.inventory.soldItems);
+  const { sales, storeDetails } = useProductQuantity();
+  const netTotal = useNetTotal(sales.orders.items);
   return (
     <View style={styles.footer}>
       <View style={styles.summaryRow}>
@@ -18,7 +18,7 @@ export function VisitFooter() {
       <TouchableOpacity
         style={styles.confirmBtn}
         activeOpacity={0.8}
-        onPress={() => storeDetails.confirmVisit(netTotal)}
+        onPress={storeDetails.confirmVisit}
       >
         <Text style={styles.confirmBtnText}>Confirm visit</Text>
       </TouchableOpacity>

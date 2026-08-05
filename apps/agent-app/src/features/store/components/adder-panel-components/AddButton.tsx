@@ -4,16 +4,16 @@ import { useProductQuantity } from "../../context/useProductQuantity";
 const HEADER_BG = "#0b4c29";
 
 export function AddButton() {
-  const { adderModal } = useProductQuantity();
+  const { sales } = useProductQuantity();
 
   return (
     <TouchableOpacity
       style={styles.addBtn}
       activeOpacity={0.85}
-      onPress={() => adderModal.inventory.addOrder()}
+      onPress={sales.adder.submit}
     >
       <Text style={styles.addBtnText}>
-        {adderModal.inventory.editingSaleId ? "Save Changes" : "Add to Order"}
+        {sales.adder.mode === "edit" ? "Save Changes" : "Add to Order"}
       </Text>
     </TouchableOpacity>
   );

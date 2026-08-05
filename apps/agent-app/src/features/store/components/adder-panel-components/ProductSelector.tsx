@@ -8,7 +8,7 @@ import { useProductQuantity } from "../../context/useProductQuantity";
 const BORDER = "#E2E8F0";
 
 export function ProductSelector() {
-  const { adderModal } = useProductQuantity();
+  const { sales } = useProductQuantity();
 
   const [listOpen, setListOpen] = useState(false);
 
@@ -22,7 +22,7 @@ export function ProductSelector() {
       >
         <View style={styles.productDropdownInner}>
           <Text style={styles.productName} numberOfLines={1}>
-            {adderModal.inventory.selectedProduct?.name ?? "Select product"}
+            {sales.adder.catalog.selected?.name ?? "Select product"}
           </Text>
         </View>
         <View style={styles.productChevron}>
@@ -30,12 +30,9 @@ export function ProductSelector() {
         </View>
       </TouchableOpacity>
 
-      {adderModal.inventory.selectedProduct && (
+      {sales.adder.catalog.selected && (
         <Text style={styles.remainingLabel}>
-          {adderModal.inventory.remaining[
-            adderModal.inventory.selectedProduct.id
-          ] ?? 0}{" "}
-          left
+          {sales.adder.catalog.remaining[sales.adder.catalog.selected.id] ?? 0} left
         </Text>
       )}
 
@@ -51,12 +48,12 @@ export function ProductSelector() {
           onPress={() => setListOpen(false)}
         >
           <View style={styles.list}>
-            {adderModal.inventory.products.map((product, index) => (
+            {sales.adder.catalog.products.map((product, index) => (
               <TouchableOpacity
                 key={product.id}
                 style={styles.listRow}
                 onPress={() => {
-                  adderModal.inventory.setSelectedProduct(product);
+                  sales.adder.catalog.select(product);
                   setListOpen(false);
                 }}
                 testID={`picker-option-${index}`}
@@ -65,7 +62,7 @@ export function ProductSelector() {
                   {product.name}
                 </Text>
                 <Text style={styles.listRowRemaining}>
-                  {adderModal.inventory.remaining[product.id] ?? 0} left
+                  {sales.adder.catalog.remaining[product.id] ?? 0} left
                 </Text>
               </TouchableOpacity>
             ))}

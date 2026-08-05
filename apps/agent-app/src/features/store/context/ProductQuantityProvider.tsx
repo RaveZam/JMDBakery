@@ -1,10 +1,12 @@
-import { createContext, type ReactNode } from "react";
+import { createContext, useEffect, type ReactNode } from "react";
 import { useStoreSales } from "../hooks/useStoreSales";
 import { useStoreDetails } from "../hooks/useStoreDetails";
+import { useCredit } from "../hooks/useCredit";
 
 export interface ProductQuantityContextValue {
-  adderModal: ReturnType<typeof useStoreSales>;
+  sales: ReturnType<typeof useStoreSales>;
   storeDetails: ReturnType<typeof useStoreDetails>;
+  credit: ReturnType<typeof useCredit>;
 }
 
 export const ProductQuantityContext = createContext<
@@ -12,10 +14,20 @@ export const ProductQuantityContext = createContext<
 >(undefined);
 
 export function ProductQuantityProvider({ children }: { children: ReactNode }) {
-  const adderModal = useStoreSales();
+  const sales = useStoreSales();
   const storeDetails = useStoreDetails();
+  const credit = useCredit();
+
+  // What the store owes is derived from its credit orders, so any change to the
+  // log — added, edited, deleted — moves the balance on the Credits tab. Neither
+  // hook knows about the other; the provider holding both wires it, so neither
+  // has to take the other as an argument.
+  useEffect(() => {
+    credit.reload();
+  }, [sales.orders.items, credit.reload]);
+
   return (
-    <ProductQuantityContext.Provider value={{ adderModal, storeDetails }}>
+    <ProductQuantityContext.Provider value={{ sales, storeDetails, credit }}>
       {children}
     </ProductQuantityContext.Provider>
   );

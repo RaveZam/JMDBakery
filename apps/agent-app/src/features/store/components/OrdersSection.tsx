@@ -7,16 +7,16 @@ const CARD_BG = "#FFFFFF";
 const BORDER = "#E2E8F0";
 
 export function OrdersSection() {
-  const { adderModal } = useProductQuantity();
+  const { sales } = useProductQuantity();
 
   return (
     <View style={styles.section}>
       <SectionRow
         label="ORDERS"
         buttonLabel="+ Add Order"
-        onToggle={adderModal.inventory.open}
+        onToggle={sales.orders.open}
       />
-      {adderModal.inventory.soldItems.length > 0 ? (
+      {sales.orders.items.length > 0 ? (
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={[styles.colHead, styles.colHeadProduct]}>PRODUCT</Text>
@@ -25,13 +25,13 @@ export function OrdersSection() {
             <Text style={[styles.colHead, styles.colHeadTotal]}>TOTAL</Text>
             <View style={styles.colHeadDelete} />
           </View>
-          {adderModal.inventory.soldItems.map((item, idx) => (
+          {sales.orders.items.map((item, idx) => (
             <SoldOrderRow
               key={item.saleId}
               item={item}
               index={idx}
-              onPress={() => adderModal.inventory.onItemPress(idx)}
-              onDelete={() => adderModal.inventory.onDeleteItem(idx)}
+              onPress={() => sales.orders.onItemPress(idx)}
+              onDelete={() => sales.orders.onDeleteItem(idx)}
             />
           ))}
         </View>

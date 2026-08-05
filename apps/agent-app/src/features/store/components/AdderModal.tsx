@@ -15,21 +15,21 @@ import { useProductQuantity } from "../context/useProductQuantity";
 const HEADER_BG = "#0b4c29";
 
 export function AdderModal() {
-  const { adderModal } = useProductQuantity();
+  const { sales } = useProductQuantity();
 
   return (
     <Modal
-      visible={adderModal.inventory.visible}
+      visible={sales.adder.visible}
       transparent
       animationType="slide"
       statusBarTranslucent
-      onRequestClose={adderModal.inventory.close}
+      onRequestClose={sales.adder.close}
     >
       {/* Full-screen backdrop */}
       <TouchableOpacity
         style={styles.backdrop}
         activeOpacity={1}
-        onPress={adderModal.inventory.close}
+        onPress={sales.adder.close}
       />
 
       {/* Sheet pinned to bottom */}
@@ -46,11 +46,11 @@ export function AdderModal() {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>
-              {adderModal.inventory.editingSaleId ? "Edit Item" : "Add Items"}
+              {sales.adder.mode === "edit" ? "Edit Item" : "Add Items"}
             </Text>
             <TouchableOpacity
               style={styles.closeBtn}
-              onPress={adderModal.inventory.close}
+              onPress={sales.adder.close}
               hitSlop={8}
             >
               <Ionicons name="close" size={18} color="rgba(255,255,255,0.8)" />

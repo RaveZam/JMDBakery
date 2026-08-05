@@ -11,9 +11,9 @@ import { PRESET_REASONS } from "../../types/store-types";
 const BORDER = "#E2E8F0";
 
 export function ReasonPicker() {
-  const { adderModal } = useProductQuantity();
+  const { sales } = useProductQuantity();
 
-  if (adderModal.inventory.boQty === 0) return null;
+  if (sales.adder.form.badOrder.quantity === 0) return null;
 
   return (
     <View style={styles.reasonSection}>
@@ -24,18 +24,17 @@ export function ReasonPicker() {
             key={r}
             style={[
               styles.chip,
-              adderModal.inventory.boReasonType === r && styles.chipActive,
+              sales.adder.form.badOrder.reasonType === r && styles.chipActive,
             ]}
             onPress={() => {
-              adderModal.inventory.selectReason(r);
+              sales.adder.form.badOrder.selectReason(r);
             }}
             activeOpacity={0.7}
           >
             <Text
               style={[
                 styles.chipText,
-                adderModal.inventory.boReasonType === r &&
-                  styles.chipTextActive,
+                sales.adder.form.badOrder.reasonType === r && styles.chipTextActive,
               ]}
             >
               {r}
@@ -43,13 +42,13 @@ export function ReasonPicker() {
           </TouchableOpacity>
         ))}
       </View>
-      {adderModal.inventory.boReasonType === "Custom" && (
+      {sales.adder.form.badOrder.reasonType === "Custom" && (
         <TextInput
           style={styles.customInput}
           placeholder="Describe the reason…"
           placeholderTextColor="#94A3B8"
-          value={adderModal.inventory.boReason}
-          onChangeText={adderModal.inventory.setBoReason}
+          value={sales.adder.form.badOrder.reason}
+          onChangeText={sales.adder.form.badOrder.setReason}
           autoFocus
         />
       )}

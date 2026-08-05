@@ -45,7 +45,7 @@ beforeEach(() => {
 test("prices a deleted product from the inventory snapshot, not ₱0", () => {
   const { result } = renderHook(() => useStoreSales());
 
-  expect(result.current.inventory.products).toEqual([
+  expect(result.current.adder.catalog.products).toEqual([
     { id: "p1", name: "Pandesal", price: 12 },
   ]);
 });

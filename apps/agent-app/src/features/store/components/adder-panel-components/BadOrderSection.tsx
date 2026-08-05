@@ -4,16 +4,14 @@ import { QtyStepper } from "./QtyStepper";
 const BORDER = "#E2E8F0";
 
 type BadOrderSectionProps = {
-  value: number;
-  onChange: (value: number) => void;
-  needsReason: boolean;
+  badOrder: {
+    quantity: number;
+    setQuantity: (value: number) => void;
+    needsReason: boolean;
+  };
 };
 
-export function BadOrderSection({
-  value,
-  onChange,
-  needsReason,
-}: BadOrderSectionProps) {
+export function BadOrderSection({ badOrder }: BadOrderSectionProps) {
   return (
     <>
       <View style={styles.sectionDivider}>
@@ -22,8 +20,12 @@ export function BadOrderSection({
         <View style={styles.dividerLine} />
       </View>
       <View style={styles.stepperSection}>
-        <QtyStepper label="Bad Order Qty" value={value} onChange={onChange} />
-        {needsReason && (
+        <QtyStepper
+          label="Bad Order Qty"
+          value={badOrder.quantity}
+          onChange={badOrder.setQuantity}
+        />
+        {badOrder.needsReason && (
           <Text style={styles.reasonWarning}>Reason required</Text>
         )}
       </View>
