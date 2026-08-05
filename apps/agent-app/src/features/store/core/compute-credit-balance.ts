@@ -1,6 +1,7 @@
 import type { CreditEntry } from "../types/store-types";
 
 // Outstanding balance for a store: what it owes minus what it has paid back.
+// Subtracts the balance if not credit, since its only either credit or payment
 export function computeCreditBalance(entries: CreditEntry[]): number {
   return entries.reduce((balance, entry) => {
     return entry.entryType === "credit"
