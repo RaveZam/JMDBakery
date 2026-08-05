@@ -8,10 +8,10 @@ export const CREDIT_RED = "#EF4444";
 export const PAYMENT_GREEN = "#16A34A";
 export const BRAND_GREEN = "#0b4c29";
 
-// Shared shell for both faces of the credit modal: a receipt slip, with the
+// Shared shell for every view of the credit modal, styled like a paper receipt: the
 // amount at the top, the ledger detail below a torn edge, and actions pinned
 // to the bottom.
-export const creditModalStyles = StyleSheet.create({
+export const styles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 360,
@@ -114,7 +114,7 @@ export const creditModalStyles = StyleSheet.create({
     paddingBottom: 20,
     paddingTop: 4,
   },
-  // Same footer, stacked: one row of buttons per tier, so a slip with edit and
+  // Same footer, stacked: one row of buttons per tier, so a modal with edit and
   // delete on it doesn't have to fit four pills across a phone.
   actionStack: {
     gap: 10,

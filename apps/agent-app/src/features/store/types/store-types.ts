@@ -41,6 +41,9 @@ export type CreditEntry = {
   createdAt: string;
 };
 
+// Which view of the credit modal is open. Null means it's closed.
+export type CreditModalMode = "entry" | "payment" | "edit" | null;
+
 export type LoggedItem = {
   saleId: string;
   productId: string;

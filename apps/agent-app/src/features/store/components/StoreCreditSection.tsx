@@ -20,10 +20,7 @@ function BalanceRow({ credit }: { credit: CreditController }) {
         </Text>
       </View>
       {credit.balance > 0 && (
-        <TouchableOpacity
-          style={styles.payButton}
-          onPress={credit.modal.openPayment}
-        >
+        <TouchableOpacity style={styles.payButton} onPress={credit.openPayment}>
           <Text style={styles.payButtonText}>Record payment</Text>
         </TouchableOpacity>
       )}
@@ -46,7 +43,7 @@ export function StoreCreditSection({ credit }: { credit: CreditController }) {
               key={entry.id}
               item={entry}
               remaining={credit.remainingByEntryId[entry.id]}
-              onPress={credit.modal.openEntry}
+              onPress={credit.openEntry}
             />
           ))}
         </View>

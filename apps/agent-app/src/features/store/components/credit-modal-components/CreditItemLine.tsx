@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import type { LoggedItem } from "../../types/store-types";
-import { creditModalStyles as s } from "./creditModalStyles";
+import { styles as s } from "./styles";
 
 // One product line of the visit that created this credit.
 export function CreditItemLine({ item }: { item: LoggedItem }) {

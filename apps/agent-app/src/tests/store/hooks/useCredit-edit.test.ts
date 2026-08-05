@@ -8,7 +8,7 @@ import {
 } from "@/src/features/store/services/store-credit-service";
 import type { CreditEntry } from "@/src/features/store/types/store-types";
 
-// The edit/delete wiring on the credit slip. What gets written is covered
+// The edit/delete wiring on the credit modal. What gets written is covered
 // against a real DB in credit-entry-edit-service.test.ts; this covers what the
 // screen is allowed to offer and what it hands the service.
 
@@ -49,11 +49,11 @@ beforeEach(() => {
   jest.spyOn(Alert, "alert").mockImplementation(() => {});
 });
 
-/** Render with the slip open on `entry`. */
+/** Render with the modal open on `entry`. */
 function renderOpenOn(entry: CreditEntry) {
   mockedEntries.mockReturnValue([entry]);
   const rendered = renderHook(() => useCredit());
-  act(() => rendered.result.current.modal.openEntry(entry));
+  act(() => rendered.result.current.openEntry(entry));
   return rendered;
 }
 
@@ -67,13 +67,13 @@ function confirmDelete() {
 test("the agent's own credit offers edit and delete", () => {
   const { result } = renderOpenOn(OWN_CREDIT);
 
-  expect(result.current.edit.canModify).toBe(true);
+  expect(result.current.canModify).toBe(true);
 });
 
 test("a colleague's credit does not", () => {
   const { result } = renderOpenOn({ ...OWN_CREDIT, recordedBy: "agent-2" });
 
-  expect(result.current.edit.canModify).toBe(false);
+  expect(result.current.canModify).toBe(false);
 });
 
 // Correcting it would save and then quietly revert: the next order added,
@@ -81,7 +81,7 @@ test("a colleague's credit does not", () => {
 test("the credit for the visit on screen does not either", () => {
   const { result } = renderOpenOn({ ...OWN_CREDIT, sessionStoreId: "ss-1" });
 
-  expect(result.current.edit.canModify).toBe(false);
+  expect(result.current.canModify).toBe(false);
 });
 
 test("a payment taken on the visit on screen still does", () => {
@@ -91,35 +91,35 @@ test("a payment taken on the visit on screen still does", () => {
     sessionStoreId: "ss-1",
   });
 
-  expect(result.current.edit.canModify).toBe(true);
+  expect(result.current.canModify).toBe(true);
 });
 
 test("opening the edit form seeds the field with what's on the ledger", () => {
   const { result } = renderOpenOn(OWN_CREDIT);
 
-  act(() => result.current.modal.openEdit());
+  act(() => result.current.openEdit());
 
-  expect(result.current.modal.mode).toBe("edit");
-  expect(result.current.edit.text).toBe("750");
+  expect(result.current.mode).toBe("edit");
+  expect(result.current.draftText).toBe("750");
 });
 
-test("saving sends the corrected amount and closes the slip", () => {
+test("saving sends the corrected amount and closes the modal", () => {
   const { result } = renderOpenOn(OWN_CREDIT);
 
-  act(() => result.current.modal.openEdit());
-  act(() => result.current.edit.setText("600"));
-  act(() => result.current.edit.save());
+  act(() => result.current.openEdit());
+  act(() => result.current.setDraftText("600"));
+  act(() => result.current.save());
 
   expect(updateCreditEntryAmount).toHaveBeenCalledWith("entry-1", 600);
-  expect(result.current.modal.mode).toBeNull();
+  expect(result.current.mode).toBeNull();
 });
 
 test("an empty field saves nothing", () => {
   const { result } = renderOpenOn(OWN_CREDIT);
 
-  act(() => result.current.modal.openEdit());
-  act(() => result.current.edit.setText(""));
-  act(() => result.current.edit.save());
+  act(() => result.current.openEdit());
+  act(() => result.current.setDraftText(""));
+  act(() => result.current.save());
 
   expect(updateCreditEntryAmount).not.toHaveBeenCalled();
 });
@@ -127,29 +127,29 @@ test("an empty field saves nothing", () => {
 test("deleting asks first, then removes the entry", () => {
   const { result } = renderOpenOn(OWN_CREDIT);
 
-  act(() => result.current.edit.remove());
+  act(() => result.current.remove());
   expect(deleteCreditEntry).not.toHaveBeenCalled();
 
   confirmDelete();
   expect(deleteCreditEntry).toHaveBeenCalledWith("entry-1");
-  expect(result.current.modal.mode).toBeNull();
+  expect(result.current.mode).toBeNull();
 });
 
 test("dismissing the confirm leaves the entry alone", () => {
   const { result } = renderOpenOn(OWN_CREDIT);
 
-  act(() => result.current.edit.remove());
+  act(() => result.current.remove());
 
   expect(deleteCreditEntry).not.toHaveBeenCalled();
-  expect(result.current.modal.mode).toBe("entry");
+  expect(result.current.mode).toBe("entry");
 });
 
-test("closing the slip drops a half-typed correction", () => {
+test("closing the modal drops a half-typed correction", () => {
   const { result } = renderOpenOn(OWN_CREDIT);
 
-  act(() => result.current.modal.openEdit());
-  act(() => result.current.edit.setText("123"));
-  act(() => result.current.modal.close());
+  act(() => result.current.openEdit());
+  act(() => result.current.setDraftText("123"));
+  act(() => result.current.close());
 
-  expect(result.current.edit.text).toBe("");
+  expect(result.current.draftText).toBe("");
 });
