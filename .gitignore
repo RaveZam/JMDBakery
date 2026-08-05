@@ -45,3 +45,4 @@ next-env.d.ts
 /docs/superpowers/specs
 /AGENTS.md
 /CLAUDE.md
+.mcp.json
