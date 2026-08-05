@@ -66,17 +66,24 @@ function seedLegacySale(): void {
     seedStore(seedProvince(seedRoute())),
   );
   seedProduct("prod-legacy", "Ensaymada", 15);
-  SalesDao.insertSale({
-    id: "sale-legacy",
-    sessionStoreId,
-    productId: "prod-legacy",
-    snapshotName: "Ensaymada",
-    snapshotPrice: 15,
-    quantitySold: 3,
-    quantityBo: 0,
-    boReason: "",
-    createdAt: "2026-07-27T11:00:00.000Z",
-  });
+  // Raw insert, not SalesDao: the legacy table predates payment_type, so the
+  // current DAO's column list wouldn't fit it.
+  getDb().runSync(
+    `INSERT INTO sales (id, session_store_id, product_id, snapshot_name,
+                        snapshot_price, quantity_sold, quantity_bo, bo_reason, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      "sale-legacy",
+      sessionStoreId,
+      "prod-legacy",
+      "Ensaymada",
+      15,
+      3,
+      0,
+      "",
+      "2026-07-27T11:00:00.000Z",
+    ],
+  );
 }
 
 beforeAll(async () => {
@@ -135,10 +142,44 @@ test("rebuilding sales drops the old products FK and keeps the rows", async () =
       "SELECT total FROM sales WHERE id = 'sale-legacy'",
     )?.total,
   ).toBe(45);
+  // The rebuild runs after the ADDED_COLUMNS block, so it has to carry
+  // payment_type across rather than recreate the table without it. A sale
+  // predating the column is cash, which is what it always meant.
+  expect(
+    getDb().getFirstSync<{ payment_type: string }>(
+      "SELECT payment_type FROM sales WHERE id = 'sale-legacy'",
+    )?.payment_type,
+  ).toBe("cash");
   // And the product it points at is now deletable.
   expect(() =>
     getDb().runSync("DELETE FROM products WHERE id = 'prod-legacy'"),
   ).not.toThrow();
+});
+
+test("drops session_stores.payment_type, keeping the visits themselves", async () => {
+  // An install from when the visit carried the payment type. It can't say that
+  // a stop took some goods on credit and was paid cash for the rest, so sales
+  // owns that now and this column goes.
+  getDb().runSync(
+    `ALTER TABLE session_stores ADD COLUMN payment_type TEXT NOT NULL DEFAULT 'cash'`,
+  );
+  const sessionStoreId = seedSessionStore(
+    seedRouteSession(),
+    seedStore(seedProvince(seedRoute())),
+  );
+
+  await initDb();
+
+  const columns = getDb()
+    .getAllSync<{ name: string }>("PRAGMA table_info(session_stores)")
+    .map((column) => column.name);
+  expect(columns).not.toContain("payment_type");
+  expect(
+    getDb().getFirstSync<{ id: string }>(
+      "SELECT id FROM session_stores WHERE id = ?",
+      [sessionStoreId],
+    )?.id,
+  ).toBe(sessionStoreId);
 });
 
 test("backfills snapshot_price on inventory rows written before the column", async () => {

@@ -238,8 +238,13 @@ const ADDED_COLUMNS: [addColumn: string, followUp?: string][] = [
   ],
   [`ALTER TABLE stores ADD COLUMN created_by TEXT`, BACKFILL_PROVINCE_STORES],
   [`ALTER TABLE stores ADD COLUMN created_by_name TEXT`],
+  // How each order was settled. One stop can mix the two — a store takes some
+  // goods on credit and pays cash for the rest — so this sits on the order, not
+  // on the visit. 'cash' by default, which is what every sale before this
+  // column meant.
+  [`ALTER TABLE sales ADD COLUMN payment_type TEXT NOT NULL DEFAULT 'cash'`],
   [
-    `ALTER TABLE session_stores ADD COLUMN payment_type TEXT NOT NULL DEFAULT 'cash'`,
+    `ALTER TABLE credit_entry_sales ADD COLUMN payment_type TEXT NOT NULL DEFAULT 'cash'`,
   ],
 ];
 
@@ -260,8 +265,42 @@ async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
     if (followUp) database.runSync(followUp);
   }
 
+  dropSessionStorePaymentType(database);
   await dropSalesProductForeignKey(database);
   await dropStoreProvinceForeignKey(database);
+}
+
+// Carries the old per-visit answer down onto the orders. The ADDED_COLUMNS
+// block defaulted every existing sale to 'cash', so a visit settled on credit
+// back when the visit held the flag has no credit sale lines under it. Its debt
+// survives as a store_credit_entries row, but the moment an agent edits one of
+// those orders the debt is re-derived from the sales — and would come out as
+// zero, silently wiping what the store owes.
+const BACKFILL_SALE_PAYMENT_TYPE = `
+  UPDATE sales SET payment_type = 'credit'
+  WHERE session_store_id IN (
+    SELECT id FROM session_stores WHERE payment_type = 'credit'
+  )
+`;
+
+/**
+ * Drops `session_stores.payment_type` on installs that still carry it. How an
+ * order is settled belongs to the order — a stop can take some goods on credit
+ * and pay cash for the rest, which one column on the visit can't say. `sales`
+ * answers it now, and leaving this one behind would leave a second, wrong
+ * answer sitting next to the right one.
+ *
+ * Mirrors `20260805000000_move_payment_type_to_sales.sql`, which does the same
+ * backfill-then-drop on the server.
+ */
+function dropSessionStorePaymentType(database: SQLite.SQLiteDatabase): void {
+  const columns = database.getAllSync<{ name: string }>(
+    `PRAGMA table_info(session_stores)`,
+  );
+  if (!columns.some((column) => column.name === "payment_type")) return;
+
+  database.runSync(BACKFILL_SALE_PAYMENT_TYPE);
+  database.runSync(`ALTER TABLE session_stores DROP COLUMN payment_type`);
 }
 
 const CREATE_SALES_REBUILT = `
@@ -274,18 +313,21 @@ const CREATE_SALES_REBUILT = `
     quantity_sold    INTEGER NOT NULL DEFAULT 0,
     quantity_bo      INTEGER NOT NULL DEFAULT 0,
     bo_reason        TEXT,
+    payment_type     TEXT NOT NULL DEFAULT 'cash',
     total            REAL GENERATED ALWAYS AS (snapshot_price * quantity_sold) VIRTUAL,
     created_at       TEXT NOT NULL
   )
 `;
 
-// total is generated — copy every column except that one.
+// total is generated — copy every column except that one. This runs after the
+// ADDED_COLUMNS block, so payment_type is already on the old table and has to
+// be carried across, or the rebuild would silently drop it.
 const COPY_SALES_INTO_REBUILT = `
   INSERT INTO sales_rebuilt
     (id, session_store_id, product_id, snapshot_name, snapshot_price,
-     quantity_sold, quantity_bo, bo_reason, created_at)
+     quantity_sold, quantity_bo, bo_reason, payment_type, created_at)
   SELECT id, session_store_id, product_id, snapshot_name, snapshot_price,
-         quantity_sold, quantity_bo, bo_reason, created_at
+         quantity_sold, quantity_bo, bo_reason, payment_type, created_at
   FROM sales
 `;
 
