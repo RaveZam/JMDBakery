@@ -50,6 +50,16 @@ function StoreItemsList({ items }: { items: LoggedItem[] }) {
             {it.productName}
           </Text>
           <Text style={styles.itemQty}>×{it.qty}</Text>
+          <Text
+            style={[
+              styles.itemPayment,
+              it.paymentType === "credit"
+                ? styles.itemPaymentCredit
+                : styles.itemPaymentCash,
+            ]}
+          >
+            {it.paymentType === "credit" ? "Credit" : "Cash"}
+          </Text>
           {it.boQty > 0 ? <Text style={styles.itemBo}>{it.boQty} BO</Text> : null}
           <Text style={styles.itemTotal}>₱{(it.price * it.qty).toFixed(2)}</Text>
         </View>
@@ -114,6 +124,16 @@ const styles = StyleSheet.create({
   },
   itemName: { flex: 1, fontSize: 13, color: "#334155" },
   itemQty: { fontSize: 13, fontWeight: "600", color: "#0F172A" },
+  itemPayment: {
+    fontSize: 10,
+    fontWeight: "700",
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+    overflow: "hidden",
+  },
+  itemPaymentCash: { color: "#166534", backgroundColor: "#DCFCE7" },
+  itemPaymentCredit: { color: "#1D4ED8", backgroundColor: "#DBEAFE" },
   itemBo: {
     fontSize: 10,
     fontWeight: "700",
