@@ -16,6 +16,7 @@ import { supabase } from "@/src/lib/supabase";
 import { Colors } from "@/src/shared/constants/Colors";
 import { useDownloadSync } from "@/src/features/settings/useDownloadSync";
 import { clearSessionData } from "@/src/features/settings/services/clearSessionData";
+import { clearDeviceTrust } from "@/src/lib/device-trust";
 import type { Session } from "@supabase/supabase-js";
 
 export default function SettingsScreen() {
@@ -49,6 +50,8 @@ export default function SettingsScreen() {
     setLoading(true);
     try {
       await supabase.auth.signOut();
+      // Without this the offline grace window would let them straight back in.
+      clearDeviceTrust();
       router.replace("/auth/sign-in");
     } catch (err) {
       Alert.alert("Sign out failed", "Please try again.");

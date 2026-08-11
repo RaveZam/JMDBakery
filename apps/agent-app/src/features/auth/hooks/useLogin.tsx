@@ -1,4 +1,5 @@
 import { supabase } from "@/src/lib/supabase";
+import { clearDeviceTrust } from "@/src/lib/device-trust";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
@@ -21,6 +22,7 @@ export default function useLogin(email: string, password: string) {
       }
       if (res.data.user?.user_metadata?.role !== "agent") {
         await supabase.auth.signOut();
+        clearDeviceTrust();
         Alert.alert("Access denied", "This account is not an agent.");
         return;
       }
