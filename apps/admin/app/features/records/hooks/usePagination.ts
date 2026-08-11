@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
-import type { SalesRecord } from "@/app/server/salesData/getBaseData";
 import { paginateRecords } from "../helpers/paginateRecords";
 
-export function usePagination(
-  records: SalesRecord[],
+export function usePagination<T>(
+  records: T[],
   pageSize: number,
   resetKey: string,
 ) {

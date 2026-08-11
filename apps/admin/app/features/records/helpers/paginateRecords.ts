@@ -1,10 +1,8 @@
-import type { SalesRecord } from "@/app/server/salesData/getBaseData";
-
-export function paginateRecords(
-  records: SalesRecord[],
+export function paginateRecords<T>(
+  records: T[],
   page: number,
   pageSize: number,
-): SalesRecord[] {
+): T[] {
   const start = (page - 1) * pageSize;
   return records.slice(start, start + pageSize);
 }
