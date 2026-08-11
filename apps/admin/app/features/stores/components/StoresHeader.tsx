@@ -29,18 +29,26 @@ function StatPill({
   );
 }
 
+function PageTitle(): ReactElement {
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+        <MapPin className="h-3.5 w-3.5" />
+        Field Operations
+      </div>
+      <h1 className="mt-1.5 text-3xl font-semibold tracking-tight">Stores</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Every retail account on the route, ranked by revenue this month.
+      </p>
+    </div>
+  );
+}
+
 export function StoresHeader({ stats }: { stats: StoreStats }): ReactElement {
   return (
     <header className="sticky top-0 z-20 border-b bg-slate-50/80 px-6 py-6 backdrop-blur dark:bg-background/80">
       <div className="mx-auto w-full max-w-[1200px]">
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
-          <MapPin className="h-3.5 w-3.5" />
-          Field Operations
-        </div>
-        <h1 className="mt-1.5 text-3xl font-semibold tracking-tight">Stores</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Every retail account on the route, ranked by revenue this month.
-        </p>
+        <PageTitle />
 
         <dl className="mt-5 grid max-w-xl grid-cols-3 gap-3">
           <StatPill label="Accounts" value={stats.storeCount} />

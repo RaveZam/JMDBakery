@@ -7,7 +7,9 @@ import { X } from "lucide-react";
 import { ModalOverlay } from "@/app/features/products/components/ModalOverlay";
 import { StoreLocationContact } from "./StoreLocationContact";
 import { StoreTopProductsPanel } from "./StoreTopProductsPanel";
-import type { GroupedStoreRow } from "../types/store-types";
+import { StoreCreditPanel } from "./StoreCreditPanel";
+import { MOCK_LEDGER } from "../mockCredit";
+import type { StoreCreditByStore } from "../types/store-types";
 
 function useCloseOnEscape(active: boolean, onClose: () => void): void {
   useEffect(() => {
@@ -24,7 +26,7 @@ function StoreDetailHeader({
   store,
   onClose,
 }: {
-  store: GroupedStoreRow;
+  store: StoreCreditByStore;
   onClose: () => void;
 }): ReactElement {
   const joined = new Date(store.createdAt).toLocaleDateString("en-PH", {
@@ -55,7 +57,7 @@ export function StoreDetailModal({
   store,
   onClose,
 }: {
-  store: GroupedStoreRow | null;
+  store: StoreCreditByStore | null;
   onClose: () => void;
 }): ReactElement | null {
   useCloseOnEscape(store !== null, onClose);
@@ -65,7 +67,7 @@ export function StoreDetailModal({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <ModalOverlay onClose={onClose} />
-      <div className="relative z-10 w-full max-w-2xl">
+      <div className="relative z-10 w-full max-w-4xl">
         <div className="pointer-events-auto w-full rounded-2xl border bg-background shadow-xl">
           <StoreDetailHeader store={store} onClose={onClose} />
 
@@ -75,6 +77,7 @@ export function StoreDetailModal({
                 merged duplicate DB rows; fetch + merge top products for all
                 of them so this panel isn't missing sales from a duplicate. */}
             <StoreTopProductsPanel storeIds={store.memberIds} />
+            <StoreCreditPanel store={store} entries={MOCK_LEDGER} />
           </div>
         </div>
       </div>

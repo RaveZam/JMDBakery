@@ -20,6 +20,37 @@ export type GroupedStoreRow = StoreRow & { memberIds: string[] };
 
 export type TopProduct = { productName: string; revenue: number };
 
+// All-time, unlike revenue, which is windowed: a debt taken three months ago
+// is still owed today.
+export type StoreCredit = {
+  storeId: string;
+  creditTaken: number;
+  paidBack: number;
+  balance: number;
+  lastPaymentAt: string | null;
+};
+
+// A grouped store card with its credit totals folded in (see
+// attachCreditToStores). Omits storeId because the card already carries the
+// canonical `id` plus every `memberIds` the totals were summed across.
+export type StoreCreditByStore = GroupedStoreRow & Omit<StoreCredit, "storeId">;
+
+// Rank is assigned across every store before the search filter runs, so a row
+// shows its true standing on the revenue board even in a filtered list.
+export type RankedStore = StoreCreditByStore & { rank: number };
+
+export type CreditLedgerEntry = {
+  id: string;
+  entryType: "credit" | "payment";
+  amount: number;
+  note: string | null;
+  /** Who typed the entry into the app. */
+  recordedByName: string | null;
+  /** Who accepted the cash. Already resolved to recordedByName when the same. */
+  tenderedByName: string | null;
+  createdAt: string;
+};
+
 export type StoreStats = {
   storeCount: number;
   totalRevenue: number;

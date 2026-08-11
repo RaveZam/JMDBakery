@@ -3,7 +3,8 @@ import { Crown } from "lucide-react";
 
 import { formatCurrencyPHP } from "@/lib/utils";
 import { formatAddress } from "../helpers/storeHelpers";
-import type { GroupedStoreRow } from "../types/store-types";
+import { StoreBalanceBadge } from "./StoreBalanceBadge";
+import type { RankedStore } from "../types/store-types";
 
 // The top 3 earners get a crown over their rank number — gold, silver, bronze.
 // The list stays sorted by revenue (groupStoresByLocation), so the crown marks
@@ -42,14 +43,12 @@ function RankMarker({ rank }: { rank: number }): ReactElement {
 
 export function StoreRankRow({
   store,
-  rank,
   shareOfLeader,
   onSelect,
 }: {
-  store: GroupedStoreRow;
-  rank: number;
+  store: RankedStore;
   shareOfLeader: number;
-  onSelect: (store: GroupedStoreRow) => void;
+  onSelect: (store: RankedStore) => void;
 }): ReactElement {
   return (
     <button
@@ -57,13 +56,16 @@ export function StoreRankRow({
       onClick={() => onSelect(store)}
       className="group flex w-full items-center gap-4 border-b border-border/60 px-2 py-3.5 text-left transition-colors last:border-b-0 hover:bg-muted/40"
     >
-      <RankMarker rank={rank} />
+      <RankMarker rank={store.rank} />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-3">
-          <h3 className="truncate text-sm font-semibold group-hover:text-primary">
-            {store.storeName}
-          </h3>
+          <div className="flex min-w-0 items-baseline gap-2">
+            <h3 className="truncate text-sm font-semibold group-hover:text-primary">
+              {store.storeName}
+            </h3>
+            <StoreBalanceBadge balance={store.balance} />
+          </div>
           <span className="shrink-0 text-sm font-semibold tabular-nums">
             {formatCurrencyPHP(store.totalRevenue)}
           </span>

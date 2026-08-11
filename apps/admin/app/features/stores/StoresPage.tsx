@@ -1,12 +1,16 @@
 "use client";
 
-import { useMemo, type ReactElement } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 
 import { useStoresQuery } from "./storesQuery";
-import { computeStoreStats, groupStoresByLocation } from "./helpers/storeHelpers";
-import { StoresList } from "./components/StoresList";
-import { StoresBoardSkeleton } from "./components/StoresBoardSkeleton";
-import { StoresEmptyState } from "./components/StoresEmptyState";
+import {
+  computeStoreStats,
+  groupStoresByLocation,
+} from "./helpers/storeHelpers";
+import { rankStores } from "./helpers/rankStores";
+import { filterStores } from "./helpers/filterStores";
+import { attachMockCredit } from "./mockCredit";
+import { StoresBoard } from "./components/StoresBoard";
 import { StoresHeader } from "./components/StoresHeader";
 
 export function StoresPage(): ReactElement {
@@ -14,8 +18,19 @@ export function StoresPage(): ReactElement {
   // groupStoresByLocation); merge before rendering so counts/stats below
   // reflect what's actually shown, not raw row count.
   const { data, isLoading } = useStoresQuery();
-  const stores = useMemo(() => groupStoresByLocation(data), [data]);
-  const stats = useMemo(() => computeStoreStats(stores), [stores]);
+  const [search, setSearch] = useState("");
+
+  const grouped = useMemo(() => groupStoresByLocation(data), [data]);
+  const stats = useMemo(() => computeStoreStats(grouped), [grouped]);
+
+  // Balances are placeholder figures for now; nothing reads the credit ledger.
+  // Rank is stamped here, across every store, so search only decides which
+  // rows are shown — never what number a row carries.
+  const stores = useMemo(() => rankStores(attachMockCredit(grouped)), [grouped]);
+  const visibleStores = useMemo(
+    () => filterStores(stores, search),
+    [stores, search],
+  );
 
   return (
     <>
@@ -23,13 +38,13 @@ export function StoresPage(): ReactElement {
 
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto w-full max-w-[1200px]">
-          {isLoading ? (
-            <StoresBoardSkeleton />
-          ) : stores.length === 0 ? (
-            <StoresEmptyState />
-          ) : (
-            <StoresList stores={stores} />
-          )}
+          <StoresBoard
+            stores={stores}
+            visibleStores={visibleStores}
+            isLoading={isLoading}
+            search={search}
+            onSearchChange={setSearch}
+          />
         </div>
       </div>
     </>
