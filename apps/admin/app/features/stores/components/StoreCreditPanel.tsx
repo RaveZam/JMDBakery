@@ -8,7 +8,7 @@ import type {
   StoreCreditByStore,
 } from "../types/store-types";
 
-function BalanceBlock({ balance }: { balance: number }): ReactElement {
+function BalanceCard({ balance }: { balance: number }): ReactElement {
   const owes = balance > 0;
 
   return (
@@ -28,7 +28,7 @@ function BalanceBlock({ balance }: { balance: number }): ReactElement {
   );
 }
 
-function TotalRow({
+function StatCard({
   label,
   value,
 }: {
@@ -36,14 +36,14 @@ function TotalRow({
   value: string;
 }): ReactElement {
   return (
-    <div className="flex justify-between gap-2 text-xs">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="tabular-nums font-medium">{value}</span>
+    <div className="rounded-xl border bg-muted/30 px-4 py-3">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-lg font-semibold tabular-nums">{value}</p>
     </div>
   );
 }
 
-function CreditTotals({ store }: { store: StoreCreditByStore }): ReactElement {
+function CreditSummaryRow({ store }: { store: StoreCreditByStore }): ReactElement {
   const lastPayment = store.lastPaymentAt
     ? new Date(store.lastPaymentAt).toLocaleDateString("en-PH", {
         year: "numeric",
@@ -53,13 +53,11 @@ function CreditTotals({ store }: { store: StoreCreditByStore }): ReactElement {
     : "Never";
 
   return (
-    <div className="mt-3 space-y-1">
-      <TotalRow
-        label="Credit taken"
-        value={formatCurrencyPHP(store.creditTaken)}
-      />
-      <TotalRow label="Paid back" value={formatCurrencyPHP(store.paidBack)} />
-      <TotalRow label="Last payment" value={lastPayment} />
+    <div className="grid grid-cols-4 gap-4">
+      <BalanceCard balance={store.balance} />
+      <StatCard label="Credit taken" value={formatCurrencyPHP(store.creditTaken)} />
+      <StatCard label="Paid back" value={formatCurrencyPHP(store.paidBack)} />
+      <StatCard label="Last payment" value={lastPayment} />
     </div>
   );
 }
@@ -87,21 +85,22 @@ export function StoreCreditPanel({
   entries: CreditLedgerEntry[];
 }): ReactElement {
   return (
-    <div className="w-64 shrink-0 px-4 py-4">
-      <div className="mb-3 flex items-center gap-1.5">
+    <div className="flex h-full flex-col px-6 py-5">
+      <div className="mb-4 flex items-center gap-1.5">
         <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
         <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Credit (All Time)
         </h3>
       </div>
 
-      <BalanceBlock balance={store.balance} />
-      <CreditTotals store={store} />
+      <CreditSummaryRow store={store} />
 
-      <h4 className="mb-2 mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <h4 className="mb-1 mt-6 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         Ledger
       </h4>
-      <LedgerSection entries={entries} />
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <LedgerSection entries={entries} />
+      </div>
     </div>
   );
 }

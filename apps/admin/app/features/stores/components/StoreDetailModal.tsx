@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
@@ -8,6 +8,7 @@ import { ModalOverlay } from "@/app/features/products/components/ModalOverlay";
 import { StoreLocationContact } from "./StoreLocationContact";
 import { StoreTopProductsPanel } from "./StoreTopProductsPanel";
 import { StoreCreditPanel } from "./StoreCreditPanel";
+import { StoreDetailTabs, type StoreDetailTab } from "./StoreDetailTabs";
 import { MOCK_LEDGER } from "../mockCredit";
 import type { StoreCreditByStore } from "../types/store-types";
 
@@ -61,23 +62,30 @@ export function StoreDetailModal({
   onClose: () => void;
 }): ReactElement | null {
   useCloseOnEscape(store !== null, onClose);
+  const [tab, setTab] = useState<StoreDetailTab>("info");
 
   if (!store) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <ModalOverlay onClose={onClose} />
-      <div className="relative z-10 w-full max-w-4xl">
-        <div className="pointer-events-auto w-full rounded-2xl border bg-background shadow-xl">
+      <div className="relative z-10 flex h-[75vh] w-full max-w-5xl flex-col">
+        <div className="pointer-events-auto flex h-[75vh] w-full flex-col rounded-2xl border bg-background shadow-xl">
           <StoreDetailHeader store={store} onClose={onClose} />
+          <StoreDetailTabs active={tab} onChange={setTab} />
 
-          <div className="flex divide-x">
-            <StoreLocationContact store={store} />
-            {/* store.memberIds may hold >1 underlying store id if this card
-                merged duplicate DB rows; fetch + merge top products for all
-                of them so this panel isn't missing sales from a duplicate. */}
-            <StoreTopProductsPanel storeIds={store.memberIds} />
-            <StoreCreditPanel store={store} entries={MOCK_LEDGER} />
+          <div className="min-h-0 flex-1">
+            {tab === "info" ? (
+              <div className="grid h-full grid-cols-[1fr_300px] divide-x overflow-y-auto">
+                <StoreLocationContact store={store} />
+                {/* store.memberIds may hold >1 underlying store id if this card
+                    merged duplicate DB rows; fetch + merge top products for all
+                    of them so this panel isn't missing sales from a duplicate. */}
+                <StoreTopProductsPanel storeIds={store.memberIds} />
+              </div>
+            ) : (
+              <StoreCreditPanel store={store} entries={MOCK_LEDGER} />
+            )}
           </div>
         </div>
       </div>

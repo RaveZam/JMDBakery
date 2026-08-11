@@ -51,29 +51,31 @@ function LocationSection({ store }: { store: GroupedStoreRow }): ReactElement {
 
 export function StoreLocationContact({ store }: { store: GroupedStoreRow }): ReactElement {
   return (
-    <div className="flex-1 space-y-4 px-5 py-4">
-      <section>
-        <h3 className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Location
-        </h3>
-        <LocationSection store={store} />
-      </section>
+    <div className="space-y-6 px-6 py-5">
+      <div className="grid grid-cols-2 gap-6">
+        <section>
+          <h3 className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Location
+          </h3>
+          <LocationSection store={store} />
+        </section>
 
-      <section>
-        <h3 className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Contact
-        </h3>
-        <div className="space-y-1 text-sm">
-          <div className="flex gap-2">
-            <span className="w-20 shrink-0 text-muted-foreground">Owner</span>
-            <span>{store.contactName ?? "—"}</span>
+        <section>
+          <h3 className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Contact
+          </h3>
+          <div className="space-y-1 text-sm">
+            <div className="flex gap-2">
+              <span className="w-20 shrink-0 text-muted-foreground">Owner</span>
+              <span>{store.contactName ?? "—"}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="w-20 shrink-0 text-muted-foreground">Phone</span>
+              <span>{store.contactNumber ?? "—"}</span>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <span className="w-20 shrink-0 text-muted-foreground">Phone</span>
-            <span>{store.contactNumber ?? "—"}</span>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <section>
         <h3 className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">

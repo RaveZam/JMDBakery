@@ -18,8 +18,8 @@ function EntryRow({ entry }: { entry: CreditLedgerEntry }): ReactElement {
   });
 
   return (
-    <li className="flex items-baseline justify-between gap-2 text-xs">
-      <span className="w-12 shrink-0 tabular-nums text-muted-foreground">
+    <li className="flex items-baseline justify-between gap-3 rounded-lg px-2 py-2 text-sm hover:bg-muted/40">
+      <span className="w-16 shrink-0 tabular-nums text-xs text-muted-foreground">
         {day}
       </span>
       <span className="min-w-0 flex-1 truncate">{entryLabel(entry)}</span>
@@ -43,7 +43,7 @@ export function CreditLedgerList({
   entries: CreditLedgerEntry[];
 }): ReactElement {
   return (
-    <ul className="space-y-1.5">
+    <ul className="divide-y divide-border/60">
       {entries.map((entry) => (
         <EntryRow key={entry.id} entry={entry} />
       ))}

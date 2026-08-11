@@ -44,8 +44,8 @@ export function StoreTopProductsPanel({
   const { products, loading, error } = useStoreTopProducts(storeIds);
 
   return (
-    <div className="w-56 shrink-0 px-4 py-4">
-      <div className="mb-3 flex items-center gap-1.5">
+    <div className="space-y-3 px-6 py-5">
+      <div className="flex items-center gap-1.5">
         <Trophy className="h-3.5 w-3.5 text-amber-500" />
         <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Top Products (This Month)
