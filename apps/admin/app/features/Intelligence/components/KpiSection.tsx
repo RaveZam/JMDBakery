@@ -35,9 +35,9 @@ export function KpiSection({ kpis }: { kpis: IntelligenceKpis }) {
           icon={BarChart2}
         />
         <KpiCard
-          title="Backorder risk level"
+          title="Bad order risk level"
           primary={kpis.backorderRisk.label}
-          secondary={`BO rate ${kpis.backorderRatePct.toFixed(1)}% this month`}
+          secondary={`Bad order rate ${kpis.backorderRatePct.toFixed(1)}% this month`}
           tone={kpis.backorderRisk.tone}
           icon={kpis.backorderRisk.icon}
         />
