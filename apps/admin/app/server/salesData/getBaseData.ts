@@ -1,5 +1,6 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
+import { windowStartDate } from "@/app/server/datasetWindow";
 
 export type SalesRecord = {
   id: string;
@@ -41,14 +42,6 @@ type RawSession = {
   conducted_by_name: string | null;
   session_stores: RawSessionStore[];
 };
-
-const DATASET_WINDOW_MONTHS = 1;
-
-function windowStartDate(): string {
-  const d = new Date();
-  d.setMonth(d.getMonth() - DATASET_WINDOW_MONTHS);
-  return d.toISOString().slice(0, 10);
-}
 
 function mapSessionStore(
   sessionStore: RawSessionStore,
