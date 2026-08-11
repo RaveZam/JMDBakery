@@ -4,8 +4,10 @@ import type { RecordsStats } from "../helpers/computeRecordsSummary";
 import { RecordsPaymentSummary } from "./RecordsPaymentSummary";
 
 export function RecordsSummary({ summary }: { summary: RecordsStats }) {
+  // Six cards on one row at xl. Narrower screens step down rather than
+  // squeezing, since the money values stop fitting well below ~190px a card.
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
       <KpiCard
         title="Total Records"
         primary={summary.totalRecords.toLocaleString()}
