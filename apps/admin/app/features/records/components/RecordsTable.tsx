@@ -9,7 +9,9 @@ import { RecordsEmptyState } from "./RecordsEmptyState";
 import { RecordDetailModal } from "./RecordDetailModal";
 
 export function RecordsTable({ records }: { records: SalesRecord[] }) {
-  const [selectedRecord, setSelectedRecord] = useState<SalesRecord | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<SalesRecord | null>(
+    null,
+  );
 
   if (records.length === 0) return <RecordsEmptyState />;
 
@@ -39,7 +41,10 @@ export function RecordsTable({ records }: { records: SalesRecord[] }) {
           </tbody>
         </table>
       </div>
-      <RecordDetailModal record={selectedRecord} onClose={() => setSelectedRecord(null)} />
+      <RecordDetailModal
+        record={selectedRecord}
+        onClose={() => setSelectedRecord(null)}
+      />
     </Card>
   );
 }

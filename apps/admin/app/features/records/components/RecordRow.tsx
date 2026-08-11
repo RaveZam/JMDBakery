@@ -9,7 +9,11 @@ const STATUS_BAR: Record<RecordStatus, string> = {
   none: "bg-border",
 };
 
-function PaymentBadge({ paymentType }: { paymentType: SalesRecord["paymentType"] }) {
+function PaymentBadge({
+  paymentType,
+}: {
+  paymentType: SalesRecord["paymentType"];
+}) {
   const isCredit = paymentType === "credit";
   return (
     <span
@@ -51,10 +55,14 @@ export function RecordRow({
       <td className="w-1 p-0">
         <span className={`block h-full w-1 ${STATUS_BAR[status]}`} />
       </td>
-      <td className="px-4 py-3 font-sans text-muted-foreground">{record.date}</td>
+      <td className="px-4 py-3 font-sans text-muted-foreground">
+        {record.date}
+      </td>
       <td className="px-4 py-3 font-sans">{record.agent}</td>
       <td className="px-4 py-3 font-sans">{record.store}</td>
-      <td className="px-4 py-3 font-sans text-muted-foreground">{record.province}</td>
+      <td className="px-4 py-3 font-sans text-muted-foreground">
+        {record.province}
+      </td>
       <td className="px-4 py-3 font-sans">{record.product}</td>
       <td className="px-4 py-3 font-sans">
         <PaymentBadge paymentType={record.paymentType} />
