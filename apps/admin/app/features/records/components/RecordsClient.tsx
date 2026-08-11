@@ -4,46 +4,25 @@ import { useSalesDataQuery } from "@/app/server/salesData/useSalesDataQuery";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useRecordsFilter } from "../hooks/useRecordsFilter";
 import { RecordsHeader } from "./RecordsHeader";
-import { RecordsSummary } from "./RecordsSummary";
-import { RecordsFilterBar } from "./RecordsFilterBar";
-import { RecordsTable } from "./RecordsTable";
-import { RecordsPagination } from "./RecordsPagination";
+import { RecordsContent } from "./RecordsContent";
 
 export function RecordsClient() {
   const { data: allRecords, isLoading } = useSalesDataQuery();
-  const { view, setView, search, setSearch, page, setPage, totalPages, records, pageRecords, summary } =
-    useRecordsFilter(allRecords);
+  const filter = useRecordsFilter(allRecords);
 
-  if (isLoading) {
-    return (
-      <>
-        <RecordsHeader />
-        <LoadingSpinner />
-      </>
-    );
-  }
+  // Payments are credit-ledger entries rather than sale lines, so this tab
+  // swaps out the table only — the summary above it keeps describing the sales
+  // dataset. The ledger is fetched separately, inside PaymentsBody.
+  const showPayments = filter.view === "payments";
 
   return (
     <>
       <RecordsHeader />
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="mx-auto w-full max-w-300 space-y-6">
-          <RecordsSummary summary={summary} />
-          <RecordsFilterBar
-            view={view}
-            onViewChange={setView}
-            search={search}
-            onSearchChange={setSearch}
-          />
-          <RecordsTable records={pageRecords} />
-          <RecordsPagination
-            page={page}
-            totalPages={totalPages}
-            totalRecords={records.length}
-            onPageChange={setPage}
-          />
-        </div>
-      </div>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <RecordsContent filter={filter} showPayments={showPayments} />
+      )}
     </>
   );
 }
