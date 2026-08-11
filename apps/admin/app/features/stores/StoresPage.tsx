@@ -36,17 +36,13 @@ export function StoresPage(): ReactElement {
     <>
       <StoresHeader stats={stats} />
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="mx-auto w-full max-w-[1200px]">
-          <StoresBoard
-            stores={stores}
-            visibleStores={visibleStores}
-            isLoading={isLoading}
-            search={search}
-            onSearchChange={setSearch}
-          />
-        </div>
-      </div>
+      <StoresBoard
+        stores={stores}
+        visibleStores={visibleStores}
+        isLoading={isLoading}
+        search={search}
+        onSearchChange={setSearch}
+      />
     </>
   );
 }
