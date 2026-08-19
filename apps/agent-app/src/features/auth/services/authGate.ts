@@ -24,7 +24,7 @@ export async function readAuthGate(
       session.user.user_metadata?.name ?? session.user.email ?? null,
     );
     if (!downloaded.current) {
-      await runDownloadSync(session.user.id);
+      await runDownloadSync();
       downloaded.current = true;
     }
   }
