@@ -10,7 +10,7 @@ export default function DashboardLayout({
     <div className="flex h-full w-full">
       <Sidebar />
       <section className="flex min-w-0 flex-1 flex-col">{children}</section>
-      <AiChat />
+      {/* <AiChat /> Removed due to technical reasons */}
     </div>
   );
 }
