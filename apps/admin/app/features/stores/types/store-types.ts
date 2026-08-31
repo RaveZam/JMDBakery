@@ -30,6 +30,10 @@ export type StoreCredit = {
   lastPaymentAt: string | null;
 };
 
+// Same shape as StoreCredit minus storeId — what summarizeCreditEntries
+// derives from a single store's fetched ledger.
+export type CreditSummary = Omit<StoreCredit, "storeId">;
+
 // A grouped store card with its credit totals folded in (see
 // attachCreditToStores). Omits storeId because the card already carries the
 // canonical `id` plus every `memberIds` the totals were summed across.
