@@ -4,7 +4,7 @@ Date: 2026-07-29
 
 ## Status
 
-Ongoing
+Completed
 
 ## Context
 
@@ -20,7 +20,7 @@ What i decided was to add a feature where agents can import other agents stores,
 
 ## Consequences
 
-But implementing this is tricky since routes -> province -> store are all linked and tied together, meaning implementing this would need to handle inconsistent PK's and links.
+Simply adding a store to the store db, will be impossible to render in the list of routes, since the route is tied to a province.
 
 ## Solution to the consequence
 
