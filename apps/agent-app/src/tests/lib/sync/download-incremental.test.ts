@@ -36,6 +36,10 @@ type MockQueryResult = {
 };
 type MockBuilder = {
   select: () => MockBuilder;
+  // pullIncremental pages the query: order + limit, awaited via returns().
+  order: () => MockBuilder;
+  limit: () => MockBuilder;
+  returns: () => MockBuilder;
   is: () => Promise<MockQueryResult>;
   gte: (column: string, value: string) => MockBuilder;
   // runDownloadSync also pulls store_credit_entries; unused by these tests
@@ -56,6 +60,9 @@ jest.mock("@/src/lib/supabase", () => ({
       };
       const builder: MockBuilder = {
         select: () => builder,
+        order: () => builder,
+        limit: () => builder,
+        returns: () => builder,
         is: () => Promise.resolve(result),
         gte: (column, value) => {
           mock.gteCalls.push({ table, column, value });
@@ -134,8 +141,10 @@ test("first run pulls unfiltered and records the newest updated_at", async () =>
   await runDownloadSync();
 
   expect(mock.gteCalls.filter((call) => call.table === "products")).toEqual([]);
+  // Parked 5s behind the newest row, so a transaction stamped just before it
+  // that hasn't committed yet still lands inside the next window.
   expect(SyncStateDao.getLastSyncedAt("products")).toBe(
-    "2026-07-27T12:00:00+00:00",
+    "2026-07-27T11:59:55.000Z",
   );
   expect(ProductsDao.getAllProducts()).toHaveLength(2);
 });
@@ -151,7 +160,7 @@ test("second run sends the stored cursor to the server", async () => {
   expect(mock.gteCalls).toContainEqual({
     table: "products",
     column: "updated_at",
-    value: "2026-07-27T10:00:00+00:00",
+    value: "2026-07-27T09:59:55.000Z",
   });
 });
 
@@ -163,7 +172,7 @@ test("an empty batch leaves the cursor where it was", async () => {
   await runDownloadSync();
 
   expect(SyncStateDao.getLastSyncedAt("products")).toBe(
-    "2026-07-27T10:00:00+00:00",
+    "2026-07-27T09:59:55.000Z",
   );
 });
 
@@ -205,9 +214,9 @@ test("a server-deleted price modifier is removed outright", async () => {
   };
   mock.rowsByTable.province_price_modifiers = [modifierRow];
   await runDownloadSync();
-  expect(
-    ProvincePriceModifiersDao.getAllProvincePriceModifiers(),
-  ).toHaveLength(1);
+  expect(ProvincePriceModifiersDao.getAllProvincePriceModifiers()).toHaveLength(
+    1,
+  );
 
   mock.rowsByTable.province_price_modifiers = [
     {
@@ -235,6 +244,6 @@ test("a failed fetch leaves the cursor unchanged so the window is retried", asyn
   await runDownloadSync();
 
   expect(SyncStateDao.getLastSyncedAt("products")).toBe(
-    "2026-07-27T10:00:00+00:00",
+    "2026-07-27T09:59:55.000Z",
   );
 });

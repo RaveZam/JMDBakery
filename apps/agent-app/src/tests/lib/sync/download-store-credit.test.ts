@@ -28,6 +28,10 @@ const mock = {
 type MockQueryResult = { data: unknown[] | null; error: null };
 type MockBuilder = {
   select: () => MockBuilder;
+  // pullIncremental pages the query: order + limit, awaited via returns().
+  order: () => MockBuilder;
+  limit: () => MockBuilder;
+  returns: () => MockBuilder;
   // downloadSessions (upstream of downloadStoreCreditEntries in runDownloadSync)
   // filters on .is("deleted_at", null); unused by these tests otherwise.
   is: () => Promise<MockQueryResult>;
@@ -48,6 +52,9 @@ jest.mock("@/src/lib/supabase", () => ({
       };
       const builder: MockBuilder = {
         select: () => builder,
+        order: () => builder,
+        limit: () => builder,
+        returns: () => builder,
         is: () => Promise.resolve(result),
         gte: (column, value) => {
           mock.gteCalls.push({ table, column, value });
