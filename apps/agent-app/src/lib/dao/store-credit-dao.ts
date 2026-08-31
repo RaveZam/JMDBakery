@@ -75,8 +75,8 @@ const StoreCreditDao = {
     );
   },
 
-  // Backfill bookkeeping: stores whose full credit history has already been
-  // pulled once. See downloadStoreCreditEntries in src/lib/sync/download.ts.
+  //This returns all of the store that doesnt exist in store_credit_synced_stores, i
+  //Store ids that are never synced gets returned.
   getUnsyncedStoreIds(storeIds: string[]): string[] {
     if (storeIds.length === 0) return [];
     const placeholders = storeIds.map(() => "?").join(",");
