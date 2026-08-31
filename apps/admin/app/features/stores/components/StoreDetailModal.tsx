@@ -7,9 +7,8 @@ import { X } from "lucide-react";
 import { ModalOverlay } from "@/app/features/products/components/ModalOverlay";
 import { StoreLocationContact } from "./StoreLocationContact";
 import { StoreTopProductsPanel } from "./StoreTopProductsPanel";
-import { StoreCreditPanel } from "./StoreCreditPanel";
+import { StoreCreditPanel } from "./credit/StoreCreditPanel";
 import { StoreDetailTabs, type StoreDetailTab } from "./StoreDetailTabs";
-import { MOCK_LEDGER } from "../mockCredit";
 import type { StoreCreditByStore } from "../types/store-types";
 
 function useCloseOnEscape(active: boolean, onClose: () => void): void {
@@ -84,7 +83,7 @@ export function StoreDetailModal({
                 <StoreTopProductsPanel storeIds={store.memberIds} />
               </div>
             ) : (
-              <StoreCreditPanel store={store} entries={MOCK_LEDGER} />
+              <StoreCreditPanel store={store} />
             )}
           </div>
         </div>

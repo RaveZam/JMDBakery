@@ -1,16 +1,14 @@
 import type { ReactElement } from "react";
 
 import { formatCurrencyPHP } from "@/lib/utils";
-import type { CreditLedgerEntry } from "../types/store-types";
+import { creditEntryLabel } from "../../core/creditEntryLabel";
+import type { CreditLedgerEntry } from "../../types/store-types";
 
-function entryLabel(entry: CreditLedgerEntry): string {
-  if (entry.entryType === "payment") {
-    return `Payment · ${entry.tenderedByName ?? "Unknown"}`;
-  }
-  return entry.note ? `Credit · ${entry.note}` : "Credit";
-}
-
-function EntryRow({ entry }: { entry: CreditLedgerEntry }): ReactElement {
+export function CreditLedgerEntryRow({
+  entry,
+}: {
+  entry: CreditLedgerEntry;
+}): ReactElement {
   const isPayment = entry.entryType === "payment";
   const day = new Date(entry.createdAt).toLocaleDateString("en-PH", {
     month: "short",
@@ -22,7 +20,7 @@ function EntryRow({ entry }: { entry: CreditLedgerEntry }): ReactElement {
       <span className="w-16 shrink-0 tabular-nums text-xs text-muted-foreground">
         {day}
       </span>
-      <span className="min-w-0 flex-1 truncate">{entryLabel(entry)}</span>
+      <span className="min-w-0 flex-1 truncate">{creditEntryLabel(entry)}</span>
       {/* Sign and colour carry the direction: debt up in gold, paid down in
           green, so the two kinds never need reading twice. */}
       <span
@@ -34,19 +32,5 @@ function EntryRow({ entry }: { entry: CreditLedgerEntry }): ReactElement {
         {formatCurrencyPHP(entry.amount)}
       </span>
     </li>
-  );
-}
-
-export function CreditLedgerList({
-  entries,
-}: {
-  entries: CreditLedgerEntry[];
-}): ReactElement {
-  return (
-    <ul className="divide-y divide-border/60">
-      {entries.map((entry) => (
-        <EntryRow key={entry.id} entry={entry} />
-      ))}
-    </ul>
   );
 }
