@@ -19,6 +19,7 @@ export default function RouteDetailScreen(): React.JSX.Element {
   const { routeId } = useLocalSearchParams<{ routeId?: string }>();
   const { name, rename } = useRouteName();
   const { provinces, loadProvinces } = useProvinces();
+
   const [showAddProvince, setShowAddProvince] = useState(false);
   const [editProvince, setEditProvince] = useState<ProvinceRow | null>(null);
 
@@ -34,9 +35,7 @@ export default function RouteDetailScreen(): React.JSX.Element {
         />
         <ProvinceList provinces={provinces} onEditProvince={setEditProvince} />
       </ThemedView>
-
       <StartSessionFooter />
-
       <AddProvinceModal
         routeId={routeId ?? ""}
         visible={showAddProvince}
@@ -46,7 +45,6 @@ export default function RouteDetailScreen(): React.JSX.Element {
           loadProvinces();
         }}
       />
-
       <EditProvinceModal
         province={editProvince}
         onClose={() => setEditProvince(null)}

@@ -13,11 +13,19 @@ import {
   removeMorningInventoryItem,
 } from "@/src/features/inventory/services/session-inventory-save-service";
 
-beforeAll(async () => { await createSchema(); });
-beforeEach(() => { resetDb(); });
+beforeAll(async () => {
+  await createSchema();
+});
+beforeEach(() => {
+  resetDb();
+});
 
 /** Insert an inventory row directly (no outbox) and return its id. */
-function seedInventoryItem(sessionId: string, productId: string, qty = 10): string {
+function seedInventoryItem(
+  sessionId: string,
+  productId: string,
+  qty = 10,
+): string {
   const id = "inv-1";
   SessionInventoryDao.insert({
     sessionId,
