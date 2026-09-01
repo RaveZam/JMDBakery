@@ -41,3 +41,12 @@ export type InventorySummaryRow = {
   ending: number;
   variance: number;
 };
+
+export type SessionPaymentRow = {
+  id: string;
+  sessionStoreId: string;
+  amount: number;
+  note: string | null;
+  recordedByName: string | null;
+  createdAt: string;
+};
