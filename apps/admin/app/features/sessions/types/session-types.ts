@@ -27,6 +27,7 @@ export type SessionStoreSaleRow = {
   quantitySold: number;
   quantityBO: number;
   boReason: string | null;
+  paymentType: "cash" | "credit";
   total: number;
 };
 

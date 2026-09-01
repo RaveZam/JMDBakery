@@ -5,6 +5,7 @@ import { formatCurrencyPHP } from "@/lib/utils";
 import { manilaTimestamp } from "@/lib/manilaTimestamp";
 import { sumSales } from "../helpers/sessionHelpers";
 import type { SessionStoreSaleRow } from "../types/session-types";
+import { SalePaymentTypeTag } from "./SalePaymentTypeTag";
 
 function SalesTotalsRow({
   sales,
@@ -15,6 +16,7 @@ function SalesTotalsRow({
   return (
     <tr className="border-t border-border/50">
       <td className="py-1 font-medium">Total</td>
+      <td />
       <td />
       <td className="py-1 text-right font-medium">{totals.quantitySold}</td>
       <td className="py-1 text-right font-medium">{totals.quantityBO}</td>
@@ -31,6 +33,9 @@ function SalesRow({ sale }: { sale: SessionStoreSaleRow }): ReactElement {
       <td className="py-1 pr-2">{sale.productName}</td>
       <td className="py-1 pr-2 whitespace-nowrap text-muted-foreground">
         {manilaTimestamp.time(sale.createdAt)}
+      </td>
+      <td className="py-1 pr-2">
+        <SalePaymentTypeTag paymentType={sale.paymentType} />
       </td>
       <td className="py-1 text-right">{sale.quantitySold}</td>
       <td className="py-1 text-right">{sale.quantityBO}</td>
@@ -70,6 +75,7 @@ export function StoreSalesTable({
         <tr className="text-muted-foreground">
           <th className="pb-1 text-left font-medium">Product</th>
           <th className="pb-1 text-left font-medium">Time</th>
+          <th className="pb-1 text-left font-medium">Paid</th>
           <th className="pb-1 text-right font-medium">Qty</th>
           <th className="pb-1 text-right font-medium">B.O.</th>
           <th className="pb-1 text-right font-medium">Total</th>

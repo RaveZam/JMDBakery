@@ -105,6 +105,7 @@ type SessionStoreSaleQueryRow = {
   quantity_sold: number;
   quantity_bo: number;
   bo_reason: string | null;
+  payment_type: "cash" | "credit";
   total: number;
 };
 
@@ -117,6 +118,7 @@ function mapSaleRow(row: SessionStoreSaleQueryRow): SessionStoreSaleRow {
     quantitySold: row.quantity_sold,
     quantityBO: row.quantity_bo,
     boReason: row.bo_reason,
+    paymentType: row.payment_type,
     total: row.total,
   };
 }
