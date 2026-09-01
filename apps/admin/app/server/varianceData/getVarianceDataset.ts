@@ -180,7 +180,21 @@ function mapSession(session: RawSession): VarianceRecord[] {
 export const getVarianceDataset = async (): Promise<VarianceRecord[]> => {
   const supabase = await createClient();
 
-  //pulls each session in the window along with its nested inventory + sales rows in one query
+  //pulls each session in the window along with its nested inventory + sales rows in one query.
+  //data comes back as:
+  //{
+  //  id: string;
+  //  session_date: string;
+  //  session_inventory: { product_id: string; quantity: number | null }[];
+  //  ending_inventory: { product_id: string; quantity: number | null }[];
+  //  session_stores: {
+  //    sales: {
+  //      product_id: string | null;
+  //      quantity_sold: number | null;
+  //      quantity_bo: number | null;
+  //    }[];
+  //  }[];
+  //}[]
   const { data, error } = await supabase
     .from("route_sessions")
     .select(
