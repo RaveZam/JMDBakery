@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { manilaTimestamp } from "@/lib/manilaTimestamp";
 import { formatSessionDate, visitRate } from "../helpers/sessionHelpers";
 import type { SessionRow } from "../types/session-types";
 import { Figure } from "./Figure";
@@ -9,6 +10,8 @@ import { RouteTrack } from "./RouteTrack";
 import { SessionStatusBadge } from "./SessionStatusBadge";
 
 function CardHeadline({ session }: { session: SessionRow }): ReactElement {
+  const startedAt = manilaTimestamp.time(session.createdAt);
+
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0 flex-1">
@@ -17,6 +20,12 @@ function CardHeadline({ session }: { session: SessionRow }): ReactElement {
         </p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           {formatSessionDate(session.sessionDate)}
+          {startedAt && (
+            <span className="text-muted-foreground/70">
+              {" "}
+              &middot; started {startedAt}
+            </span>
+          )}
         </p>
       </div>
       <SessionStatusBadge status={session.status} />

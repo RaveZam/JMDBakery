@@ -12,6 +12,7 @@ type SessionQueryRow = {
   id: string;
   route_name: string;
   session_date: string;
+  created_at: string | null;
   status: string;
   session_stores: { visited: boolean }[] | null;
 };
@@ -22,6 +23,7 @@ function mapSessionRow(row: SessionQueryRow): SessionRow {
     id: row.id,
     routeName: row.route_name,
     sessionDate: row.session_date,
+    createdAt: row.created_at,
     status: row.status as "ongoing" | "completed" | "cancelled",
     totalStores: storeRows.length,
     visitedStores: storeRows.filter((r) => r.visited).length,
@@ -33,7 +35,9 @@ export async function getSessions(): Promise<SessionRow[]> {
 
   const { data, error } = await supabase
     .from("route_sessions")
-    .select("id, route_name, session_date, status, session_stores(visited)")
+    .select(
+      "id, route_name, session_date, created_at, status, session_stores(visited)",
+    )
     .order("created_at", { ascending: false })
     .limit(100);
 
@@ -93,6 +97,7 @@ export async function getSessionStores(
 // since-deleted product (that's the whole point of the snapshot).
 type SessionStoreSaleQueryRow = {
   id: string;
+  created_at: string | null;
   snapshot_product_name: string;
   snapshot_price: number;
   quantity_sold: number;
@@ -104,6 +109,7 @@ type SessionStoreSaleQueryRow = {
 function mapSaleRow(row: SessionStoreSaleQueryRow): SessionStoreSaleRow {
   return {
     id: row.id,
+    createdAt: row.created_at,
     productName: row.snapshot_product_name,
     snapshotPrice: row.snapshot_price,
     quantitySold: row.quantity_sold,

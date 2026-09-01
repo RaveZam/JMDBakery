@@ -2,6 +2,7 @@ export type SessionRow = {
   id: string;
   routeName: string;
   sessionDate: string;
+  createdAt: string | null;
   status: "ongoing" | "completed" | "cancelled";
   totalStores: number;
   visitedStores: number;
@@ -19,6 +20,7 @@ export type SessionStoreRow = {
 
 export type SessionStoreSaleRow = {
   id: string;
+  createdAt: string | null;
   productName: string;
   snapshotPrice: number;
   quantitySold: number;
