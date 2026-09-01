@@ -1,5 +1,6 @@
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
 import { formatCurrencyPHP } from "@/lib/utils";
+import { manilaTimestamp } from "@/lib/manilaTimestamp";
 import { recordStatus, type RecordStatus } from "../helpers/recordStatus";
 
 const STATUS_BAR: Record<RecordStatus, string> = {
@@ -23,6 +24,19 @@ function PaymentBadge({
     >
       {isCredit ? "Credit" : "Cash"}
     </span>
+  );
+}
+
+function DateCell({ record }: { record: SalesRecord }) {
+  const time = manilaTimestamp.time(record.createdAt);
+
+  return (
+    <td className="px-4 py-3 font-sans text-muted-foreground">
+      <span className="block">{record.date}</span>
+      {time && (
+        <span className="block text-xs text-muted-foreground/70">{time}</span>
+      )}
+    </td>
   );
 }
 
@@ -55,9 +69,7 @@ export function RecordRow({
       <td className="w-1 p-0">
         <span className={`block h-full w-1 ${STATUS_BAR[status]}`} />
       </td>
-      <td className="px-4 py-3 font-sans text-muted-foreground">
-        {record.date}
-      </td>
+      <DateCell record={record} />
       <td className="px-4 py-3 font-sans">{record.agent}</td>
       <td className="px-4 py-3 font-sans">{record.store}</td>
       <td className="px-4 py-3 font-sans text-muted-foreground">

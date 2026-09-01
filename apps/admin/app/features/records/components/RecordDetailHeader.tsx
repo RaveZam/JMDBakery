@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { X } from "lucide-react";
 
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
+import { manilaTimestamp } from "@/lib/manilaTimestamp";
 import type { RecordStatus } from "../helpers/recordStatus";
 import { RecordStatusStamp } from "./RecordStatusStamp";
 
@@ -14,6 +15,8 @@ export function RecordDetailHeader({
   status: RecordStatus;
   onClose: () => void;
 }): ReactElement {
+  const time = manilaTimestamp.time(record.createdAt);
+
   return (
     <div className="flex items-start justify-between gap-3 border-b border-dashed border-border px-5 py-4">
       <div>
@@ -23,6 +26,7 @@ export function RecordDetailHeader({
         <h2 className="mt-0.5 text-base font-semibold">{record.store}</h2>
         <p className="text-xs text-muted-foreground">
           {record.province} &middot; {record.date}
+          {time && <> &middot; {time}</>}
         </p>
       </div>
       <div className="flex flex-col items-end gap-2">
