@@ -1,6 +1,7 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
 import { windowStartDate } from "@/app/server/datasetWindow";
+import { manilaTimestamp } from "@/lib/manilaTimestamp";
 
 export type SalesRecord = {
   id: string;
@@ -53,7 +54,10 @@ function mapSessionStore(
   return sessionStore.sales.map((sale) => ({
     id: sale.id,
     sessionId: session.id,
-    date: session.session_date,
+    // A sale is dated by when it was logged, not when its route started — an
+    // order taken the morning after an overnight session belongs to that day.
+    // The seeded rows carry no usable timestamp, so they keep the session date.
+    date: manilaTimestamp.day(sale.created_at) || session.session_date,
     createdAt: sale.created_at ?? null,
     agent: session.conducted_by_name ?? "Unknown",
     store,

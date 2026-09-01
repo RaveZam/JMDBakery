@@ -46,6 +46,31 @@ describe("filterRecords", () => {
     expect(result.map((r) => r.id)).toEqual(["bad", "split"]);
   });
 
+  test("keeps credit records on the all view", () => {
+    const cashRecord = makeRecord({ id: "cash", paymentType: "cash" });
+    const creditRecord = makeRecord({ id: "credit", paymentType: "credit" });
+
+    const result = filterRecords([cashRecord, creditRecord], "all", "");
+
+    expect(result.map((r) => r.id)).toEqual(["cash", "credit"]);
+  });
+
+  test("drops credit records from the sales and bad orders views", () => {
+    const cashRecord = makeRecord({ id: "cash", paymentType: "cash" });
+    const creditRecord = makeRecord({ id: "credit", paymentType: "credit" });
+
+    expect(
+      filterRecords([cashRecord, creditRecord], "sales", "").map((r) => r.id),
+    ).toEqual(["cash"]);
+    expect(
+      filterRecords(
+        [makeRecord({ id: "bad-credit", paymentType: "credit", soldQty: 0, boQty: 3 })],
+        "bad-orders",
+        "",
+      ),
+    ).toEqual([]);
+  });
+
   test("keeps only credit records on the credits view", () => {
     const cashRecord = makeRecord({ id: "cash", paymentType: "cash" });
     const creditRecord = makeRecord({ id: "credit", paymentType: "credit" });
