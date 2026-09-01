@@ -12,6 +12,7 @@ function session(overrides: Partial<SessionRow> = {}): SessionRow {
   return {
     id: "s1",
     routeName: "Cavite North",
+    agentName: "Mira Santos",
     sessionDate: "2026-07-15",
     createdAt: "2026-07-15T08:30:00.000+00:00",
     status: "completed",

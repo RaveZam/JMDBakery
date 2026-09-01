@@ -11,6 +11,7 @@ import type {
 type SessionQueryRow = {
   id: string;
   route_name: string;
+  conducted_by_name: string | null;
   session_date: string;
   created_at: string | null;
   status: string;
@@ -22,6 +23,7 @@ function mapSessionRow(row: SessionQueryRow): SessionRow {
   return {
     id: row.id,
     routeName: row.route_name,
+    agentName: row.conducted_by_name,
     sessionDate: row.session_date,
     createdAt: row.created_at,
     status: row.status as "ongoing" | "completed" | "cancelled",
@@ -36,7 +38,7 @@ export async function getSessions(): Promise<SessionRow[]> {
   const { data, error } = await supabase
     .from("route_sessions")
     .select(
-      "id, route_name, session_date, created_at, status, session_stores(visited)",
+      "id, route_name, conducted_by_name, session_date, created_at, status, session_stores(visited)",
     )
     .order("created_at", { ascending: false })
     .limit(100);

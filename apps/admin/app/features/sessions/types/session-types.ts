@@ -1,6 +1,7 @@
 export type SessionRow = {
   id: string;
   routeName: string;
+  agentName: string | null;
   sessionDate: string;
   createdAt: string | null;
   status: "ongoing" | "completed" | "cancelled";

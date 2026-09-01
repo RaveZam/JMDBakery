@@ -15,8 +15,13 @@ function CardHeadline({ session }: { session: SessionRow }): ReactElement {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[15px] font-semibold tracking-tight">
-          {session.routeName}
+        <p className="flex items-baseline gap-1.5 text-[15px] font-semibold tracking-tight">
+          <span className="truncate">{session.routeName}</span>
+          {session.agentName && (
+            <span className="shrink-0 truncate text-xs font-normal text-muted-foreground">
+              {session.agentName}
+            </span>
+          )}
         </p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           {formatSessionDate(session.sessionDate)}
