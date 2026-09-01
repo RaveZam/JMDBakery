@@ -27,6 +27,12 @@ describe("recordStatus", () => {
     expect(recordStatus(makeRecord({ soldQty: 10, boQty: 0 }))).toBe("sale");
   });
 
+  test("marks a sold-on-credit record as credit, not a sale", () => {
+    expect(
+      recordStatus(makeRecord({ soldQty: 10, boQty: 0, paymentType: "credit" })),
+    ).toBe("credit");
+  });
+
   test("marks a record with only bad-order units as a bad order", () => {
     expect(recordStatus(makeRecord({ soldQty: 0, boQty: 4 }))).toBe("bad-order");
   });

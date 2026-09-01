@@ -4,6 +4,7 @@ import type { RecordStatus } from "../helpers/recordStatus";
 
 const STAMP_LABEL: Record<RecordStatus, string> = {
   sale: "Sold",
+  credit: "Credit",
   "bad-order": "Bad order",
   split: "Split",
   none: "No activity",
@@ -11,6 +12,7 @@ const STAMP_LABEL: Record<RecordStatus, string> = {
 
 const STAMP_STYLE: Record<RecordStatus, string> = {
   sale: "border-primary text-primary",
+  credit: "border-credit text-credit",
   "bad-order": "border-destructive text-destructive",
   split: "border-gold text-gold",
   none: "border-muted-foreground/40 text-muted-foreground",

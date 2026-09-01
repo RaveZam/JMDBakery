@@ -5,6 +5,7 @@ import { recordStatus, type RecordStatus } from "../helpers/recordStatus";
 
 const STATUS_BAR: Record<RecordStatus, string> = {
   sale: "bg-primary",
+  credit: "bg-credit",
   "bad-order": "bg-destructive",
   split: "bg-gold",
   none: "bg-border",
@@ -19,7 +20,7 @@ function PaymentBadge({
   return (
     <span
       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-        isCredit ? "bg-gold/15 text-gold" : "bg-primary/10 text-primary"
+        isCredit ? "bg-credit/15 text-credit" : "bg-primary/10 text-primary"
       }`}
     >
       {isCredit ? "Credit" : "Cash"}

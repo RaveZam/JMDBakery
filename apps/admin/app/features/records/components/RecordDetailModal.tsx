@@ -39,7 +39,10 @@ export function RecordDetailModal({
           <div className="px-5 py-4">
             <RecordDetailRow label="Agent" value={record.agent} />
             <RecordDetailRow label="Product" value={record.product} />
-            <RecordDetailRow label="Sold" value={String(record.soldQty)} />
+            <RecordDetailRow
+              label={record.paymentType === "credit" ? "Credit" : "Sold"}
+              value={String(record.soldQty)}
+            />
             <RecordDetailRow label="Bad order" value={String(record.boQty)} />
             <RecordDetailRow label="Unit price" value={formatCurrencyPHP(record.unitPrice)} />
             <RecordDetailTotal record={record} status={status} />
