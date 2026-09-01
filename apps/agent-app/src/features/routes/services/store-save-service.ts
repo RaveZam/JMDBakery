@@ -3,7 +3,7 @@ import { enqueueOutbox } from "@/src/lib/sync/outbox";
 import StoresDao from "@/src/lib/dao/store-dao";
 import ProvinceStoresDao from "@/src/lib/dao/province-stores-dao";
 import { getCurrentUserId } from "@/src/lib/current-user";
-import { getPhTime } from "@/src/shared/helpers/getPhTime";
+import { manilaTimestamp } from "@/src/shared/helpers/manilaTimestamp";
 import type { ExistingStore } from "./store-search-service";
 
 export type StoreFields = {
@@ -71,7 +71,7 @@ export function createStore(provinceId: string, fields: StoreFields): string {
 function linkStoreToProvince(provinceId: string, storeId: string): void {
   // One clock read for both destinations — a second one in SQLite or in
   // Postgres would drift the local row away from the synced one.
-  const createdAt = getPhTime().toISOString();
+  const createdAt = manilaTimestamp();
   const linkId = ProvinceStoresDao.insertLink(provinceId, storeId, createdAt);
   enqueueOutbox({
     entityType: "province_store",

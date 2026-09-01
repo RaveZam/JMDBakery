@@ -2,7 +2,7 @@ import { getDb } from "@/src/lib/db";
 import { generateUUID } from "@/src/lib/uuid";
 import { enqueueOutbox } from "@/src/lib/sync/outbox";
 import { getCurrentUserId, getCurrentUserName } from "@/src/lib/current-user";
-import { getPhTime } from "@/src/shared/helpers/getPhTime";
+import { manilaTimestamp } from "@/src/shared/helpers/manilaTimestamp";
 import StoreCreditDao from "@/src/lib/dao/store-credit-dao";
 import CreditEntrySalesDao from "@/src/lib/dao/credit-entry-sales-dao";
 import SessionStoresDao from "@/src/lib/dao/session-stores-dao";
@@ -165,7 +165,7 @@ export function syncVisitCredit(sessionStoreId: string): void {
     creditTotal: SalesDao.getCreditTotal(sessionStoreId),
     recordedBy: session.conducted_by,
     recordedByName: session.conducted_by_name ?? "Unknown",
-    createdAt: existing?.created_at ?? getPhTime().toISOString(),
+    createdAt: existing?.created_at ?? manilaTimestamp(),
   });
 
   if (!entry) {
@@ -260,7 +260,7 @@ export function recordStorePayment(input: {
     recordedByName: getCurrentUserName() ?? "Unknown",
     tenderedBy: session?.conducted_by ?? null,
     tenderedByName: session?.conducted_by_name ?? null,
-    createdAt: getPhTime().toISOString(),
+    createdAt: manilaTimestamp(),
   });
   if (!entry) return;
 

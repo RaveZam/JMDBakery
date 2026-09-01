@@ -1,7 +1,7 @@
 import { getDb } from "@/src/lib/db";
 import EndingInventoryDao from "@/src/lib/dao/ending-inventory-dao";
 import { enqueueOutbox } from "@/src/lib/sync/outbox";
-import { getPhTime } from "@/src/shared/helpers/getPhTime";
+import { manilaTimestamp } from "@/src/shared/helpers/manilaTimestamp";
 
 type UpsertEndingInventoryInput = {
   id?: string;
@@ -35,7 +35,7 @@ type UpsertEndingInventoryInput = {
 export function upsertEndingInventoryQty(
   input: UpsertEndingInventoryInput,
 ): string {
-  const createdAt = getPhTime().toISOString();
+  const createdAt = manilaTimestamp();
   // withTransactionSync runs its callback synchronously, but TS can't see
   // that through the callback boundary — assert we always assign below.
   let id!: string;

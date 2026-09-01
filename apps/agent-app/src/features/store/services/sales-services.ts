@@ -2,7 +2,7 @@ import { getDb } from "@/src/lib/db";
 import { generateUUID } from "@/src/lib/uuid";
 import SalesDao, { type LoggedItem } from "@/src/lib/dao/sales-dao";
 import { enqueueOutbox } from "@/src/lib/sync/outbox";
-import { getPhTime } from "@/src/shared/helpers/getPhTime";
+import { manilaTimestamp } from "@/src/shared/helpers/manilaTimestamp";
 import { syncVisitCredit } from "./store-credit-service";
 
 type AddSaleInput = {
@@ -48,7 +48,7 @@ function toSalePayload(id: string, input: AddSaleInput) {
 
 export function addSale(input: AddSaleInput): void {
   const id = generateUUID();
-  const createdAt = getPhTime().toISOString();
+  const createdAt = manilaTimestamp();
   getDb().withTransactionSync(() => {
     SalesDao.insertSale({
       id,

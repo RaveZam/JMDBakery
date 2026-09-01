@@ -2,7 +2,7 @@ import { getDb } from "@/src/lib/db";
 import { generateUUID } from "@/src/lib/uuid";
 import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
 import { enqueueOutbox } from "@/src/lib/sync/outbox";
-import { getPhTime } from "@/src/shared/helpers/getPhTime";
+import { manilaTimestamp } from "@/src/shared/helpers/manilaTimestamp";
 
 type AddInventoryInput = {
   sessionId: string;
@@ -41,7 +41,7 @@ export function removeMorningInventoryItem(inventoryId: string): void {
 
 export function addMorningInventoryItem(input: AddInventoryInput): void {
   const id = generateUUID();
-  const createdAt = getPhTime().toISOString();
+  const createdAt = manilaTimestamp();
   getDb().withTransactionSync(() => {
     SessionInventoryDao.insert({
       sessionId: input.sessionId,

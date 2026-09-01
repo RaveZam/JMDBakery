@@ -3,7 +3,8 @@ import RouteSessionsDao from "@/src/lib/dao/route-sessions-dao";
 import StoresDao from "@/src/lib/dao/store-dao";
 import { generateUUID } from "@/src/lib/uuid";
 import { supabase } from "@/src/lib/supabase";
-import { getPhTime } from "@/src/shared/helpers/getPhTime";
+import { manilaDateKey } from "@/src/shared/helpers/manilaDateKey";
+import { manilaTimestamp } from "@/src/shared/helpers/manilaTimestamp";
 import { insertRouteSession } from "./route-session-create-service";
 import { insertSessionStore } from "./session-store-save-service";
 import { enqueueOutbox } from "@/src/lib/sync/outbox";
@@ -19,7 +20,7 @@ export async function startSession(
   routeId: string,
   routeName: string,
 ): Promise<string> {
-  const sessionDate = getPhTime().toISOString().split("T")[0];
+  const sessionDate = manilaDateKey();
 
   const {
     data: { session },
@@ -39,7 +40,7 @@ export async function startSession(
 
   if (stores.length === 0) throw new Error("No stores on this route");
 
-  const createdAt = getPhTime().toISOString();
+  const createdAt = manilaTimestamp();
 
   getDb().withTransactionSync(() => {
     insertRouteSession({
