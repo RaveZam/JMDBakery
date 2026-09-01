@@ -30,7 +30,7 @@ describe("computeSalesTimeline — today", () => {
       makeSale({ createdAt: "2026-07-15T14:10:00Z", total: 200 }),
     ];
 
-    expect(computeSalesTimeline(data, "today")).toEqual([
+    expect(computeSalesTimeline(data, [], "today")).toEqual([
       { label: "9am", sales: 150 },
       { label: "2pm", sales: 200 },
     ]);
@@ -43,7 +43,7 @@ describe("computeSalesTimeline — today", () => {
       makeSale({ createdAt: "2026-07-15T11:00:00Z", total: 1 }),
     ];
 
-    expect(computeSalesTimeline(data, "today").map((p) => p.label)).toEqual([
+    expect(computeSalesTimeline(data, [], "today").map((p) => p.label)).toEqual([
       "3am",
       "11am",
       "10pm",
@@ -56,13 +56,13 @@ describe("computeSalesTimeline — today", () => {
       makeSale({ createdAt: "2026-07-15T09:00:00Z", total: 100 }),
     ];
 
-    expect(computeSalesTimeline(data, "today")).toEqual([
+    expect(computeSalesTimeline(data, [], "today")).toEqual([
       { label: "9am", sales: 100 },
     ]);
   });
 
   test("returns no points when there are no sales", () => {
-    expect(computeSalesTimeline([], "today")).toEqual([]);
+    expect(computeSalesTimeline([], [], "today")).toEqual([]);
   });
 });
 
@@ -74,7 +74,7 @@ describe("computeSalesTimeline — multi-day", () => {
       makeSale({ date: "2026-07-15", total: 50 }),
     ];
 
-    expect(computeSalesTimeline(data, "7days")).toEqual([
+    expect(computeSalesTimeline(data, [], "7days")).toEqual([
       { label: "Wed", sales: 150 },
       { label: "Thu", sales: 300 },
     ]);
@@ -83,7 +83,7 @@ describe("computeSalesTimeline — multi-day", () => {
   test("uses month-and-day labels on the 30-day range", () => {
     const data = [makeSale({ date: "2026-07-15", total: 100 })];
 
-    expect(computeSalesTimeline(data, "30days")).toEqual([
+    expect(computeSalesTimeline(data, [], "30days")).toEqual([
       { label: "Jul 15", sales: 100 },
     ]);
   });
@@ -91,12 +91,66 @@ describe("computeSalesTimeline — multi-day", () => {
   test("counts a day's sales even when timestamps are missing", () => {
     const data = [makeSale({ date: "2026-07-15", createdAt: null, total: 75 })];
 
-    expect(computeSalesTimeline(data, "7days")).toEqual([
+    expect(computeSalesTimeline(data, [], "7days")).toEqual([
       { label: "Wed", sales: 75 },
     ]);
   });
 
   test("returns no points when there are no sales", () => {
-    expect(computeSalesTimeline([], "7days")).toEqual([]);
+    expect(computeSalesTimeline([], [], "7days")).toEqual([]);
+  });
+});
+
+describe("computeSalesTimeline — credit and repayments", () => {
+  test("leaves credit orders out of an hourly point", () => {
+    const data = [
+      makeSale({ createdAt: "2026-07-15T09:00:00Z", total: 100 }),
+      makeSale({
+        createdAt: "2026-07-15T09:30:00Z",
+        total: 900,
+        paymentType: "credit",
+      }),
+    ];
+
+    expect(computeSalesTimeline(data, [], "today")).toEqual([
+      { label: "9am", sales: 100 },
+    ]);
+  });
+
+  test("adds a repayment to the hour it was collected", () => {
+    const data = [makeSale({ createdAt: "2026-07-15T09:00:00Z", total: 100 })];
+    const payments = [
+      {
+        date: "2026-07-15",
+        createdAt: "2026-07-15T09:20:00Z",
+        amount: 50,
+      },
+    ];
+
+    expect(computeSalesTimeline(data, payments, "today")).toEqual([
+      { label: "9am", sales: 150 },
+    ]);
+  });
+
+  test("adds a repayment to the day it was collected", () => {
+    const data = [makeSale({ date: "2026-07-15", total: 100 })];
+    const payments = [
+      { date: "2026-07-16", createdAt: "2026-07-16T10:00:00Z", amount: 300 },
+    ];
+
+    expect(computeSalesTimeline(data, payments, "7days")).toEqual([
+      { label: "Wed", sales: 100 },
+      { label: "Thu", sales: 300 },
+    ]);
+  });
+
+  test("plots a day whose only money was a repayment", () => {
+    const payments = [
+      { date: "2026-07-15", createdAt: "2026-07-15T10:00:00Z", amount: 500 },
+    ];
+
+    expect(computeSalesTimeline([], payments, "7days")).toEqual([
+      { label: "Wed", sales: 500 },
+    ]);
   });
 });

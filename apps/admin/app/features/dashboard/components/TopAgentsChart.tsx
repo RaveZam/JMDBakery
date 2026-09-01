@@ -13,7 +13,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { computeTopAgents } from "../helpers/computeTopAgents";
 import { formatCurrencyCompact } from "../helpers/formatCurrencyCompact";
-import type { AgentSaleRecord } from "../types/dashboard-types";
+import type {
+  AgentPaymentRecord,
+  AgentSaleRecord,
+} from "../types/dashboard-types";
 
 const BAR_COLORS = ["#1f7a44", "#2f9e5e", "#c79a3a", "#dec06a", "#86a06b"];
 
@@ -51,10 +54,12 @@ function CustomTooltip({
 
 export function TopAgentsChart({
   data,
+  payments,
 }: {
   data: AgentSaleRecord[];
+  payments: AgentPaymentRecord[];
 }): ReactElement {
-  const chartData = computeTopAgents(data);
+  const chartData = computeTopAgents(data, payments);
 
   return (
     <Card className="border-border/70 shadow-soft dark:shadow-soft-dark">

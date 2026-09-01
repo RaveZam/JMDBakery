@@ -14,22 +14,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
 import { computeSalesTimeline } from "../helpers/computeSalesTimeline";
 import { formatCurrencyCompact } from "../helpers/formatCurrencyCompact";
-import { FilterRange } from "../types/dashboard-types";
+import {
+  FilterRange,
+  TimelinePaymentRecord,
+} from "../types/dashboard-types";
 
 const CHART_TITLE: Record<FilterRange, string> = {
-  today: "Sales Today",
-  "7days": "Sales — Last 7 Days",
-  "30days": "Sales — Last 30 Days",
+  today: "Collected Today",
+  "7days": "Collected — Last 7 Days",
+  "30days": "Collected — Last 30 Days",
 };
 
 export function SalesLineChart({
   data,
+  payments,
   filter,
 }: {
   data: SalesRecord[];
+  payments: TimelinePaymentRecord[];
   filter: FilterRange;
 }): ReactElement {
-  const chartData = computeSalesTimeline(data, filter);
+  const chartData = computeSalesTimeline(data, payments, filter);
 
   return (
     <Card className="border-border/70 shadow-soft dark:shadow-soft-dark">

@@ -24,6 +24,7 @@ export type ProductBoRecord = {
 export type AgentSaleRecord = {
   agent: string;
   total: number;
+  paymentType: "cash" | "credit";
 };
 
 export type ProductSoldRecord = {
@@ -37,4 +38,27 @@ export type SalesKpiRecord = {
   total: number;
   soldQty: number;
   boQty: number;
+  paymentType: "cash" | "credit";
+};
+
+/*
+ * Credit repayments reach the dashboard as money with no products or pieces
+ * attached, so they get their own narrow shapes rather than being forced into
+ * the sale-line ones. Each holds only what its chart needs.
+ */
+
+export type StorePaymentRecord = {
+  store: string;
+  amount: number;
+};
+
+export type AgentPaymentRecord = {
+  collectedBy: string;
+  amount: number;
+};
+
+export type TimelinePaymentRecord = {
+  date: string;
+  createdAt: string;
+  amount: number;
 };

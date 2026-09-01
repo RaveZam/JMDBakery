@@ -3,7 +3,11 @@ import { KpiCard } from "./KpiCard";
 import { computeSalesKPI } from "../helpers/computeSalesKPI";
 import { computeVarianceTotal } from "../helpers/computeVarianceTotal";
 import type { VarianceRecord } from "@/app/server/varianceData/getVarianceDataset";
-import { FilterRange, SalesKpiRecord } from "../types/dashboard-types";
+import {
+  FilterRange,
+  SalesKpiRecord,
+  StorePaymentRecord,
+} from "../types/dashboard-types";
 
 const FILTER_LABEL: Record<FilterRange, string> = {
   today: "Today",
@@ -14,14 +18,16 @@ const FILTER_LABEL: Record<FilterRange, string> = {
 export function KpiStrip({
   data,
   varianceData,
+  payments,
   filter,
 }: {
   data: SalesKpiRecord[];
   varianceData: VarianceRecord[];
+  payments: StorePaymentRecord[];
   filter: FilterRange;
 }) {
   const { totalSales, avgPerStore, totalBO, finalBboRate, totalSold } =
-    computeSalesKPI(data);
+    computeSalesKPI(data, payments);
   const varianceTotal = computeVarianceTotal(varianceData);
 
   const label = FILTER_LABEL[filter];
@@ -29,13 +35,13 @@ export function KpiStrip({
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
       <KpiCard
-        title={`Total Sales · ${label}`}
+        title={`Total Collected · ${label}`}
         primary={"₱" + totalSales.toLocaleString()}
         tone="hero"
         icon={Banknote}
       />
       <KpiCard
-        title="Avg Sales per Store"
+        title="Avg Collected per Store"
         primary={
           "₱" +
           avgPerStore.toLocaleString(undefined, {
