@@ -19,7 +19,7 @@ function payment(id: string, amount: number, createdAt: string): CreditEntry {
   return {
     id,
     storeId: "store-9",
-    sessionStoreId: null,
+    sessionStoreId: "sstore-paid",
     entryType: "payment",
     amount,
     note: null,

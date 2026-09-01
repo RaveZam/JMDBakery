@@ -8,12 +8,11 @@ function input(
   return {
     id: "entry-1",
     storeId: "store-9",
+    sessionStoreId: "session-store-1",
     amount: 500,
     outstandingBalance: 1150,
     recordedBy: "user-1",
     recordedByName: "Raven",
-    tenderedBy: "user-1",
-    tenderedByName: "Raven",
     createdAt: CREATED_AT,
     ...overrides,
   };
@@ -23,33 +22,12 @@ test("builds a payment entry for an amount against an outstanding balance", () =
   expect(buildStorePaymentEntry(input())).toEqual({
     id: "entry-1",
     storeId: "store-9",
-    sessionStoreId: null,
+    sessionStoreId: "session-store-1",
     entryType: "payment",
     amount: 500,
     recordedBy: "user-1",
     recordedByName: "Raven",
-    tenderedBy: null,
-    tenderedByName: null,
     createdAt: CREATED_AT,
-  });
-});
-
-test("keeps the collector when a different agent took the cash", () => {
-  const entry = buildStorePaymentEntry(
-    input({ tenderedBy: "user-2", tenderedByName: "Juan" }),
-  );
-
-  expect(entry).toMatchObject({
-    recordedBy: "user-1",
-    tenderedBy: "user-2",
-    tenderedByName: "Juan",
-  });
-});
-
-test("drops the collector when it is the same person who recorded it", () => {
-  expect(buildStorePaymentEntry(input())).toMatchObject({
-    tenderedBy: null,
-    tenderedByName: null,
   });
 });
 
@@ -70,6 +48,8 @@ test("does not cap the amount at the balance", () => {
   expect(entry?.amount).toBe(800);
 });
 
-test("a payment is never tied to a visit", () => {
-  expect(buildStorePaymentEntry(input())?.sessionStoreId).toBeNull();
+test("carries the visit it was collected on", () => {
+  expect(buildStorePaymentEntry(input())?.sessionStoreId).toBe(
+    "session-store-1",
+  );
 });

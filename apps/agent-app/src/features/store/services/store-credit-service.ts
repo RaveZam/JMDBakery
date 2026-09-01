@@ -90,19 +90,6 @@ function removeExistingCreditEntry(entryId: string): void {
 
 type WritableEntry = VisitCreditEntry | StorePaymentEntry;
 
-// Only the pushed payload carries the collector: nothing on the device reads
-// it back, so the local table has no columns for it.
-function tenderedFields(entry: WritableEntry): {
-  tendered_by?: string;
-  tendered_by_name?: string | null;
-} {
-  if (entry.entryType !== "payment" || !entry.tenderedBy) return {};
-  return {
-    tendered_by: entry.tenderedBy,
-    tendered_by_name: entry.tenderedByName,
-  };
-}
-
 function writeCreditEntry(entry: WritableEntry): void {
   StoreCreditDao.upsertEntry({
     id: entry.id,
@@ -129,7 +116,6 @@ function writeCreditEntry(entry: WritableEntry): void {
       recorded_by: entry.recordedBy,
       recorded_by_name: entry.recordedByName,
       created_at: entry.createdAt,
-      ...tenderedFields(entry),
     },
   });
 }
@@ -156,7 +142,7 @@ export function syncVisitCredit(sessionStoreId: string): void {
   const session = RouteSessionsDao.getById(sessionStore.route_session_id);
   if (!session) return;
 
-  const existing = StoreCreditDao.getBySessionStoreId(sessionStoreId);
+  const existing = StoreCreditDao.getCreditBySessionStoreId(sessionStoreId);
 
   const entry = buildVisitCreditEntry({
     id: existing?.id ?? generateUUID(),
@@ -230,10 +216,8 @@ export function deleteCreditEntry(entryId: string): void {
  * sum of the entries, so a payment only ever adds to the history.
  *
  * Everything but the amount is resolved here from local SQLite, so this works
- * with no signal. recorded_by is the agent signed in on this device — whoever
- * typed it — while tendered_by is the agent whose session the store is being
- * visited under, the person who actually took the cash. They are usually the
- * same, and buildStorePaymentEntry drops tendered_by when they are.
+ * with no signal. recorded_by is the agent on this device, the one who
+ * collected the cash.
  *
  * A no-op when the visit is unknown, nobody is signed in, or the payment would
  * be rejected by the server (see buildStorePaymentEntry).
@@ -245,21 +229,20 @@ export function recordStorePayment(input: {
   const sessionStore = SessionStoresDao.getById(input.sessionStoreId);
   if (!sessionStore) return;
 
-  const session = RouteSessionsDao.getById(sessionStore.route_session_id);
-  const recordedBy = getCurrentUserId();
-  if (!recordedBy) return;
+  const collectedBy = getCurrentUserId();
+  if (!collectedBy) return;
+  const collectedByName = getCurrentUserName() ?? "Unknown";
+
+  const entries = getCreditEntriesForStore(sessionStore.store_id);
 
   const entry = buildStorePaymentEntry({
     id: generateUUID(),
     storeId: sessionStore.store_id,
+    sessionStoreId: input.sessionStoreId,
     amount: input.amount,
-    outstandingBalance: computeCreditBalance(
-      getCreditEntriesForStore(sessionStore.store_id),
-    ),
-    recordedBy,
-    recordedByName: getCurrentUserName() ?? "Unknown",
-    tenderedBy: session?.conducted_by ?? null,
-    tenderedByName: session?.conducted_by_name ?? null,
+    outstandingBalance: computeCreditBalance(entries),
+    recordedBy: collectedBy,
+    recordedByName: collectedByName,
     createdAt: manilaTimestamp(),
   });
   if (!entry) return;

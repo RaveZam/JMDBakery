@@ -165,7 +165,7 @@ function seedCreditVisit(creditTotal: number, sessionId?: string) {
   const routeId = seedRoute();
   const provinceId = seedProvince(routeId);
   const storeId = seedStore(provinceId);
-  const session = sessionId ?? seedRouteSession();
+  const session = sessionId ?? seedRouteSession("North Route", TEST_AGENT_ID, "Ana");
   const sessionStoreId = seedSessionStore(session, storeId, provinceId);
 
   seedOrder(sessionStoreId, creditTotal, "credit");
@@ -192,9 +192,12 @@ test("recordStorePayment writes a payment entry against the store's balance", ()
   );
   expect(payment).toMatchObject({
     storeId,
-    sessionStoreId: null,
+    // The payment shares the visit's session_store_id — safe because
+    // syncVisitCredit and the unique index both scope to entry_type = 'credit'.
+    sessionStoreId,
     entryType: "payment",
     amount: 500,
+    // The agent on this device, the one who collected the cash.
     recordedByName: "Raven",
   });
 });
@@ -220,14 +223,15 @@ test("a payment is queued for push", () => {
   expect(outboxPayloadsFor(payment!.id)[0]).toMatchObject({
     id: payment!.id,
     store_id: storeId,
-    session_store_id: null,
+    session_store_id: sessionStoreId,
     entry_type: "payment",
     amount: 500,
   });
 });
 
-test("the pushed payment names the collector when another agent ran the session", () => {
+test("a payment is recorded under the agent who collected it, not the credit's original encoder", () => {
   setCurrentUserName("Raven");
+  // Credit logged by a colleague's session; the payment is collected here.
   const sessionId = seedRouteSession("South Route", "user-2", "Juan");
   const { sessionStoreId, storeId } = seedCreditVisit(750, sessionId);
 
@@ -236,23 +240,14 @@ test("the pushed payment names the collector when another agent ran the session"
   const payment = getCreditEntriesForStore(storeId).find(
     (entry) => entry.entryType === "payment",
   );
+  expect(payment).toMatchObject({
+    recordedBy: TEST_AGENT_ID,
+    recordedByName: "Raven",
+  });
   expect(outboxPayloadsFor(payment!.id)[0]).toMatchObject({
     recorded_by: TEST_AGENT_ID,
-    tendered_by: "user-2",
-    tendered_by_name: "Juan",
+    recorded_by_name: "Raven",
   });
-});
-
-test("the pushed payment omits the collector when the recorder took the cash", () => {
-  setCurrentUserName("Raven");
-  const { sessionStoreId, storeId } = seedCreditVisit(750);
-
-  recordStorePayment({ sessionStoreId, amount: 500 });
-
-  const payment = getCreditEntriesForStore(storeId).find(
-    (entry) => entry.entryType === "payment",
-  );
-  expect(outboxPayloadsFor(payment!.id)[0]).not.toHaveProperty("tendered_by");
 });
 
 test("recordStorePayment writes nothing when the store owes nothing", () => {
