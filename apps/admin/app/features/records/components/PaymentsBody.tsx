@@ -23,7 +23,7 @@ export function PaymentsBody({ search }: { search: string }) {
   }
 
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col gap-6">
       <PaymentsTable payments={payments.pagePayments} />
       <RecordsPagination
         page={payments.page}
@@ -31,6 +31,6 @@ export function PaymentsBody({ search }: { search: string }) {
         totalRecords={payments.payments.length}
         onPageChange={payments.setPage}
       />
-    </>
+    </div>
   );
 }

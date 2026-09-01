@@ -8,7 +8,7 @@ export function PaymentsTable({ payments }: { payments: CreditPayment[] }) {
   if (payments.length === 0) return <PaymentsEmptyState />;
 
   return (
-    <Card className="overflow-hidden border-border/70 p-0 shadow-soft dark:shadow-soft-dark">
+    <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border-border/70 p-0 shadow-soft dark:shadow-soft-dark">
       <div
         aria-hidden
         className="h-3 w-full bg-border/70"
@@ -19,7 +19,7 @@ export function PaymentsTable({ payments }: { payments: CreditPayment[] }) {
           backgroundPosition: "top left",
         }}
       />
-      <div className="max-h-[70vh] overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto">
         <table className="w-full border-collapse text-sm">
           <PaymentsTableHeader />
           <tbody className="font-mono tabular-nums">
