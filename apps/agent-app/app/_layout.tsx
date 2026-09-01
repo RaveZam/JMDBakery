@@ -12,7 +12,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useColorScheme } from "@/src/shared/hooks/useColorScheme";
 import { Colors } from "@/src/shared/constants/Colors";
 import { useAuthGuard } from "@/src/features/auth/hooks/useAuthGuard";
-import { useAppReady } from "@/src/shared/hooks/useAppReady";
 import { useSyncScheduler } from "@/src/shared/hooks/useSyncScheduler";
 import { SnackbarProvider } from "@/src/shared/hooks/useSnackbar";
 import "react-native-get-random-values";
@@ -24,7 +23,6 @@ export default function RootLayout() {
   });
 
   const { checking, allowed } = useAuthGuard();
-  useAppReady(allowed);
   useSyncScheduler(allowed);
 
   if (!loaded || checking) {
