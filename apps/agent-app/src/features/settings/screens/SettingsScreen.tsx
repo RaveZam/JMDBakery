@@ -9,20 +9,19 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { ThemedView } from "@/src/shared/components/ThemedView";
 import { ThemedText } from "@/src/shared/components/ThemedText";
 import { supabase } from "@/src/lib/supabase";
 import { Colors } from "@/src/shared/constants/Colors";
 import { useDownloadSync } from "@/src/features/settings/useDownloadSync";
+import { useSignOut } from "@/src/features/settings/hooks/useSignOut";
 import { clearSessionData } from "@/src/features/settings/services/clearSessionData";
-import { clearDeviceTrust } from "@/src/lib/device-trust";
 import type { Session } from "@supabase/supabase-js";
 
 export default function SettingsScreen() {
-  const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const { syncing, triggerDownload } = useDownloadSync();
+  const { loading, signOut } = useSignOut();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -44,20 +43,6 @@ export default function SettingsScreen() {
         },
       ],
     );
-  };
-
-  const handleSignOut = async () => {
-    setLoading(true);
-    try {
-      await supabase.auth.signOut();
-      // Without this the offline grace window would let them straight back in.
-      clearDeviceTrust();
-      router.replace("/auth/sign-in");
-    } catch (err) {
-      Alert.alert("Sign out failed", "Please try again.");
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -166,7 +151,7 @@ export default function SettingsScreen() {
         <TouchableOpacity
           style={styles.signOut}
           activeOpacity={0.8}
-          onPress={handleSignOut}
+          onPress={signOut}
           disabled={loading}
         >
           {loading ? (
