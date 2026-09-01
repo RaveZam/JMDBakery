@@ -50,8 +50,6 @@ export type CreditLedgerEntry = {
   note: string | null;
   /** Who typed the entry into the app. */
   recordedByName: string | null;
-  /** Who accepted the cash. Already resolved to recordedByName when the same. */
-  tenderedByName: string | null;
   createdAt: string;
 };
 

@@ -9,7 +9,6 @@ function makeEntry(overrides: Partial<CreditLedgerEntry> = {}): CreditLedgerEntr
     amount: 100,
     note: null,
     recordedByName: "Ana",
-    tenderedByName: "Ana",
     createdAt: "2026-07-15T09:00:00Z",
     ...overrides,
   };

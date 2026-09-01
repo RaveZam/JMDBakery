@@ -9,7 +9,6 @@ type StoreCreditEntryRow = {
   amount: number | string;
   note: string | null;
   recorded_by_name: string | null;
-  tendered_by_name: string | null;
   created_at: string;
 };
 
@@ -33,8 +32,6 @@ export async function getStoreCreditEntries(
     amount: Number(row.amount),
     note: row.note,
     recordedByName: row.recorded_by_name,
-    // A null tendered_by means the encoder collected the cash themselves.
-    tenderedByName: row.tendered_by_name ?? row.recorded_by_name,
     createdAt: row.created_at,
   }));
 }

@@ -24,10 +24,8 @@ export type CreditPayment = {
   createdAt: string;
   store: string;
   province: string;
-  /** Who physically accepted the cash at the store. */
+  /** The agent who recorded the payment. */
   collectedBy: string;
-  /** Who typed it into the app. Usually the same person as collectedBy. */
-  encodedBy: string;
   note: string | null;
   amount: number;
 };

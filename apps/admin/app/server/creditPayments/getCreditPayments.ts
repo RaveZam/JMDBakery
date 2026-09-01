@@ -10,23 +10,17 @@ type RawCreditPayment = {
   note: string | null;
   created_at: string;
   recorded_by_name: string | null;
-  tendered_by_name: string | null;
   stores: { store_name: string | null; province: string | null } | null;
 };
 
 function mapCreditPayment(row: RawCreditPayment): CreditPayment {
-  const encodedBy = row.recorded_by_name ?? "Unknown";
-
   return {
     id: row.id,
     date: manilaTimestamp.day(row.created_at),
     createdAt: row.created_at,
     store: row.stores?.store_name ?? "",
     province: row.stores?.province ?? "",
-    // tendered_by is only written when someone other than the encoder took
-    // the cash, so a null here means the encoder collected it themselves.
-    collectedBy: row.tendered_by_name ?? encodedBy,
-    encodedBy,
+    collectedBy: row.recorded_by_name ?? "Unknown",
     note: row.note,
     amount: row.amount ?? 0,
   };
@@ -46,7 +40,7 @@ export const getCreditPayments = async (): Promise<CreditPayment[]> => {
     .from("store_credit_entries")
     .select(
       `
-      id, amount, note, created_at, recorded_by_name, tendered_by_name,
+      id, amount, note, created_at, recorded_by_name,
       stores(store_name, province)
     `,
     )

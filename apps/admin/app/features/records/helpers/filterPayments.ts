@@ -12,7 +12,6 @@ export function filterPayments(
       payment.store.toLowerCase().includes(query) ||
       payment.province.toLowerCase().includes(query) ||
       payment.collectedBy.toLowerCase().includes(query) ||
-      payment.encodedBy.toLowerCase().includes(query) ||
       (payment.note ?? "").toLowerCase().includes(query),
   );
 }

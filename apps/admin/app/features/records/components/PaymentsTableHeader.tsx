@@ -3,8 +3,6 @@ const COLUMNS = [
   "Store",
   "Province",
   "Collected by",
-  "Encoded by",
-  "Note",
 ];
 
 export function PaymentsTableHeader() {

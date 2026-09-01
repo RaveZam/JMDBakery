@@ -12,7 +12,6 @@ function makePayment(date: string): CreditPayment {
     store: "Store A",
     province: "Cebu",
     collectedBy: "Ana",
-    encodedBy: "Ana",
     note: null,
     amount: 100,
   };
