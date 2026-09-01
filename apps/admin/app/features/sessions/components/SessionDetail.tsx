@@ -6,16 +6,20 @@ import { ClipboardList } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrencyPHP } from "@/lib/utils";
 import { useSessionStores } from "../hooks/useSessionStores";
+import { useSessionPayments } from "../hooks/useSessionPayments";
 import { formatSessionDate, visitRate } from "../helpers/sessionHelpers";
-import type { SessionRow } from "../types/session-types";
+import type { SessionPaymentRow, SessionRow } from "../types/session-types";
 import { SessionInventoryModal } from "./SessionInventoryModal";
 import { StoreEntry } from "./StoreEntry";
 
 function StoreEntryList({
   session,
+  paymentsByStore,
 }: {
   session: SessionRow;
+  paymentsByStore: Record<string, SessionPaymentRow[]>;
 }): ReactElement {
   const { stores, loading } = useSessionStores(session.id);
   const [expandedStoreId, setExpandedStoreId] = useState<string | null>(null);
@@ -40,6 +44,7 @@ function StoreEntryList({
         <StoreEntry
           key={store.id}
           store={store}
+          payments={paymentsByStore[store.id] ?? []}
           expanded={expandedStoreId === store.id}
           onToggle={() =>
             setExpandedStoreId((current) =>
@@ -52,7 +57,13 @@ function StoreEntryList({
   );
 }
 
-function DetailHeadline({ session }: { session: SessionRow }): ReactElement {
+function DetailHeadline({
+  session,
+  collectedTotal,
+}: {
+  session: SessionRow;
+  collectedTotal: number;
+}): ReactElement {
   return (
     <div>
       <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-gold">
@@ -65,6 +76,16 @@ function DetailHeadline({ session }: { session: SessionRow }): ReactElement {
           {visitRate(session.visitedStores, session.totalStores)}
         </span>{" "}
         of stops covered
+        {collectedTotal > 0 ? (
+          <>
+            {" "}
+            &middot;{" "}
+            <span className="font-[family-name:var(--font-mono)] font-medium tabular-nums text-primary">
+              {formatCurrencyPHP(collectedTotal)}
+            </span>{" "}
+            collected
+          </>
+        ) : null}
       </p>
     </div>
   );
@@ -72,11 +93,15 @@ function DetailHeadline({ session }: { session: SessionRow }): ReactElement {
 
 export function SessionDetail({ session }: { session: SessionRow }): ReactElement {
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const payments = useSessionPayments(session.id);
 
   return (
     <Card className="border-border/70 shadow-soft dark:shadow-soft-dark">
       <CardHeader className="flex flex-row items-start justify-between gap-3 pb-3">
-        <DetailHeadline session={session} />
+        <DetailHeadline
+          session={session}
+          collectedTotal={payments.collectedTotal}
+        />
         <Button
           type="button"
           variant="outline"
@@ -89,7 +114,10 @@ export function SessionDetail({ session }: { session: SessionRow }): ReactElemen
         </Button>
       </CardHeader>
       <CardContent className="space-y-2">
-        <StoreEntryList session={session} />
+        <StoreEntryList
+          session={session}
+          paymentsByStore={payments.paymentsByStore}
+        />
       </CardContent>
       {inventoryOpen ? (
         <SessionInventoryModal
