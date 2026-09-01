@@ -144,6 +144,9 @@ export async function initDb(): Promise<void> {
     -- or deleted session must not silently erase a debt the store still owes.
     -- Both are grouping keys only. No local deleted_at — an arriving
     -- deleted_at deletes the row, matching products.
+    -- session_store_id is the visit a credit is derived from, or the one a
+    -- payment was collected on. syncVisitCredit only ever looks it up with
+    -- entry_type = 'credit', so a payment sharing a visit is left alone.
     CREATE TABLE IF NOT EXISTS store_credit_entries (
       id               TEXT PRIMARY KEY,
       store_id         TEXT NOT NULL,
@@ -202,8 +205,14 @@ export async function initDb(): Promise<void> {
     CREATE INDEX IF NOT EXISTS ending_inventory_session_idx ON ending_inventory(route_session_id);
     CREATE INDEX IF NOT EXISTS outbox_pending_idx ON outbox(synced_at) WHERE synced_at IS NULL;
     CREATE INDEX IF NOT EXISTS store_credit_entries_store_idx ON store_credit_entries(store_id);
+    -- One derived credit row per visit. Scoped to 'credit' so a payment sharing
+    -- the visit's session_store_id doesn't collide with it — INSERT OR REPLACE
+    -- on a unique hit would delete the credit. Dropped first so installs that
+    -- created the old, unscoped version pick up the narrower predicate.
+    DROP INDEX IF EXISTS store_credit_entries_session_store_idx;
     CREATE UNIQUE INDEX IF NOT EXISTS store_credit_entries_session_store_idx
-      ON store_credit_entries(session_store_id) WHERE session_store_id IS NOT NULL;
+      ON store_credit_entries(session_store_id)
+      WHERE session_store_id IS NOT NULL AND entry_type = 'credit';
     CREATE INDEX IF NOT EXISTS credit_entry_sales_session_store_idx ON credit_entry_sales(session_store_id);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_route_sessions_one_ongoing ON route_sessions(status) WHERE status = 'ongoing';
     CREATE INDEX IF NOT EXISTS route_sessions_created_at_idx ON route_sessions(created_at DESC);

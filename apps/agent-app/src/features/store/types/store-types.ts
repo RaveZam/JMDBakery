@@ -30,6 +30,9 @@ export type SessionStoreDetails = {
 export type CreditEntry = {
   id: string;
   storeId: string;
+  // The visit this entry belongs to: a credit's derived-from visit, or the one
+  // a payment was collected on. Null only on payments taken before the app
+  // recorded where a payment happened.
   sessionStoreId: string | null;
   entryType: "credit" | "payment";
   amount: number;
