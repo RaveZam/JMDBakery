@@ -55,14 +55,42 @@ describe("useRecordsFilter", () => {
     expect(result.current.records.map((r) => r.id)).toEqual(["sold", "split"]);
   });
 
-  test("summarises the filtered records, not every record", () => {
+  test("summarises the whole dataset, not just the open view", () => {
     const { result } = renderHook(() => useRecordsFilter(allRecords));
 
     act(() => result.current.setView("bad-orders"));
 
-    expect(result.current.summary.totalRecords).toBe(2);
-    expect(result.current.summary.totalSoldQty).toBe(6);
+    expect(result.current.summary.totalRecords).toBe(3);
+    expect(result.current.summary.totalSoldQty).toBe(16);
     expect(result.current.summary.totalBoQty).toBe(6);
+  });
+
+  test("summarises only what the search matches", () => {
+    const { result } = renderHook(() => useRecordsFilter(allRecords));
+
+    act(() => result.current.setSearch("ana"));
+
+    expect(result.current.summary.totalRecords).toBe(2);
+  });
+
+  test("lists credit rows on the all view and keeps their total in the summary", () => {
+    const creditRecord = makeRecord({
+      id: "credit",
+      paymentType: "credit",
+      total: 250,
+    });
+
+    const { result } = renderHook(() =>
+      useRecordsFilter([...allRecords, creditRecord]),
+    );
+
+    expect(result.current.records.map((r) => r.id)).toEqual([
+      "sold",
+      "bad",
+      "split",
+      "credit",
+    ]);
+    expect(result.current.summary.creditTotal).toBe(250);
   });
 
   test("returns the first page of results", () => {
