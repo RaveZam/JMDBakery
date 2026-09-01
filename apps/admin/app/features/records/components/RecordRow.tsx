@@ -61,10 +61,14 @@ export function RecordRow({
   onClick: () => void;
 }) {
   const status = recordStatus(record);
+  // A row with any bad order sits on a red wash so damaged stock stands out
+  // while scanning the table.
+  const rowTint =
+    record.boQty > 0 ? "bg-destructive/5 hover:bg-destructive/10" : "hover:bg-muted/50";
 
   return (
     <tr
-      className="cursor-pointer border-b border-border/50 last:border-0 hover:bg-muted/50"
+      className={`cursor-pointer border-b border-border/50 last:border-0 ${rowTint}`}
       onClick={onClick}
     >
       <td className="w-1 p-0">
