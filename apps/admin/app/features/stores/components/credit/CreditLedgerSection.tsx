@@ -8,10 +8,12 @@ export function CreditLedgerSection({
   entries,
   loading,
   error,
+  onSelect,
 }: {
   entries: CreditLedgerEntry[];
   loading: boolean;
   error: string | null;
+  onSelect: (entry: CreditLedgerEntry) => void;
 }): ReactElement {
   if (loading) {
     return <LoadingSpinner />;
@@ -26,5 +28,5 @@ export function CreditLedgerSection({
       </p>
     );
   }
-  return <CreditLedgerList entries={entries} />;
+  return <CreditLedgerList entries={entries} onSelect={onSelect} />;
 }
