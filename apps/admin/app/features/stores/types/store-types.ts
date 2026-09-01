@@ -55,6 +55,18 @@ export type CreditLedgerEntry = {
   createdAt: string;
 };
 
+// One order line behind a credit entry. Cash lines of the same visit are not
+// included — they were paid on the spot and never part of the debt.
+export type CreditEntrySale = {
+  id: string;
+  productName: string;
+  price: number;
+  quantitySold: number;
+  quantityBadOrder: number;
+  badOrderReason: string | null;
+  total: number;
+};
+
 export type StoreStats = {
   storeCount: number;
   totalRevenue: number;
