@@ -58,7 +58,61 @@ describe("SoldOrderRow", () => {
     expect(screen.getByText("—")).toBeTruthy();
   });
 
-  // 3. Interaction: tapping delete calls onDelete with this row's index.
+  // 3. Payment type marker shows on every row.
+  test("shows a CREDIT marker for a credit order", () => {
+    render(
+      <SoldOrderRow
+        item={makeItem({ paymentType: "credit" })}
+        index={0}
+        onPress={() => {}}
+        onDelete={() => {}}
+      />,
+    );
+    expect(screen.getByText("Credit")).toBeTruthy();
+    expect(screen.queryByText("Cash")).toBeNull();
+  });
+
+  test("shows a CASH marker for a cash order", () => {
+    render(
+      <SoldOrderRow
+        item={makeItem({ paymentType: "cash" })}
+        index={0}
+        onPress={() => {}}
+        onDelete={() => {}}
+      />,
+    );
+    expect(screen.getByText("Cash")).toBeTruthy();
+    expect(screen.queryByText("Credit")).toBeNull();
+  });
+
+  test("shows only a red BO marker when the row is back-order only", () => {
+    render(
+      <SoldOrderRow
+        item={makeItem({ qty: 0, boQty: 8 })}
+        index={0}
+        onPress={() => {}}
+        onDelete={() => {}}
+      />,
+    );
+    expect(screen.getByText("BO")).toBeTruthy();
+    expect(screen.queryByText("Cash")).toBeNull();
+    expect(screen.queryByText("Credit")).toBeNull();
+  });
+
+  test("shows both the payment marker and the BO marker when sold and back-ordered", () => {
+    render(
+      <SoldOrderRow
+        item={makeItem({ qty: 5, boQty: 8, paymentType: "cash" })}
+        index={0}
+        onPress={() => {}}
+        onDelete={() => {}}
+      />,
+    );
+    expect(screen.getByText("Cash")).toBeTruthy();
+    expect(screen.getByText("BO")).toBeTruthy();
+  });
+
+  // 4. Interaction: tapping delete calls onDelete with this row's index.
   test("calls onDelete with the row index when delete is pressed", () => {
     const onDelete = jest.fn(); // a "spy" — records how it was called
     render(

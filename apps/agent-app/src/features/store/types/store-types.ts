@@ -9,6 +9,7 @@ export const PRESET_REASONS = [
   "Damaged",
   "Lost",
   "Returned",
+  "Replaced",
   "Custom",
 ] as const;
 export type PresetReason = (typeof PRESET_REASONS)[number];
