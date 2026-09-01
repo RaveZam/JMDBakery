@@ -1,6 +1,7 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
-import { manilaDateKey, windowStartDate } from "@/app/server/datasetWindow";
+import { windowStartDate } from "@/app/server/datasetWindow";
+import { manilaTimestamp } from "@/lib/manilaTimestamp";
 import type { CreditPayment } from "@/app/features/records/types";
 
 type RawCreditPayment = {
@@ -18,7 +19,8 @@ function mapCreditPayment(row: RawCreditPayment): CreditPayment {
 
   return {
     id: row.id,
-    date: manilaDateKey(row.created_at),
+    date: manilaTimestamp.day(row.created_at),
+    createdAt: row.created_at,
     store: row.stores?.store_name ?? "",
     province: row.stores?.province ?? "",
     // tendered_by is only written when someone other than the encoder took

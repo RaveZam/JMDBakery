@@ -9,6 +9,7 @@ import { StoreLocationContact } from "./StoreLocationContact";
 import { StoreTopProductsPanel } from "./StoreTopProductsPanel";
 import { StoreCreditPanel } from "./credit/StoreCreditPanel";
 import { StoreDetailTabs, type StoreDetailTab } from "./StoreDetailTabs";
+import { manilaTimestamp } from "@/lib/manilaTimestamp";
 import type { StoreCreditByStore } from "../types/store-types";
 
 function useCloseOnEscape(active: boolean, onClose: () => void): void {
@@ -29,11 +30,7 @@ function StoreDetailHeader({
   store: StoreCreditByStore;
   onClose: () => void;
 }): ReactElement {
-  const joined = new Date(store.createdAt).toLocaleDateString("en-PH", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const joined = manilaTimestamp.dayLong(store.createdAt);
 
   return (
     <div className="flex items-start justify-between border-b px-5 py-4">

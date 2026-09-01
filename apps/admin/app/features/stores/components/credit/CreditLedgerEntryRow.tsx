@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 
 import { formatCurrencyPHP } from "@/lib/utils";
 import { creditEntryLabel } from "../../core/creditEntryLabel";
+import { manilaTimestamp } from "@/lib/manilaTimestamp";
 import type { CreditLedgerEntry } from "../../types/store-types";
 
 export function CreditLedgerEntryRow({
@@ -10,10 +11,7 @@ export function CreditLedgerEntryRow({
   entry: CreditLedgerEntry;
 }): ReactElement {
   const isPayment = entry.entryType === "payment";
-  const day = new Date(entry.createdAt).toLocaleDateString("en-PH", {
-    month: "short",
-    day: "numeric",
-  });
+  const day = manilaTimestamp.dayShort(entry.createdAt);
 
   return (
     <li className="flex items-baseline justify-between gap-3 rounded-lg px-2 py-2 text-sm hover:bg-muted/40">

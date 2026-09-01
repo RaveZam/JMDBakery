@@ -20,6 +20,8 @@ export type CreditPayment = {
   id: string;
   /** The day it was collected, in Philippine time. */
   date: string;
+  /** Raw collection timestamp, for hourly views and the time on each row. */
+  createdAt: string;
   store: string;
   province: string;
   /** Who physically accepted the cash at the store. */
