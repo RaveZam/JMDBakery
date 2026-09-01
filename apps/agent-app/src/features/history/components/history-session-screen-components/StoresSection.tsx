@@ -67,6 +67,7 @@ export function StoresSection() {
               }
               onToggle={() => toggleGroup(group.provinceName)}
               salesByStore={session.salesByStore}
+              paymentsByStore={session.paymentsByStore}
             />
           ))}
         </View>

@@ -18,6 +18,7 @@ import {
 import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
 import SalesDao from "@/src/lib/dao/sales-dao";
 import EndingInventoryDao from "@/src/lib/dao/ending-inventory-dao";
+import StoreCreditDao from "@/src/lib/dao/store-credit-dao";
 import { useHistorySession } from "@/src/features/history/hooks/useHistorySession";
 import { cancelHistorySession } from "@/src/features/history/services/cancel-session-service";
 import { useLocalSearchParams } from "expo-router";
@@ -92,6 +93,50 @@ test("assembles the session row, inventory, stores, and per-store sales", () => 
     qty: 5,
   });
   expect(session.hasEndingInventory).toBe(false);
+});
+
+/** A credit payment the agent collected on the given visit. */
+function seedPayment(
+  id: string,
+  sessionStoreId: string | null,
+  amount: number,
+) {
+  StoreCreditDao.upsertEntry({
+    id,
+    store_id: "store-9",
+    session_store_id: sessionStoreId,
+    entry_type: "payment",
+    amount,
+    note: null,
+    recorded_by: "agent-1",
+    recorded_by_name: "Raven",
+    created_at: "2026-06-30T02:00:00.000Z",
+  });
+}
+
+test("carries the payments collected on each visit, and what they add up to", () => {
+  const { sessionId, sessionStoreId } = seedSessionDetail();
+  seedPayment("payment-1", sessionStoreId, 300);
+  seedPayment("payment-2", sessionStoreId, 200);
+  mockParams.mockReturnValue({ sessionId });
+
+  const { result } = renderHook(() => useHistorySession());
+  const { session } = result.current;
+
+  expect(session.paymentsByStore[sessionStoreId]).toHaveLength(2);
+  expect(session.collectedTotal).toBe(500);
+});
+
+test("leaves out a payment collected on another session's visit", () => {
+  const { sessionId } = seedSessionDetail();
+  seedPayment("payment-1", "visit-elsewhere", 300);
+  mockParams.mockReturnValue({ sessionId });
+
+  const { result } = renderHook(() => useHistorySession());
+  const { session } = result.current;
+
+  expect(session.paymentsByStore).toEqual({});
+  expect(session.collectedTotal).toBe(0);
 });
 
 test("reports ending inventory once the session has ending rows", () => {

@@ -53,6 +53,9 @@ export function HistorySessionHeader() {
         {session.data
           ? ` • ${visitedCount} of ${session.stores.length} visited`
           : ""}
+        {session.collectedTotal > 0
+          ? ` • ₱${session.collectedTotal.toFixed(2)} collected`
+          : ""}
       </Text>
       {!session.hasEndingInventory && session.inventory.length > 0 && (
         <MissingEndingInventoryBanner />

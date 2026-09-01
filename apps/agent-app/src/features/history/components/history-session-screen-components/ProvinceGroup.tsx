@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type SessionStoresDao from "@/src/lib/dao/session-stores-dao";
 import type { LoggedItem } from "@/src/features/store/types/store-types";
+import type { StoreCreditEntryRow } from "@/src/lib/dao/store-credit-dao";
 import type { ProvinceGroup as ProvinceGroupData } from "../../core/session-derived";
 import { StoreCard } from "./StoreCard";
 
@@ -12,40 +13,64 @@ type Props = {
   expanded: boolean;
   onToggle: () => void;
   salesByStore: Record<string, LoggedItem[]>;
+  paymentsByStore: Record<string, StoreCreditEntryRow[]>;
 };
 
-export function ProvinceGroup({ group, expanded, onToggle, salesByStore }: Props) {
-  const { provinceName, stores, visitedCount } = group;
+function ProvinceGroupHeader({
+  group,
+  expanded,
+  onToggle,
+}: {
+  group: ProvinceGroupData<SessionStoreRow>;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <TouchableOpacity style={styles.header} activeOpacity={0.7} onPress={onToggle}>
+      <View style={styles.iconWrap}>
+        <Ionicons name="map-outline" size={15} color="#3F7355" />
+      </View>
+      <Text style={styles.name} numberOfLines={1}>
+        {group.provinceName}
+      </Text>
+      <View style={styles.visitedBadge}>
+        <Text style={styles.visitedBadgeText}>
+          {group.visitedCount}/{group.stores.length} visited
+        </Text>
+      </View>
+      <Ionicons
+        name={expanded ? "chevron-up" : "chevron-down"}
+        size={16}
+        color="#94A3B8"
+      />
+    </TouchableOpacity>
+  );
+}
 
+export function ProvinceGroup({
+  group,
+  expanded,
+  onToggle,
+  salesByStore,
+  paymentsByStore,
+}: Props) {
   return (
     <View style={styles.panel}>
-      <TouchableOpacity
-        style={styles.header}
-        activeOpacity={0.7}
-        onPress={onToggle}
-      >
-        <View style={styles.iconWrap}>
-          <Ionicons name="map-outline" size={15} color="#3F7355" />
-        </View>
-        <Text style={styles.name} numberOfLines={1}>
-          {provinceName}
-        </Text>
-        <View style={styles.visitedBadge}>
-          <Text style={styles.visitedBadgeText}>
-            {visitedCount}/{stores.length} visited
-          </Text>
-        </View>
-        <Ionicons
-          name={expanded ? "chevron-up" : "chevron-down"}
-          size={16}
-          color="#94A3B8"
-        />
-      </TouchableOpacity>
+      <ProvinceGroupHeader
+        group={group}
+        expanded={expanded}
+        onToggle={onToggle}
+      />
 
       {expanded && (
         <View style={styles.storeList}>
-          {stores.map((s) => (
-            <StoreCard key={s.id} store={s} items={salesByStore[s.id] ?? []} />
+          {group.stores.map((s) => (
+            <StoreCard
+              key={s.id}
+              store={s}
+              items={salesByStore[s.id] ?? []}
+              payments={paymentsByStore[s.id] ?? []}
+            />
           ))}
         </View>
       )}

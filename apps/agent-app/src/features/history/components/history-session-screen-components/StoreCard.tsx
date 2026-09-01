@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type SessionStoresDao from "@/src/lib/dao/session-stores-dao";
+import type { StoreCreditEntryRow } from "@/src/lib/dao/store-credit-dao";
 import type { LoggedItem } from "@/src/features/store/types/store-types";
 import { sumItemsTotal } from "../../core/session-derived";
 
@@ -9,6 +10,7 @@ type SessionStoreRow = ReturnType<typeof SessionStoresDao.getBySessionId>[number
 type Props = {
   store: SessionStoreRow;
   items: LoggedItem[];
+  payments: StoreCreditEntryRow[];
 };
 
 function StoreCardHeader({ store }: { store: SessionStoreRow }) {
@@ -72,11 +74,30 @@ function StoreItemsList({ items }: { items: LoggedItem[] }) {
   );
 }
 
-export function StoreCard({ store, items }: Props) {
+// What the store paid off its balance on this visit. Separate from the order
+// total above it — a payment settles old debt, it is not part of what was sold
+// today, so adding the two together would be wrong.
+function StorePaymentsList({ payments }: { payments: StoreCreditEntryRow[] }) {
+  if (payments.length === 0) return null;
+  return (
+    <View style={styles.paymentsWrap}>
+      {payments.map((payment) => (
+        <View key={payment.id} style={styles.paymentRow}>
+          <Ionicons name="cash-outline" size={14} color="#0b4c29" />
+          <Text style={styles.paymentLabel}>Payment collected</Text>
+          <Text style={styles.paymentAmount}>₱{payment.amount.toFixed(2)}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+export function StoreCard({ store, items, payments }: Props) {
   return (
     <View style={styles.storeCard}>
       <StoreCardHeader store={store} />
       <StoreItemsList items={items} />
+      <StorePaymentsList payments={payments} />
     </View>
   );
 }
@@ -167,4 +188,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   itemTotalValue: { fontSize: 14, fontWeight: "700", color: "#0b4c29" },
+
+  paymentsWrap: {
+    borderTopWidth: 1,
+    borderTopColor: "#DCFCE7",
+    backgroundColor: "#F0FDF4",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    gap: 4,
+  },
+  paymentRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  paymentLabel: { flex: 1, fontSize: 13, color: "#166534" },
+  paymentAmount: { fontSize: 14, fontWeight: "700", color: "#0b4c29" },
 });
