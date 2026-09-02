@@ -3,11 +3,11 @@ import { useLocalSearchParams } from "expo-router";
 import SessionInventoryDao from "@/src/lib/dao/session-inventory-dao";
 import EndingInventoryDao from "@/src/lib/dao/ending-inventory-dao";
 import { countSoldByProduct } from "@/src/features/store/core/count-sold-by-product";
-import { computeRemaining } from "@/src/features/store/core/compute-remaining";
 import { getSalesByRouteSession } from "@/src/features/store/services/sales-services";
 import { useSnackbar } from "@/src/shared/hooks/useSnackbar";
 import { upsertEndingInventoryQty } from "../services/ending-inventory-save-service";
 import { mergeEndingInventoryRows } from "../core/merge-ending-inventory-rows";
+import { computeExpectedEnding } from "../core/compute-expected-ending";
 import type { EndingInventoryRow } from "../types/ending-inventory-types";
 
 /**
@@ -48,8 +48,8 @@ export function useEndingInventory() {
     const morningItems = SessionInventoryDao.getBySessionId(sessionId);
     // e.g. { "prod_123": { sold: 5, bo: 2 } }, tallied from this session's sales
     const salesCounts = countSoldByProduct(getSalesByRouteSession(sessionId));
-    // expected count left per product: morning qty - sold - bo, e.g. { "prod_123": 4 }
-    const remaining = computeRemaining(
+    // expected count left per product: morning qty - sold (BO stays counted, still on the truck), e.g. { "prod_123": 4 }
+    const remaining = computeExpectedEnding(
       morningItems.map((item) => ({
         productId: item.productId,
         qty: item.qty,

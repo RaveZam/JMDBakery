@@ -12,7 +12,8 @@ import type { EndingInventoryRow } from "../types/ending-inventory-types";
  *                        and in what order; a product with no morning entry never
  *                        gets a row, even if it has sales or a saved ending count.
  * @param remaining - Map of productId to the expected ending quantity
- *                     (morning stock - sold - back-ordered), e.g. `{ "prod_123": 4 }`.
+ *                     (morning stock - sold; back-ordered units are still counted,
+ *                     they're still on the truck), e.g. `{ "prod_123": 4 }`.
  *                     Missing entries default to 0.
  * @param saved - Ending-inventory rows already persisted for this session, if the
  *                driver started this screen before (e.g. app was closed mid-count).
