@@ -3,14 +3,21 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useHistorySessionContext } from "../../context/HistorySessionContext";
-import { buildInventoryComparison } from "../../core/inventory-comparison";
+import {
+  buildInventoryComparison,
+  type InventoryComparisonRow,
+} from "../../core/inventory-comparison";
+
+const GREEN = "#0b4c29";
+const INK = "#1F2421";
+const MUTED = "#6B7280";
 
 function VarianceCell({ variance }: { variance: number | null }) {
   if (variance === null) {
-    return <Text style={styles.cellMuted}>—</Text>;
+    return <Text style={styles.cellDash}>—</Text>;
   }
   if (variance === 0) {
-    return <Ionicons name="checkmark" size={14} color="#16A34A" />;
+    return <Ionicons name="checkmark" size={14} color={GREEN} />;
   }
   const sign = variance > 0 ? "+" : "";
   return (
@@ -18,6 +25,60 @@ function VarianceCell({ variance }: { variance: number | null }) {
       {sign}
       {variance}
     </Text>
+  );
+}
+
+function SectionHint({ sessionId, routeName }: { sessionId: string; routeName: string }) {
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.hint}>What should be left, against what you counted.</Text>
+      <TouchableOpacity
+        style={styles.editBtn}
+        activeOpacity={0.7}
+        hitSlop={8}
+        onPress={() =>
+          router.push({
+            pathname: "/main/history/ending-inventory",
+            params: { sessionId, routeName },
+          })
+        }
+      >
+        <Ionicons name="create-outline" size={14} color={GREEN} />
+        <Text style={styles.editBtnText}>Edit</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function ComparisonTable({ rows }: { rows: InventoryComparisonRow[] }) {
+  return (
+    <View style={styles.table}>
+      <View style={styles.headRow}>
+        <Text style={[styles.head, styles.colProduct]}>Product</Text>
+        <Text style={[styles.head, styles.colWide]}>Start</Text>
+        <Text style={[styles.head, styles.colNum]}>Sold</Text>
+        <Text style={[styles.head, styles.colWide, styles.headBal]}>Bal</Text>
+        <Text style={[styles.head, styles.colNum]}>BO</Text>
+        <Text style={[styles.head, styles.colNum]}>End</Text>
+        <Text style={[styles.head, styles.colVar]}>VAR</Text>
+      </View>
+      {rows.map((row, index) => (
+        <View key={row.productId} style={[styles.row, index % 2 === 1 && styles.rowAlt]}>
+          <Text style={styles.cellProduct} numberOfLines={1}>
+            {row.productName}
+          </Text>
+          <Text style={[styles.cellNum, styles.colWide, styles.cellInk]}>{row.start}</Text>
+          <Text style={[styles.cellNum, styles.cellMutedNum]}>{row.sold}</Text>
+          {/* Balance = good stock that should be left: remaining minus BO units. */}
+          <Text style={[styles.cellNum, styles.colWide, styles.cellBal]}>{row.balance}</Text>
+          <Text style={[styles.cellNum, styles.cellMutedNum]}>{row.bo}</Text>
+          <Text style={[styles.cellNum, styles.cellInk]}>{row.end === null ? "—" : row.end}</Text>
+          <View style={styles.cellVar}>
+            <VarianceCell variance={row.variance} />
+          </View>
+        </View>
+      ))}
+    </View>
   );
 }
 
@@ -31,7 +92,7 @@ export function InventoryComparisonSection() {
   if (session.inventory.length === 0) {
     return (
       <View style={styles.emptyCard}>
-        <Text style={styles.emptyText}>No inventory recorded.</Text>
+        <Text style={styles.emptyText}>No stock loaded for this route.</Text>
       </View>
     );
   }
@@ -39,55 +100,13 @@ export function InventoryComparisonSection() {
   return (
     <>
       {session.hasEndingInventory && (
-        <View style={styles.sectionHeader}>
-          <Text style={styles.hint}>Start → sold → end, matched against expected</Text>
-          <TouchableOpacity
-            style={styles.editBtn}
-            activeOpacity={0.7}
-            hitSlop={8}
-            onPress={() =>
-              router.push({
-                pathname: "/main/history/ending-inventory",
-                params: {
-                  sessionId: session.sessionId,
-                  routeName: session.data?.route_name ?? "",
-                },
-              })
-            }
-          >
-            <Ionicons name="create-outline" size={14} color="#0b4c29" />
-            <Text style={styles.editBtnText}>Edit</Text>
-          </TouchableOpacity>
-        </View>
+        <SectionHint sessionId={session.sessionId} routeName={session.data?.route_name ?? ""} />
       )}
 
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.colHead, styles.colHeadProduct]}>PRODUCT</Text>
-          <Text style={[styles.colHead, styles.colHeadNum]}>START</Text>
-          <Text style={[styles.colHead, styles.colHeadNum]}>SOLD</Text>
-          <Text style={[styles.colHead, styles.colHeadNum]}>END</Text>
-          <Text style={[styles.colHead, styles.colHeadVariance]}>VAR</Text>
-        </View>
-        {rows.map((row) => (
-          <View key={row.productId} style={styles.row}>
-            <Text style={styles.rowProduct} numberOfLines={1}>
-              {row.productName}
-            </Text>
-            <Text style={styles.cellNum}>{row.start}</Text>
-            <Text style={styles.cellNum}>{row.sold}</Text>
-            <Text style={styles.cellNum}>{row.end === null ? "—" : row.end}</Text>
-            <View style={styles.cellVariance}>
-              <VarianceCell variance={row.variance} />
-            </View>
-          </View>
-        ))}
-      </View>
+      <ComparisonTable rows={rows} />
 
       {!session.hasEndingInventory && (
-        <Text style={styles.pendingNote}>
-          End quantities appear here once ending inventory is logged.
-        </Text>
+        <Text style={styles.pendingNote}>End counts appear here once you log ending inventory.</Text>
       )}
     </>
   );
@@ -98,8 +117,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 8,
   },
-  hint: { flex: 1, fontSize: 12, color: "#94A3B8" },
+  hint: { flex: 1, fontSize: 12, color: "#8A8F8B", lineHeight: 16 },
   editBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -109,64 +129,90 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "#ECFDF5",
   },
-  editBtnText: { fontSize: 12, fontWeight: "600", color: "#0b4c29" },
+  editBtnText: { fontSize: 12, fontWeight: "600", color: GREEN },
 
   emptyCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FEFDF9",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: "#E6E3D8",
     borderStyle: "dashed",
     padding: 20,
     alignItems: "center",
   },
-  emptyText: { fontSize: 14, color: "#94A3B8" },
+  emptyText: { fontSize: 14, color: "#8A8F8B" },
 
   table: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FEFDF9",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: "#E6E3D8",
     overflow: "hidden",
   },
-  tableHeader: {
+
+  headRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F5F0",
+    backgroundColor: "#F4F1E8",
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 9,
+    borderBottomWidth: 1.5,
+    borderBottomColor: GREEN,
+    columnGap: 3,
   },
-  colHead: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: "#94A3B8",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
+  head: { fontSize: 11, fontWeight: "700", color: GREEN, letterSpacing: 0.2 },
+  headBal: { fontWeight: "800" },
+  colProduct: { flex: 1 },
+  colNum: { width: 30, textAlign: "right" },
+  colWide: { width: 36, textAlign: "right" },
+  colVar: {
+    width: 34,
+    textAlign: "right",
+    borderLeftWidth: 1,
+    borderLeftColor: "#0b4c2926",
+    paddingLeft: 6,
+    marginLeft: 3,
   },
-  colHeadProduct: { flex: 1 },
-  colHeadNum: { width: 42, textAlign: "right" },
-  colHeadVariance: { width: 38, textAlign: "right" },
 
   row: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
-    paddingVertical: 11,
-    borderTopWidth: 1,
-    borderTopColor: "#F1F5F9",
+    paddingVertical: 10,
+    columnGap: 3,
   },
-  rowProduct: { flex: 1, fontSize: 13, fontWeight: "600", color: "#0F172A" },
-  cellNum: { width: 42, fontSize: 13, fontWeight: "600", color: "#334155", textAlign: "right" },
-  cellVariance: { width: 38, alignItems: "flex-end" },
-  cellMuted: { fontSize: 13, color: "#CBD5E1" },
-  varianceValue: { fontSize: 13, fontWeight: "700" },
+  rowAlt: { backgroundColor: "#FAF7EE" },
+
+  cellProduct: { flex: 1, fontSize: 13, fontWeight: "600", color: INK },
+  cellNum: {
+    width: 30,
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "right",
+    fontVariant: ["tabular-nums"],
+  },
+  cellInk: { color: INK },
+  cellBal: { color: GREEN, fontWeight: "800" },
+  cellMutedNum: { color: MUTED, fontWeight: "500" },
+  cellVar: {
+    width: 34,
+    alignItems: "flex-end",
+    borderLeftWidth: 1,
+    borderLeftColor: "#0b4c2926",
+    paddingLeft: 6,
+    marginLeft: 3,
+  },
+
+  cellDash: { fontSize: 12, color: "#C4C8C2" },
+  varianceValue: { fontSize: 12, fontWeight: "800", fontVariant: ["tabular-nums"] },
   varianceOver: { color: "#B45309" },
   varianceUnder: { color: "#DC2626" },
 
   pendingNote: {
     fontSize: 12,
-    color: "#94A3B8",
+    color: "#8A8F8B",
     fontStyle: "italic",
     paddingHorizontal: 2,
+    lineHeight: 16,
   },
 });
