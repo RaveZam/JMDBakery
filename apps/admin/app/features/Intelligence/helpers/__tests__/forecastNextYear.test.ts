@@ -51,38 +51,72 @@ describe("forecastNextYear", () => {
     expect(result.title).toContain("Holt-Winters");
   });
 
-  test("splits the year into completed actuals and Holt-Winters forecasts", () => {
+  test("splits the year into elapsed actuals and Holt-Winters forecasts", () => {
     const { monthly, values } = buildTrailingMonths();
+    // The RPC also returns the current, still-in-progress month (Aug) as a
+    // 25th bucket -- the client shows it as an actual but keeps it out of the fit.
+    const currentMonthPartial = 4321;
+    const withCurrent: SalesPoint[] = [
+      ...monthly,
+      {
+        period: monthKey(CURRENT_YEAR, CURRENT_MONTH),
+        total_sales: currentMonthPartial,
+      },
+    ];
 
-    const result = forecastNextYear(monthly);
+    const result = forecastNextYear(withCurrent);
 
     const actualPoints = result.data.filter((d) => d.actual != null);
     const forecastPoints = result.data.filter((d) => d.forecast != null);
 
-    // Jan-Jul (7 completed months) are actuals, Aug-Dec (5 months) are forecast.
-    expect(actualPoints).toHaveLength(CURRENT_MONTH);
-    expect(forecastPoints).toHaveLength(12 - CURRENT_MONTH);
+    // Jan-Aug (7 completed + the current month) are actuals; Sep-Dec forecast.
     expect(actualPoints.map((d) => d.label)).toEqual(
-      MONTH_LABELS.slice(0, CURRENT_MONTH),
+      MONTH_LABELS.slice(0, CURRENT_MONTH + 1),
     );
     expect(forecastPoints.map((d) => d.label)).toEqual(
-      MONTH_LABELS.slice(CURRENT_MONTH, 12),
+      MONTH_LABELS.slice(CURRENT_MONTH + 1, 12),
     );
-    expect(result.forecastStart).toBe(MONTH_LABELS[CURRENT_MONTH]);
+    expect(result.forecastStart).toBe(MONTH_LABELS[CURRENT_MONTH + 1]);
     expect(result.forecastEnd).toBe(MONTH_LABELS[11]);
 
-    // The actuals should be the same revenue figures the RPC reported for
-    // Jan-Jul, i.e. the last 7 entries of the trailing-24-month window.
-    expect(actualPoints.map((d) => d.actual)).toEqual(values.slice(-CURRENT_MONTH));
+    // Jan-Jul come from the RPC's trailing window; Aug is the partial month.
+    expect(actualPoints.slice(0, CURRENT_MONTH).map((d) => d.actual)).toEqual(
+      values.slice(-CURRENT_MONTH),
+    );
+    expect(actualPoints[CURRENT_MONTH].actual).toBe(currentMonthPartial);
 
-    // The forecast values should be exactly what fitting Holt-Winters on the
-    // same 24 completed months produces -- this is the same series
-    // completedMonths() builds internally.
+    // The forecast is Holt-Winters fit to the same 24 completed months, but
+    // starting a horizon later: horizon 1 is the current month, which is shown
+    // as an actual instead of forecast, so Sep is horizon 2.
     const expectedForecast = fitHoltWinters(values, 12);
     forecastPoints.forEach((point, i) => {
-      const horizon = i + 1;
-      expect(point.forecast).toBe(Math.max(0, Math.round(expectedForecast(horizon))));
+      expect(point.forecast).toBe(
+        Math.max(0, Math.round(expectedForecast(i + 2))),
+      );
     });
+  });
+
+  test("shows the current month's sales so far as an actual, not a forecast", () => {
+    const { monthly } = buildTrailingMonths();
+    const withCurrent: SalesPoint[] = [
+      ...monthly,
+      {
+        period: monthKey(CURRENT_YEAR, CURRENT_MONTH),
+        total_sales: 250_000,
+      },
+    ];
+
+    const { data } = forecastNextYear(withCurrent);
+
+    expect(data).toContainEqual({
+      label: MONTH_LABELS[CURRENT_MONTH],
+      actual: 250_000,
+    });
+    const forecastLabels = data
+      .filter((d) => d.forecast != null)
+      .map((d) => d.label);
+    expect(forecastLabels).not.toContain(MONTH_LABELS[CURRENT_MONTH]);
+    expect(forecastLabels[0]).toBe(MONTH_LABELS[CURRENT_MONTH + 1]);
   });
 
   test("never forecasts negative revenue", () => {

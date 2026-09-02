@@ -48,13 +48,13 @@ describe("forecastNextMonth", () => {
     expect(result.title).toBe("Next Month Revenue Forecast");
   });
 
-  test("excludes the current in-progress week from the regression fit", () => {
+  test("keeps the current in-progress week out of the fit but shows it as an actual", () => {
     const completed: SalesPoint[] = [
       { period: "2026-01-01", total_sales: 1000 },
       { period: "2026-01-08", total_sales: 2000 },
     ];
     // The current week (2026-08-15, containing "now") is in-progress and
-    // wildly different -- if it leaked into the fit, the forecast would move.
+    // wildly different -- if it leaked into the fit, the trend line would move.
     const withCurrentWeek: SalesPoint[] = [
       ...completed,
       { period: "2026-08-15", total_sales: 999999 },
@@ -63,7 +63,56 @@ describe("forecastNextMonth", () => {
     const withoutCurrent = forecastNextMonth(completed);
     const withCurrent = forecastNextMonth(withCurrentWeek);
 
-    expect(withCurrent.data).toEqual(withoutCurrent.data);
+    // The fit is unchanged: a week that both runs project (Aug W4, Sep W1)
+    // forecasts lands on the same value in each.
+    const forecastAt = (r: typeof withCurrent, label: string) =>
+      r.data.find((d) => d.label === label)?.forecast;
+    expect(forecastAt(withCurrent, "Aug W4")).toBe(forecastAt(withoutCurrent, "Aug W4"));
+    expect(forecastAt(withCurrent, "Sep W1")).toBe(forecastAt(withoutCurrent, "Sep W1"));
+
+    // But the partial week's sales are now visible as an actual, and it is not
+    // also drawn as a forecast.
+    expect(withCurrent.data).toContainEqual({ label: "Aug W3", actual: 999999 });
+    expect(
+      withCurrent.data.filter((d) => d.forecast != null).map((d) => d.label),
+    ).not.toContain("Aug W3");
+  });
+
+  test("plots sales from the current in-progress week as an actual, not a forecast", () => {
+    // now = 2026-08-20 -> current week is Aug W3 (period 2026-08-15)
+    const weekly: SalesPoint[] = [
+      { period: "2026-07-15", total_sales: 1000 },
+      { period: "2026-08-01", total_sales: 1000 },
+      { period: "2026-08-08", total_sales: 1000 },
+      { period: "2026-08-15", total_sales: 200_000 }, // booked so far this week
+    ];
+
+    const { data } = forecastNextMonth(weekly);
+
+    expect(data).toContainEqual({ label: "Aug W3", actual: 200_000 });
+    const forecastLabels = data
+      .filter((d) => d.forecast != null)
+      .map((d) => d.label);
+    expect(forecastLabels).not.toContain("Aug W3");
+    expect(forecastLabels[0]).toBe("Aug W4");
+  });
+
+  test("still forecasts the current week when nothing has been booked in it yet", () => {
+    const weekly: SalesPoint[] = [
+      { period: "2026-07-15", total_sales: 1000 },
+      { period: "2026-08-01", total_sales: 1100 },
+      { period: "2026-08-08", total_sales: 1200 },
+    ];
+
+    const { data } = forecastNextMonth(weekly);
+    const forecastLabels = data
+      .filter((d) => d.forecast != null)
+      .map((d) => d.label);
+
+    expect(forecastLabels[0]).toBe("Aug W3");
+    expect(
+      data.some((d) => d.label === "Aug W3" && d.actual != null),
+    ).toBe(false);
   });
 
   test("shows only weeks within the trailing window as actuals, labeled by month and week-of-month", () => {

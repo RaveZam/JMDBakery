@@ -27,15 +27,22 @@ function weekLabel(period: string): string {
 
 function projectedWeeks(
   line: (x: number) => number,
-  historyLength: number,
+  fitLength: number,
   now: Date,
+  currentWeekShownAsActual: boolean,
 ): DataPoint[] {
   const monthName = MONTH_LABELS[now.getUTCMonth()];
   const nextMonthName = MONTH_LABELS[(now.getUTCMonth() + 1) % 12];
 
+  // When the current week already has sales on the chart as an actual, start
+  // projecting from the next week; otherwise the current week gets a forecast
+  // bar like before. The fitted line has the current week at x = fitLength, so
+  // the first projected week is one step further out in that case.
+  const skip = currentWeekShownAsActual ? 1 : 0;
+
   const labels: string[] = [];
   for (
-    let week = weekOfMonth(now.getUTCDate());
+    let week = weekOfMonth(now.getUTCDate()) + skip;
     week <= WEEKS_PER_MONTH;
     week++
   ) {
@@ -45,7 +52,7 @@ function projectedWeeks(
 
   return labels.map((label, step) => ({
     label,
-    forecast: Math.max(0, Math.round(line(historyLength + step))),
+    forecast: Math.max(0, Math.round(line(fitLength + skip + step))),
   }));
 }
 
@@ -53,28 +60,35 @@ export function forecastNextMonth(weekly: SalesPoint[]): ForecastChartData {
   const title = "Next Month Revenue Forecast";
   const now = nowInManila();
 
-  // The in-progress week is partial, so including it would drag the trend down
-  // and plot a misleadingly low bar for "this week".
+  // The in-progress week is partial, so it stays out of the regression fit --
+  // a half-finished week drags the slope down. It is still drawn as an actual
+  // below when it has sales, so money booked this week doesn't vanish.
   const currentWeek = toDateKey(weekStart(now));
-  const history = weekly.filter((w) => w.period < currentWeek);
+  const fitWeeks = weekly.filter((w) => w.period < currentWeek);
 
-  if (history.length < 2) {
+  if (fitWeeks.length < 2) {
     return { title, forecastStart: "", forecastEnd: "", yFormatter, data: [] };
   }
 
   const line = ss.linearRegressionLine(
-    ss.linearRegression(history.map((w, i) => [i, w.total_sales])),
+    ss.linearRegression(fitWeeks.map((w, i) => [i, w.total_sales])),
   );
 
   const windowStart = toDateKey(weekStart(addDays(now, -ACTUALS_WINDOW_DAYS)));
+  const currentWeekActual = weekly.find((w) => w.period === currentWeek);
 
   // Appended in chronological order, so no re-sort is needed -- sorting by
-  // month name would misorder a December-to-January span.
+  // month name would misorder a December-to-January span. Completed weeks in
+  // the trailing window come first, then the current week's sales so far (if
+  // any), then the projection.
   const data: DataPoint[] = [
-    ...history
+    ...fitWeeks
       .filter((w) => w.period >= windowStart)
       .map((w) => ({ label: weekLabel(w.period), actual: w.total_sales })),
-    ...projectedWeeks(line, history.length, now),
+    ...(currentWeekActual
+      ? [{ label: weekLabel(currentWeek), actual: currentWeekActual.total_sales }]
+      : []),
+    ...projectedWeeks(line, fitWeeks.length, now, currentWeekActual != null),
   ];
 
   return { title, ...computeForecastBounds(data), yFormatter, data };

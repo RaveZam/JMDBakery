@@ -41,18 +41,25 @@ export function forecastNextYear(monthly: SalesPoint[]): ForecastChartData {
     MONTHS_PER_SEASON,
   );
 
+  // Elapsed months this year are actuals, the current in-progress one included
+  // (whatever the RPC has booked so far). The current month is still kept out
+  // of the Holt-Winters fit -- completedMonths() only reads the 24 months
+  // before it.
   const data: DataPoint[] = [];
-  for (let m = 0; m < month; m++) {
+  for (let m = 0; m <= month; m++) {
     data.push({
       label: MONTH_LABELS[m],
       actual: revenueByMonth.get(monthKey(year, m)) ?? 0,
     });
   }
 
-  for (let horizon = 1; horizon <= MONTHS_PER_SEASON - month; horizon++) {
+  // Forecast the rest of the year. horizon 1 is the current month, one step
+  // past the fit window, so next month -- the first month we actually project
+  // -- is horizon 2.
+  for (let horizon = 1; horizon <= MONTHS_PER_SEASON - month - 1; horizon++) {
     data.push({
-      label: MONTH_LABELS[month + horizon - 1],
-      forecast: Math.max(0, Math.round(forecastFn(horizon))),
+      label: MONTH_LABELS[month + horizon],
+      forecast: Math.max(0, Math.round(forecastFn(horizon + 1))),
     });
   }
 
