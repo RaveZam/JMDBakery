@@ -18,6 +18,9 @@ export interface ForecastChartData {
   forecastStart: string;
   forecastEnd: string;
   yFormatter: (v: number) => string;
+  /** Optional caveat shown under the chart title (e.g. the monthly forecast
+   * leaves the in-progress week out of its trend line). */
+  note?: string;
 }
 
 export type { SalesPoint } from "@/app/server/salesData/getForecastSeries";

@@ -5,6 +5,8 @@ import { computeForecastBounds } from "./computeForecastBounds";
 
 const WEEKS_PER_MONTH = 4;
 const ACTUALS_WINDOW_DAYS = 31;
+const IN_PROGRESS_WEEK_NOTE =
+  "The in-progress week isn't counted in the trend line -- it only holds a few days of sales so far.";
 
 const yFormatter = (v: number): string => `₱${(v / 1000).toFixed(0)}k`;
 
@@ -27,32 +29,29 @@ function weekLabel(period: string): string {
 
 function projectedWeeks(
   line: (x: number) => number,
-  fitLength: number,
+  completedCount: number,
   now: Date,
-  currentWeekShownAsActual: boolean,
+  currentWeekHasActual: boolean,
 ): DataPoint[] {
   const monthName = MONTH_LABELS[now.getUTCMonth()];
   const nextMonthName = MONTH_LABELS[(now.getUTCMonth() + 1) % 12];
 
-  // When the current week already has sales on the chart as an actual, start
-  // projecting from the next week; otherwise the current week gets a forecast
-  // bar like before. The fitted line has the current week at x = fitLength, so
-  // the first projected week is one step further out in that case.
-  const skip = currentWeekShownAsActual ? 1 : 0;
+  // The completed weeks occupy x = 0 .. completedCount - 1, so the in-progress
+  // week sits at x = completedCount. If it already has sales it is drawn as an
+  // actual, so the projection starts at the week after it (x = completedCount +
+  // 1); otherwise the in-progress week itself gets the first forecast bar.
+  const firstStep = currentWeekHasActual ? 1 : 0;
+  const firstWeek = weekOfMonth(now.getUTCDate()) + firstStep;
 
   const labels: string[] = [];
-  for (
-    let week = weekOfMonth(now.getUTCDate()) + skip;
-    week <= WEEKS_PER_MONTH;
-    week++
-  ) {
+  for (let week = firstWeek; week <= WEEKS_PER_MONTH; week++) {
     labels.push(`${monthName} W${week}`);
   }
   labels.push(`${nextMonthName} W1`);
 
   return labels.map((label, step) => ({
     label,
-    forecast: Math.max(0, Math.round(line(fitLength + skip + step))),
+    forecast: Math.max(0, Math.round(line(completedCount + firstStep + step))),
   }));
 }
 
@@ -60,36 +59,45 @@ export function forecastNextMonth(weekly: SalesPoint[]): ForecastChartData {
   const title = "Next Month Revenue Forecast";
   const now = nowInManila();
 
-  // The in-progress week is partial, so it stays out of the regression fit --
-  // a half-finished week drags the slope down. It is still drawn as an actual
-  // below when it has sales, so money booked this week doesn't vanish.
+  // The in-progress week is left out of the regression fit: it holds only a few
+  // days of sales in a full-week slot, so fitting it reads as a sharp drop and
+  // drags every projection down. It is still drawn as an actual bar below (its
+  // sales-so-far); the header carries IN_PROGRESS_WEEK_NOTE to explain the gap.
   const currentWeek = toDateKey(weekStart(now));
-  const fitWeeks = weekly.filter((w) => w.period < currentWeek);
+  const completedWeeks = weekly.filter((w) => w.period < currentWeek);
 
-  if (fitWeeks.length < 2) {
+  if (completedWeeks.length < 2) {
     return { title, forecastStart: "", forecastEnd: "", yFormatter, data: [] };
   }
 
   const line = ss.linearRegressionLine(
-    ss.linearRegression(fitWeeks.map((w, i) => [i, w.total_sales])),
+    ss.linearRegression(completedWeeks.map((w, i) => [i, w.total_sales])),
   );
 
   const windowStart = toDateKey(weekStart(addDays(now, -ACTUALS_WINDOW_DAYS)));
   const currentWeekActual = weekly.find((w) => w.period === currentWeek);
 
   // Appended in chronological order, so no re-sort is needed -- sorting by
-  // month name would misorder a December-to-January span. Completed weeks in
-  // the trailing window come first, then the current week's sales so far (if
-  // any), then the projection.
+  // month name would misorder a December-to-January span. Weeks in the trailing
+  // window (including the in-progress one if it has sales) come first, then the
+  // projection.
   const data: DataPoint[] = [
-    ...fitWeeks
-      .filter((w) => w.period >= windowStart)
+    ...weekly
+      .filter((w) => w.period >= windowStart && w.period <= currentWeek)
       .map((w) => ({ label: weekLabel(w.period), actual: w.total_sales })),
-    ...(currentWeekActual
-      ? [{ label: weekLabel(currentWeek), actual: currentWeekActual.total_sales }]
-      : []),
-    ...projectedWeeks(line, fitWeeks.length, now, currentWeekActual != null),
+    ...projectedWeeks(
+      line,
+      completedWeeks.length,
+      now,
+      currentWeekActual != null,
+    ),
   ];
 
-  return { title, ...computeForecastBounds(data), yFormatter, data };
+  return {
+    title,
+    note: IN_PROGRESS_WEEK_NOTE,
+    ...computeForecastBounds(data),
+    yFormatter,
+    data,
+  };
 }
