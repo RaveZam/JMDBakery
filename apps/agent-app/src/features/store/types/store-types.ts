@@ -7,9 +7,10 @@ export type Product = {
 export const PRESET_REASONS = [
   "Rotten",
   "Damaged",
-  "Lost",
-  "Returned",
-  "Replaced",
+  // Temporarily hidden
+  // "Lost",
+  // "Returned",
+  // "Replaced",
   "Custom",
 ] as const;
 export type PresetReason = (typeof PRESET_REASONS)[number];
