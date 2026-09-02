@@ -1,5 +1,6 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
+import { computeInventoryVariance } from "@/lib/computeInventoryVariance";
 
 export type VarianceRecord = {
   sessionId: string;
@@ -126,9 +127,11 @@ function sumSessionTotals(session: RawSession): Map<string, ProductTotals> {
 /**
  * Converts one route session into its per-product variance rows.
  *
- * Expected remaining stock is `morning - sold - boQty`; variance is how far the
- * physically counted `ending` stock differs from that expectation (positive means
- * more was counted than expected, negative means less).
+ * Expected remaining stock is `morning - sold` (see `computeInventoryVariance`
+ * — BO is not subtracted, a bad-order unit is still on the truck, not sold);
+ * variance is how far the physically counted `ending` stock differs from that
+ * expectation (positive means more was counted than expected, negative means
+ * less).
  *
  * @param session - A single route session with its nested inventory/sales rows.
  * @returns One `VarianceRecord` per product that has an actual ending_inventory
@@ -144,8 +147,7 @@ function mapSession(session: RawSession): VarianceRecord[] {
   return Array.from(totals.entries())
     .filter(([, t]) => t.hasEnding)
     .map(([productId, t]) => {
-      //what should be left over if nothing but sales and back-orders reduced the morning stock
-      const expected = t.morning - t.sold - t.boQty;
+      const { expected, variance } = computeInventoryVariance(t.morning, t.sold, t.ending);
       return {
         sessionId: session.id,
         date: session.session_date,
@@ -155,8 +157,7 @@ function mapSession(session: RawSession): VarianceRecord[] {
         boQty: t.boQty,
         ending: t.ending,
         expected,
-        //how far the actual counted ending stock drifted from the expected amount
-        variance: t.ending - expected,
+        variance,
       };
     });
 }
