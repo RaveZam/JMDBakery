@@ -58,6 +58,11 @@ export function ForecastChart(): React.ReactElement {
             onChange={forecast.setRange}
           />
         </div>
+        {forecast.series.note ? (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {forecast.series.note}
+          </p>
+        ) : null}
       </CardHeader>
       <CardContent>
         {/* The loading state lives inside the fixed-height plot area so the
