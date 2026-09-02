@@ -6,6 +6,11 @@ vi.mock("@/app/server/salesData/useSalesDataQuery", () => ({
   useSalesDataQuery: () => useSalesDataQuery(),
 }));
 
+const useCreditPaymentsQuery = vi.fn();
+vi.mock("@/app/server/creditPayments/useCreditPaymentsQuery", () => ({
+  useCreditPaymentsQuery: () => useCreditPaymentsQuery(),
+}));
+
 vi.mock("../KpiSection", () => ({
   KpiSection: () => <div data-testid="kpi-section" />,
 }));
@@ -25,6 +30,7 @@ describe("IntelligencePageClient", () => {
   test("shows only the header and a spinner while the dataset is loading", () => {
     // The real hook always returns an array (`data ?? []`), even while loading.
     useSalesDataQuery.mockReturnValue({ data: [], isLoading: true });
+    useCreditPaymentsQuery.mockReturnValue({ data: [], isLoading: false });
 
     render(<IntelligencePageClient sp={{}} />);
 
@@ -35,6 +41,7 @@ describe("IntelligencePageClient", () => {
 
   test("renders every dashboard section once the dataset has loaded", () => {
     useSalesDataQuery.mockReturnValue({ data: [], isLoading: false });
+    useCreditPaymentsQuery.mockReturnValue({ data: [], isLoading: false });
 
     render(<IntelligencePageClient sp={{}} />);
 

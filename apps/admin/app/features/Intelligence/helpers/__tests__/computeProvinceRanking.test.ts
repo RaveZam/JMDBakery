@@ -1,6 +1,21 @@
 import { describe, expect, test } from "vitest";
 import { computeProvinceRanking } from "../computeProvinceRanking";
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
+import type { CreditPayment } from "@/app/features/records/types";
+
+function makePayment(overrides: Partial<CreditPayment> = {}): CreditPayment {
+  return {
+    id: "pay-1",
+    date: "2026-07-15",
+    createdAt: "2026-07-15T09:00:00Z",
+    store: "Store A",
+    province: "Cebu",
+    collectedBy: "Ana",
+    note: null,
+    amount: 100,
+    ...overrides,
+  };
+}
 
 function makeRecord(overrides: Partial<SalesRecord> = {}): SalesRecord {
   return {
@@ -33,6 +48,20 @@ describe("computeProvinceRanking", () => {
     expect(computeProvinceRanking(records)).toEqual([
       { province: "Bohol", revenue: 200 },
       { province: "Cebu", revenue: 150 },
+    ]);
+  });
+
+  test("excludes credit orders but adds credit collected, by province", () => {
+    const records = [
+      makeRecord({ province: "Cebu", total: 100, paymentType: "cash" }),
+      makeRecord({ province: "Cebu", total: 900, paymentType: "credit" }),
+      makeRecord({ province: "Bohol", total: 50, paymentType: "cash" }),
+    ];
+    const payments = [makePayment({ province: "Bohol", amount: 200 })];
+
+    expect(computeProvinceRanking(records, payments)).toEqual([
+      { province: "Bohol", revenue: 250 },
+      { province: "Cebu", revenue: 100 },
     ]);
   });
 

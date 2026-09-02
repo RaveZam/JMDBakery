@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
+import type { CreditPayment } from "@/app/features/records/types";
 import { computeProductBoRate } from "../helpers/computeProductBoRate";
 import { computeAgentBoRate } from "../helpers/computeAgentBoRate";
 import { computeBoReasonRanking } from "../helpers/computeBoReasonRanking";
@@ -10,7 +11,13 @@ import { BoRateTable } from "./BoRateTable";
 import { BoReasonTable } from "./BoReasonTable";
 import { SectionHeading } from "./SectionHeading";
 
-export function PerformanceRankings({ records }: { records: SalesRecord[] }) {
+export function PerformanceRankings({
+  records,
+  payments,
+}: {
+  records: SalesRecord[];
+  payments: CreditPayment[];
+}) {
   const productBoRate = useMemo(() => computeProductBoRate(records), [records]);
   const agentBoRate = useMemo(() => computeAgentBoRate(records), [records]);
   const boReasons = useMemo(() => computeBoReasonRanking(records), [records]);
@@ -22,7 +29,7 @@ export function PerformanceRankings({ records }: { records: SalesRecord[] }) {
         caption="Where revenue comes from, and where units are being lost."
       />
       <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <ProvinceRankingChart records={records} />
+        <ProvinceRankingChart records={records} payments={payments} />
         <BoRateTable
           title="Product bad order rate"
           caption="Worst products first, by share of units returned"

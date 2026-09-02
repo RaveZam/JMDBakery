@@ -2,6 +2,7 @@
 
 import type { ReactElement } from "react";
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
+import type { CreditPayment } from "@/app/features/records/types";
 import {
   computeProvinceRanking,
   type ProvinceRevenue,
@@ -45,16 +46,18 @@ function ProvinceRow({
 
 export function ProvinceRankingChart({
   records,
+  payments,
 }: {
   records: SalesRecord[];
+  payments: CreditPayment[];
 }): ReactElement {
-  const ranking = computeProvinceRanking(records);
+  const ranking = computeProvinceRanking(records, payments);
   const topRevenue = ranking[0]?.revenue ?? 0;
 
   return (
     <PanelCard
       title="Province ranking"
-      caption="Total revenue by province, highest first"
+      caption="Revenue collected by province, highest first"
     >
       {ranking.length === 0 ? (
         <p className="py-6 text-sm text-muted-foreground">
