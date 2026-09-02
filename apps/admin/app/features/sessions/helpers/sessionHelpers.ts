@@ -37,9 +37,10 @@ export function sumInventory(
       sold: sum.sold + r.sold,
       backOrder: sum.backOrder + r.backOrder,
       expected: sum.expected + r.expected,
+      balance: sum.balance + r.balance,
       ending: sum.ending + r.ending,
       variance: sum.variance + r.variance,
     }),
-    { morning: 0, sold: 0, backOrder: 0, expected: 0, ending: 0, variance: 0 },
+    { morning: 0, sold: 0, backOrder: 0, expected: 0, balance: 0, ending: 0, variance: 0 },
   );
 }

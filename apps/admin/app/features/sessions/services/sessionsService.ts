@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { computeInventoryVariance } from "@/lib/computeInventoryVariance";
 import type {
   InventorySummaryRow,
   SessionRow,
@@ -144,23 +145,26 @@ type SessionInventorySummaryQueryRow = {
   morning: number;
   sold: number;
   back_order: number;
-  expected: number;
   ending: number;
-  variance: number;
 };
 
 function mapInventorySummaryRow(
   row: SessionInventorySummaryQueryRow,
 ): InventorySummaryRow {
+  // expected/variance are derived here, not read from the RPC — see computeInventoryVariance.
+  const { expected, variance } = computeInventoryVariance(row.morning, row.sold, row.ending);
+  // Balance is the good stock that should be left: expected minus the B.O. units.
+  const balance = expected - row.back_order;
   return {
     productId: row.product_id,
     productName: row.product_name,
     morning: row.morning,
     sold: row.sold,
     backOrder: row.back_order,
-    expected: row.expected,
+    expected,
+    balance,
     ending: row.ending,
-    variance: row.variance,
+    variance,
   };
 }
 

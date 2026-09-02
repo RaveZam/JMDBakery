@@ -38,6 +38,7 @@ export type InventorySummaryRow = {
   sold: number;
   backOrder: number;
   expected: number;
+  balance: number;
   ending: number;
   variance: number;
 };

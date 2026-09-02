@@ -39,6 +39,7 @@ function InventoryRow({ row }: { row: InventorySummaryRow }): ReactElement {
       <td className="py-1 pr-2">{row.productName}</td>
       <td className="py-1 text-right">{row.morning}</td>
       <td className="py-1 text-right">{row.sold}</td>
+      <td className="py-1 text-right font-medium">{row.balance}</td>
       <td className="py-1 text-right">{row.backOrder}</td>
       <td className="py-1 text-right">{row.expected}</td>
       <td className="py-1 text-right">{row.ending}</td>
@@ -60,6 +61,7 @@ function InventoryTotalsRow({
       <td className="py-1">Total</td>
       <td className="py-1 text-right">{totals.morning}</td>
       <td className="py-1 text-right">{totals.sold}</td>
+      <td className="py-1 text-right font-medium">{totals.balance}</td>
       <td className="py-1 text-right">{totals.backOrder}</td>
       <td className="py-1 text-right">{totals.expected}</td>
       <td className="py-1 text-right">{totals.ending}</td>
@@ -87,6 +89,7 @@ function InventoryTable({ rows }: { rows: InventorySummaryRow[] }): ReactElement
           <th className="pb-1 text-left font-medium">Product</th>
           <th className="pb-1 text-right font-medium">Morning</th>
           <th className="pb-1 text-right font-medium">Sold</th>
+          <th className="pb-1 text-right font-medium">Balance</th>
           <th className="pb-1 text-right font-medium">B.O.</th>
           <th className="pb-1 text-right font-medium">Expected</th>
           <th className="pb-1 text-right font-medium">Ending</th>
@@ -125,7 +128,7 @@ export function InventorySummaryTable({
     <div className="space-y-2">
       <InventoryTable rows={rows} />
       <p className="text-[11px] text-muted-foreground">
-        Expected = Morning − Sold − B.O. · Variance = Ending − Expected
+        Expected = Morning − Sold · Balance = Expected − B.O. · Variance = Ending − Expected
       </p>
     </div>
   );

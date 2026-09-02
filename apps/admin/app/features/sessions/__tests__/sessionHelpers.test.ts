@@ -76,6 +76,7 @@ describe("sumInventory", () => {
       sold: 60,
       backOrder: 5,
       expected: 40,
+      balance: 35,
       ending: 40,
       variance: 0,
       ...overrides,
@@ -84,8 +85,17 @@ describe("sumInventory", () => {
 
   test("adds every numeric column across rows", () => {
     const rows = [
-      makeRow({ morning: 100, sold: 60, backOrder: 5, expected: 40, ending: 38, variance: -2 }),
-      makeRow({ productId: "p2", morning: 50, sold: 20, backOrder: 1, expected: 30, ending: 30, variance: 0 }),
+      makeRow({ morning: 100, sold: 60, backOrder: 5, expected: 40, balance: 35, ending: 38, variance: -2 }),
+      makeRow({
+        productId: "p2",
+        morning: 50,
+        sold: 20,
+        backOrder: 1,
+        expected: 30,
+        balance: 29,
+        ending: 30,
+        variance: 0,
+      }),
     ];
 
     expect(sumInventory(rows)).toEqual({
@@ -93,6 +103,7 @@ describe("sumInventory", () => {
       sold: 80,
       backOrder: 6,
       expected: 70,
+      balance: 64,
       ending: 68,
       variance: -2,
     });
@@ -104,6 +115,7 @@ describe("sumInventory", () => {
       sold: 0,
       backOrder: 0,
       expected: 0,
+      balance: 0,
       ending: 0,
       variance: 0,
     });
