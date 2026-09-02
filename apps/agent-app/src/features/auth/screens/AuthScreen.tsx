@@ -13,11 +13,18 @@ import { Colors } from "@/src/shared/constants/Colors";
 import useLogin from "../hooks/useLogin";
 import useSessionRedirect from "../hooks/useSessionRedirect";
 
+function signInButtonLabel(loading: boolean, syncing: boolean): string {
+  if (syncing) return "Syncing your data…";
+  if (loading) return "Signing in...";
+  return "Sign in";
+}
+
 function AuthScreen(): ReactElement {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const offline = useSessionRedirect();
+  const login = useLogin(email, password);
+  const busy = login.loading || login.syncing || offline;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -68,13 +75,13 @@ function AuthScreen(): ReactElement {
           </View>
 
           <TouchableOpacity
-            style={[styles.button, loading || offline ? styles.buttonDisabled : null]}
-            onPress={useLogin(email, password)}
+            style={[styles.button, busy ? styles.buttonDisabled : null]}
+            onPress={login.handleSignIn}
             activeOpacity={0.8}
-            disabled={loading || offline}
+            disabled={busy}
           >
             <Text style={styles.buttonText}>
-              {loading ? "Signing in..." : "Sign in"}
+              {signInButtonLabel(login.loading, login.syncing)}
             </Text>
           </TouchableOpacity>
         </View>
