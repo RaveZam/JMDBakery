@@ -36,10 +36,8 @@ export function forecastNextYear(monthly: SalesPoint[]): ForecastChartData {
   const month = now.getUTCMonth();
 
   const revenueByMonth = new Map(monthly.map((m) => [m.period, m.total_sales]));
-  const forecastFn = fitHoltWinters(
-    completedMonths(revenueByMonth, year, month),
-    MONTHS_PER_SEASON,
-  );
+  const holtWintersData = completedMonths(revenueByMonth, year, month);
+  const forecastFn = fitHoltWinters(holtWintersData, MONTHS_PER_SEASON);
 
   // Elapsed months this year are actuals, the current in-progress one included
   // (whatever the RPC has booked so far). The current month is still kept out
