@@ -10,9 +10,12 @@ function makeRecord(overrides: Partial<VarianceRecord> = {}): VarianceRecord {
     morning: 10,
     sold: 5,
     boQty: 0,
-    ending: 5,
-    expected: 5,
-    variance: 0,
+    endingBo: 0,
+    endingBalance: 5,
+    expectedBo: 0,
+    expectedBalance: 5,
+    boVariance: 0,
+    balanceVariance: 0,
     ...overrides,
   };
 }
@@ -22,17 +25,28 @@ describe("computeVarianceTotal", () => {
     expect(computeVarianceTotal([])).toBe(0);
   });
 
-  test("ignores rows where variance is zero", () => {
+  test("ignores rows where both variances are zero", () => {
     const data = [makeRecord(), makeRecord({ productId: "product-2" })];
     expect(computeVarianceTotal(data)).toBe(0);
   });
 
-  test("sums the absolute variance across rows, mixing overages and shortages", () => {
+  test("sums the absolute balance variance across rows, mixing overages and shortages", () => {
     const data = [
-      makeRecord({ productId: "product-1", variance: 0 }),
-      makeRecord({ productId: "product-2", variance: 3 }),
-      makeRecord({ productId: "product-3", variance: -2 }),
+      makeRecord({ productId: "product-1", balanceVariance: 0 }),
+      makeRecord({ productId: "product-2", balanceVariance: 3 }),
+      makeRecord({ productId: "product-3", balanceVariance: -2 }),
     ];
+    expect(computeVarianceTotal(data)).toBe(5);
+  });
+
+  test("a bad order miscounted as balance no longer cancels out", () => {
+    // 10 expected BO counted as 0, and those same 10 units counted into balance instead.
+    const data = [makeRecord({ boVariance: -10, balanceVariance: 10 })];
+    expect(computeVarianceTotal(data)).toBe(20);
+  });
+
+  test("bo and balance variances both contribute to the same row's total", () => {
+    const data = [makeRecord({ boVariance: 2, balanceVariance: -3 })];
     expect(computeVarianceTotal(data)).toBe(5);
   });
 });

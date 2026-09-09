@@ -9,13 +9,20 @@ export type VarianceRecord = {
   morning: number;
   sold: number;
   boQty: number;
-  ending: number;
-  expected: number;
-  variance: number;
+  endingBo: number;
+  endingBalance: number;
+  expectedBo: number;
+  expectedBalance: number;
+  boVariance: number;
+  balanceVariance: number;
 };
 
 type RawSessionInventory = { product_id: string; quantity: number | null };
-type RawEndingInventory = { product_id: string; quantity: number | null };
+type RawEndingInventory = {
+  product_id: string;
+  ending_bo: number | null;
+  ending_balance: number | null;
+};
 type RawSale = {
   product_id: string | null;
   quantity_sold: number | null;
@@ -51,7 +58,8 @@ type ProductTotals = {
   morning: number;
   sold: number;
   boQty: number;
-  ending: number;
+  endingBo: number;
+  endingBalance: number;
   hasEnding: boolean;
 };
 
@@ -72,10 +80,23 @@ function getEntry(
   let entry = totals.get(productId);
   if (!entry) {
     //first time we've seen this product in this session, start it at zero
-    entry = { morning: 0, sold: 0, boQty: 0, ending: 0, hasEnding: false };
+    entry = { morning: 0, sold: 0, boQty: 0, endingBo: 0, endingBalance: 0, hasEnding: false };
     totals.set(productId, entry);
   }
   return entry;
+}
+
+/** Adds every store's sales rows for a session into the running per-product totals. */
+function tallySessionSales(totals: Map<string, ProductTotals>, session: RawSession): void {
+  //sales are per store, so we loop stores then each store's sale rows to roll them up session-wide
+  for (const store of session.session_stores) {
+    for (const sale of store.sales) {
+      if (!sale.product_id) continue;
+      const entry = getEntry(totals, sale.product_id);
+      entry.sold += sale.quantity_sold ?? 0;
+      entry.boQty += sale.quantity_bo ?? 0;
+    }
+  }
 }
 
 /**
@@ -90,12 +111,13 @@ function getEntry(
  * @param session - A single route session with its nested session_inventory,
  *                  ending_inventory, and session_stores(sales) rows as returned
  *                  by the Supabase query.
- * @returns Map keyed by `productId` to `{ morning, sold, boQty, ending, hasEnding }`
- *          totals, summed across all of the session's stores. Products with null
- *          quantities are treated as 0. `hasEnding` is true only if an actual
- *          ending_inventory row was seen for that product (distinct from ending
- *          staying 0 because none was ever recorded). A product absent from all
- *          three row types never appears in the map.
+ * @returns Map keyed by `productId` to `{ morning, sold, boQty, endingBo,
+ *          endingBalance, hasEnding }` totals, summed across all of the
+ *          session's stores. Products with null quantities are treated as 0.
+ *          `hasEnding` is true only if an actual ending_inventory row was
+ *          seen for that product (distinct from ending staying 0 because none
+ *          was ever recorded). A product absent from all three row types
+ *          never appears in the map.
  */
 function sumSessionTotals(session: RawSession): Map<string, ProductTotals> {
   const totals = new Map<string, ProductTotals>();
@@ -104,22 +126,14 @@ function sumSessionTotals(session: RawSession): Map<string, ProductTotals> {
   for (const row of session.session_inventory) {
     getEntry(totals, row.product_id).morning += row.quantity ?? 0;
   }
-  //leftover stock counted at the end of the route, one row per product
+  //leftover stock counted at the end of the route, one row per product, split into bad orders and balance
   for (const row of session.ending_inventory) {
     const entry = getEntry(totals, row.product_id);
-    entry.ending += row.quantity ?? 0;
+    entry.endingBo += row.ending_bo ?? 0;
+    entry.endingBalance += row.ending_balance ?? 0;
     entry.hasEnding = true;
   }
-  //sales are per store, so we loop stores then each store's sale rows to roll them up session-wide
-  for (const store of session.session_stores) {
-    for (const sale of store.sales) {
-      if (!sale.product_id) continue;
-      const entry = getEntry(totals, sale.product_id);
-      entry.sold += sale.quantity_sold ?? 0;
-      entry.boQty += sale.quantity_bo ?? 0;
-      //This will return product  { morning, sold, boqty, ending}
-    }
-  }
+  tallySessionSales(totals, session);
 
   return totals;
 }
@@ -127,11 +141,11 @@ function sumSessionTotals(session: RawSession): Map<string, ProductTotals> {
 /**
  * Converts one route session into its per-product variance rows.
  *
- * Expected remaining stock is `morning - sold` (see `computeInventoryVariance`
- * — BO is not subtracted, a bad-order unit is still on the truck, not sold);
- * variance is how far the physically counted `ending` stock differs from that
- * expectation (positive means more was counted than expected, negative means
- * less).
+ * Ending inventory is counted as two buckets — bad orders and good-stock
+ * balance — each with its own expectation (see `computeInventoryVariance`):
+ * expected BO is the bad orders already logged in sales, expected balance is
+ * `morning - sold - boQty`. A BO unit miscounted as good stock shows up on
+ * both variances instead of cancelling out.
  *
  * @param session - A single route session with its nested inventory/sales rows.
  * @returns One `VarianceRecord` per product that has an actual ending_inventory
@@ -147,7 +161,8 @@ function mapSession(session: RawSession): VarianceRecord[] {
   return Array.from(totals.entries())
     .filter(([, t]) => t.hasEnding)
     .map(([productId, t]) => {
-      const { expected, variance } = computeInventoryVariance(t.morning, t.sold, t.ending);
+      const { expectedBo, expectedBalance, boVariance, balanceVariance } =
+        computeInventoryVariance(t.morning, t.sold, t.boQty, t.endingBo, t.endingBalance);
       return {
         sessionId: session.id,
         date: session.session_date,
@@ -155,9 +170,12 @@ function mapSession(session: RawSession): VarianceRecord[] {
         morning: t.morning,
         sold: t.sold,
         boQty: t.boQty,
-        ending: t.ending,
-        expected,
-        variance,
+        endingBo: t.endingBo,
+        endingBalance: t.endingBalance,
+        expectedBo,
+        expectedBalance,
+        boVariance,
+        balanceVariance,
       };
     });
 }
@@ -187,7 +205,7 @@ export const getVarianceDataset = async (): Promise<VarianceRecord[]> => {
   //  id: string;
   //  session_date: string;
   //  session_inventory: { product_id: string; quantity: number | null }[];
-  //  ending_inventory: { product_id: string; quantity: number | null }[];
+  //  ending_inventory: { product_id: string; ending_bo: number | null; ending_balance: number | null }[];
   //  session_stores: {
   //    sales: {
   //      product_id: string | null;
@@ -202,7 +220,7 @@ export const getVarianceDataset = async (): Promise<VarianceRecord[]> => {
       `
       id, session_date,
       session_inventory(product_id, quantity),
-      ending_inventory(product_id, quantity),
+      ending_inventory(product_id, ending_bo, ending_balance),
       session_stores!inner(sales(product_id, quantity_sold, quantity_bo))
     `,
     )
