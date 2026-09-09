@@ -145,7 +145,8 @@ test("reports ending inventory once the session has ending rows", () => {
     sessionId,
     productId,
     snapshotName: "Pandesal",
-    quantity: 15,
+    endingBo: 2,
+    endingBalance: 13,
     createdAt: "2026-06-30T18:00:00.000Z",
   });
   mockParams.mockReturnValue({ sessionId });

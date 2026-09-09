@@ -129,12 +129,16 @@ export async function initDb(): Promise<void> {
       UNIQUE(route_session_id, product_id)
     );
 
+    -- The end-of-route count is split in two: ending_bo is the damaged or
+    -- otherwise bad-order units still on the truck, ending_balance is the good
+    -- stock left. One number couldn't tell those apart.
     CREATE TABLE IF NOT EXISTS ending_inventory (
       id                    TEXT PRIMARY KEY,
       route_session_id      TEXT NOT NULL REFERENCES route_sessions(id) ON DELETE CASCADE,
       product_id            TEXT NOT NULL,
       snapshot_product_name TEXT NOT NULL,
-      quantity              INTEGER NOT NULL DEFAULT 0,
+      ending_bo             INTEGER NOT NULL DEFAULT 0,
+      ending_balance        INTEGER NOT NULL DEFAULT 0,
       created_at            TEXT NOT NULL,
       UNIQUE(route_session_id, product_id)
     );
@@ -255,6 +259,10 @@ const ADDED_COLUMNS: [addColumn: string, followUp?: string][] = [
   [
     `ALTER TABLE credit_entry_sales ADD COLUMN payment_type TEXT NOT NULL DEFAULT 'cash'`,
   ],
+  [`ALTER TABLE ending_inventory ADD COLUMN ending_bo INTEGER NOT NULL DEFAULT 0`],
+  [
+    `ALTER TABLE ending_inventory ADD COLUMN ending_balance INTEGER NOT NULL DEFAULT 0`,
+  ],
 ];
 
 /** Brings an existing install up to the schema `initDb()` just declared. */
@@ -275,6 +283,7 @@ async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
   }
 
   dropSessionStorePaymentType(database);
+  dropEndingInventoryQuantity(database);
   await dropSalesProductForeignKey(database);
   await dropStoreProvinceForeignKey(database);
 }
@@ -310,6 +319,36 @@ function dropSessionStorePaymentType(database: SQLite.SQLiteDatabase): void {
 
   database.runSync(BACKFILL_SALE_PAYMENT_TYPE);
   database.runSync(`ALTER TABLE session_stores DROP COLUMN payment_type`);
+}
+
+// The old single `quantity` was a whole-truck count, taken before bad orders
+// were counted separately, so every unit it holds belongs to the good stock.
+// Only untouched rows: a count already split into bo/balance must not be
+// overwritten by a column that is on its way out.
+const BACKFILL_ENDING_BALANCE = `
+  UPDATE ending_inventory SET ending_balance = quantity
+  WHERE ending_balance = 0 AND ending_bo = 0
+`;
+
+/**
+ * Moves a legacy whole-truck count onto `ending_balance` and drops the old
+ * `quantity` column, on installs that still carry it.
+ *
+ * The copy runs here, inside the same transaction as the drop, rather than as an
+ * ADDED_COLUMNS follow-up: a follow-up is skipped on the next launch once its
+ * column exists, so a crash between the ALTER and the copy would drop `quantity`
+ * with nothing carried out of it — every counted row back to zero, for good.
+ */
+function dropEndingInventoryQuantity(database: SQLite.SQLiteDatabase): void {
+  const columns = database.getAllSync<{ name: string }>(
+    `PRAGMA table_info(ending_inventory)`,
+  );
+  if (!columns.some((column) => column.name === "quantity")) return;
+
+  database.withTransactionSync(() => {
+    database.runSync(BACKFILL_ENDING_BALANCE);
+    database.runSync(`ALTER TABLE ending_inventory DROP COLUMN quantity`);
+  });
 }
 
 const CREATE_SALES_REBUILT = `

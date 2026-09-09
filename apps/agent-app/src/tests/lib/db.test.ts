@@ -60,6 +60,25 @@ function restoreLegacySessionInventoryTable(): void {
   `);
 }
 
+/**
+ * Puts back the pre-migration ending_inventory table — one `quantity` column
+ * instead of the bad-order/balance split — so the ALTERs actually fire.
+ */
+function restoreLegacyEndingInventoryTable(): void {
+  getDb().runSync("DROP TABLE ending_inventory");
+  getDb().runSync(`
+    CREATE TABLE ending_inventory (
+      id                    TEXT PRIMARY KEY,
+      route_session_id      TEXT NOT NULL REFERENCES route_sessions(id) ON DELETE CASCADE,
+      product_id            TEXT NOT NULL,
+      snapshot_product_name TEXT NOT NULL,
+      quantity              INTEGER NOT NULL DEFAULT 0,
+      created_at            TEXT NOT NULL,
+      UNIQUE(route_session_id, product_id)
+    )
+  `);
+}
+
 function seedLegacySale(): void {
   const sessionStoreId = seedSessionStore(
     seedRouteSession(),
@@ -241,6 +260,61 @@ test("does not re-run the backfill once the column exists", async () => {
       "SELECT snapshot_price FROM session_inventory WHERE id = 'inv-null'",
     )?.snapshot_price,
   ).toBeNull();
+});
+
+test("splits a legacy ending count into the balance, dropping the old column", async () => {
+  const sessionId = seedRouteSession();
+  restoreLegacyEndingInventoryTable();
+  // An old whole-truck count, taken before bad orders were counted separately.
+  getDb().runSync(
+    `INSERT INTO ending_inventory
+       (id, route_session_id, product_id, snapshot_product_name, quantity, created_at)
+     VALUES ('end-legacy', ?, 'prod-1', 'Ensaymada', 20, '2026-07-27T00:00:00Z')`,
+    [sessionId],
+  );
+
+  await initDb();
+
+  const columns = getDb()
+    .getAllSync<{ name: string }>("PRAGMA table_info(ending_inventory)")
+    .map((column) => column.name);
+  expect(columns).not.toContain("quantity");
+
+  const row = getDb().getFirstSync<{
+    ending_bo: number;
+    ending_balance: number;
+  }>("SELECT ending_bo, ending_balance FROM ending_inventory WHERE id = 'end-legacy'");
+  // Every unit of the old count was good stock as far as the app knew.
+  expect(row).toEqual({ ending_bo: 0, ending_balance: 20 });
+});
+
+// The copy used to run as an ADDED_COLUMNS follow-up, which is skipped on the
+// next launch once its column exists. A crash in between would drop `quantity`
+// with nothing carried out of it.
+test("carries the legacy count across even if a launch already added the columns", async () => {
+  const sessionId = seedRouteSession();
+  restoreLegacyEndingInventoryTable();
+  getDb().runSync(
+    `INSERT INTO ending_inventory
+       (id, route_session_id, product_id, snapshot_product_name, quantity, created_at)
+     VALUES ('end-interrupted', ?, 'prod-1', 'Ensaymada', 20, '2026-07-27T00:00:00Z')`,
+    [sessionId],
+  );
+  // The interrupted launch: both columns landed, nothing was copied, then it died.
+  getDb().runSync(
+    `ALTER TABLE ending_inventory ADD COLUMN ending_bo INTEGER NOT NULL DEFAULT 0`,
+  );
+  getDb().runSync(
+    `ALTER TABLE ending_inventory ADD COLUMN ending_balance INTEGER NOT NULL DEFAULT 0`,
+  );
+
+  await initDb();
+
+  expect(
+    getDb().getFirstSync<{ ending_balance: number }>(
+      "SELECT ending_balance FROM ending_inventory WHERE id = 'end-interrupted'",
+    )?.ending_balance,
+  ).toBe(20);
 });
 
 test("route_sessions has conducted_by_name column", () => {
