@@ -145,26 +145,27 @@ type SessionInventorySummaryQueryRow = {
   morning: number;
   sold: number;
   back_order: number;
-  ending: number;
+  ending_bo: number;
+  ending_balance: number;
 };
 
 function mapInventorySummaryRow(
   row: SessionInventorySummaryQueryRow,
 ): InventorySummaryRow {
   // expected/variance are derived here, not read from the RPC — see computeInventoryVariance.
-  const { expected, variance } = computeInventoryVariance(row.morning, row.sold, row.ending);
-  // Balance is the good stock that should be left: expected minus the B.O. units.
-  const balance = expected - row.back_order;
+  const { expectedBo, expectedBalance, boVariance, balanceVariance } =
+    computeInventoryVariance(row.morning, row.sold, row.back_order, row.ending_bo, row.ending_balance);
   return {
     productId: row.product_id,
     productName: row.product_name,
     morning: row.morning,
     sold: row.sold,
-    backOrder: row.back_order,
-    expected,
-    balance,
-    ending: row.ending,
-    variance,
+    expectedBo,
+    endingBo: row.ending_bo,
+    boVariance,
+    expectedBalance,
+    endingBalance: row.ending_balance,
+    balanceVariance,
   };
 }
 

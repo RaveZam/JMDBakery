@@ -35,12 +35,22 @@ export function sumInventory(
     (sum, r) => ({
       morning: sum.morning + r.morning,
       sold: sum.sold + r.sold,
-      backOrder: sum.backOrder + r.backOrder,
-      expected: sum.expected + r.expected,
-      balance: sum.balance + r.balance,
-      ending: sum.ending + r.ending,
-      variance: sum.variance + r.variance,
+      expectedBo: sum.expectedBo + r.expectedBo,
+      endingBo: sum.endingBo + r.endingBo,
+      boVariance: sum.boVariance + r.boVariance,
+      expectedBalance: sum.expectedBalance + r.expectedBalance,
+      endingBalance: sum.endingBalance + r.endingBalance,
+      balanceVariance: sum.balanceVariance + r.balanceVariance,
     }),
-    { morning: 0, sold: 0, backOrder: 0, expected: 0, balance: 0, ending: 0, variance: 0 },
+    {
+      morning: 0,
+      sold: 0,
+      expectedBo: 0,
+      endingBo: 0,
+      boVariance: 0,
+      expectedBalance: 0,
+      endingBalance: 0,
+      balanceVariance: 0,
+    },
   );
 }

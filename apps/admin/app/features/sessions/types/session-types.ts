@@ -36,11 +36,12 @@ export type InventorySummaryRow = {
   productName: string;
   morning: number;
   sold: number;
-  backOrder: number;
-  expected: number;
-  balance: number;
-  ending: number;
-  variance: number;
+  expectedBo: number;
+  endingBo: number;
+  boVariance: number;
+  expectedBalance: number;
+  endingBalance: number;
+  balanceVariance: number;
 };
 
 export type SessionPaymentRow = {

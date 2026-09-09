@@ -74,38 +74,50 @@ describe("sumInventory", () => {
       productName: "Pandesal",
       morning: 100,
       sold: 60,
-      backOrder: 5,
-      expected: 40,
-      balance: 35,
-      ending: 40,
-      variance: 0,
+      expectedBo: 5,
+      endingBo: 5,
+      boVariance: 0,
+      expectedBalance: 35,
+      endingBalance: 35,
+      balanceVariance: 0,
       ...overrides,
     };
   }
 
   test("adds every numeric column across rows", () => {
     const rows = [
-      makeRow({ morning: 100, sold: 60, backOrder: 5, expected: 40, balance: 35, ending: 38, variance: -2 }),
+      makeRow({
+        morning: 100,
+        sold: 60,
+        expectedBo: 5,
+        endingBo: 5,
+        boVariance: 0,
+        expectedBalance: 35,
+        endingBalance: 33,
+        balanceVariance: -2,
+      }),
       makeRow({
         productId: "p2",
         morning: 50,
         sold: 20,
-        backOrder: 1,
-        expected: 30,
-        balance: 29,
-        ending: 30,
-        variance: 0,
+        expectedBo: 1,
+        endingBo: 1,
+        boVariance: 0,
+        expectedBalance: 29,
+        endingBalance: 29,
+        balanceVariance: 0,
       }),
     ];
 
     expect(sumInventory(rows)).toEqual({
       morning: 150,
       sold: 80,
-      backOrder: 6,
-      expected: 70,
-      balance: 64,
-      ending: 68,
-      variance: -2,
+      expectedBo: 6,
+      endingBo: 6,
+      boVariance: 0,
+      expectedBalance: 64,
+      endingBalance: 62,
+      balanceVariance: -2,
     });
   });
 
@@ -113,21 +125,22 @@ describe("sumInventory", () => {
     expect(sumInventory([])).toEqual({
       morning: 0,
       sold: 0,
-      backOrder: 0,
-      expected: 0,
-      balance: 0,
-      ending: 0,
-      variance: 0,
+      expectedBo: 0,
+      endingBo: 0,
+      boVariance: 0,
+      expectedBalance: 0,
+      endingBalance: 0,
+      balanceVariance: 0,
     });
   });
 
   test("keeps positive and negative variances offsetting each other", () => {
     const rows = [
-      makeRow({ productId: "p1", variance: 5 }),
-      makeRow({ productId: "p2", variance: -5 }),
+      makeRow({ productId: "p1", balanceVariance: 5 }),
+      makeRow({ productId: "p2", balanceVariance: -5 }),
     ];
 
-    expect(sumInventory(rows).variance).toBe(0);
+    expect(sumInventory(rows).balanceVariance).toBe(0);
   });
 
   test("drops the product columns from the summed row", () => {
