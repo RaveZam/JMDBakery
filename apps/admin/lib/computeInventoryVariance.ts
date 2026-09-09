@@ -1,19 +1,34 @@
 /**
  * Single source of truth for the ending-inventory reconciliation formula.
  *
- * Expected ending stock is `morning - sold`. BO (bad order: damaged, spoiled,
- * replaced, returned, or lost) is deliberately not in the signature — a BO
- * unit was not sold, and in every case but "lost" it is still physically on
- * the truck, so it belongs in the counted ending stock, not subtracted out of
- * what's expected. Variance is how far the physically counted `ending` stock
- * differs from that expectation (positive: more counted than expected,
- * negative: less).
+ * Ending inventory is counted as two separate buckets: bad-order units still
+ * on the truck (damaged, spoiled, replaced, returned) and the good stock
+ * balance. Each gets its own expectation and its own variance, so a BO unit
+ * miscounted as good stock shows up instead of cancelling out:
+ *
+ * - Expected BO is the bad orders already logged in sales.
+ * - Expected balance is `morning - sold - backOrder`.
+ * - Each variance is how far the physically counted number differs from its
+ *   own expectation (positive: more counted than expected, negative: less).
  */
 export function computeInventoryVariance(
   morning: number,
   sold: number,
-  ending: number,
-): { expected: number; variance: number } {
-  const expected = morning - sold;
-  return { expected, variance: ending - expected };
+  backOrder: number,
+  endingBo: number,
+  endingBalance: number,
+): {
+  expectedBo: number;
+  expectedBalance: number;
+  boVariance: number;
+  balanceVariance: number;
+} {
+  const expectedBo = backOrder;
+  const expectedBalance = morning - sold - backOrder;
+  return {
+    expectedBo,
+    expectedBalance,
+    boVariance: endingBo - expectedBo,
+    balanceVariance: endingBalance - expectedBalance,
+  };
 }
