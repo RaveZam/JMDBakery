@@ -13,6 +13,7 @@ import { router, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemedView } from "@/src/shared/components/ThemedView";
 import { useEndingInventory } from "../hooks/useEndingInventory";
+import { EndingInventoryProductRow } from "../components/ending-inventory-screen-components/EndingInventoryProductRow";
 
 const HEADER_BG = "#0b4c29";
 
@@ -54,6 +55,10 @@ export default function EndingInventoryScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Text style={styles.sectionTitle}>Products</Text>
+          <Text style={styles.sectionHint}>
+            Count the bad orders and the good stock left on the truck
+            separately. EXP is what the system expects.
+          </Text>
 
           {endingInventory.items.length === 0 ? (
             <View style={styles.emptyCard}>
@@ -68,47 +73,24 @@ export default function EndingInventoryScreen() {
                 <Text style={[styles.colHead, styles.colHeadProduct]}>
                   PRODUCT
                 </Text>
-                <Text style={[styles.colHead, styles.colHeadExpected]}>
-                  EXPECTED
+                <Text style={[styles.colHead, styles.colHeadCount]}>
+                  BAD ORDER
                 </Text>
-                <Text style={[styles.colHead, styles.colHeadQty]}>QTY</Text>
+                <Text style={[styles.colHead, styles.colHeadCount]}>
+                  BALANCE
+                </Text>
               </View>
               {endingInventory.items.map((item) => (
-                <View key={item.productId} style={styles.row}>
-                  <Text style={styles.rowProduct} numberOfLines={1}>
-                    {item.productName}
-                  </Text>
-                  <Text style={styles.rowExpected}>{item.expected}</Text>
-                  <View style={styles.qtyControls}>
-                    <TouchableOpacity
-                      testID={`ending-inventory-decrement-${item.productId}`}
-                      onPress={() =>
-                        endingInventory.updateQty(item.productId, -1)
-                      }
-                      hitSlop={8}
-                    >
-                      <Ionicons
-                        name="remove-circle-outline"
-                        size={20}
-                        color="#0b4c29"
-                      />
-                    </TouchableOpacity>
-                    <Text style={styles.rowQty}>{item.quantity}</Text>
-                    <TouchableOpacity
-                      testID={`ending-inventory-increment-${item.productId}`}
-                      onPress={() =>
-                        endingInventory.updateQty(item.productId, 1)
-                      }
-                      hitSlop={8}
-                    >
-                      <Ionicons
-                        name="add-circle-outline"
-                        size={20}
-                        color="#0b4c29"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                <EndingInventoryProductRow
+                  key={item.productId}
+                  item={item}
+                  onStep={(field, delta) =>
+                    endingInventory.updateCount(item.productId, field, delta)
+                  }
+                  onSet={(field, next) =>
+                    endingInventory.setCount(item.productId, field, next)
+                  }
+                />
               ))}
             </View>
           )}
@@ -188,6 +170,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyText: { fontSize: 14, color: "#94A3B8" },
+  sectionHint: { fontSize: 12, color: "#8A8F8B", lineHeight: 16 },
 
   table: {
     backgroundColor: "#FFFFFF",
@@ -211,38 +194,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   colHeadProduct: { flex: 1 },
-  colHeadExpected: { width: 70, textAlign: "right" },
-  colHeadQty: { width: 90, textAlign: "right" },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    borderTopWidth: 1,
-    borderTopColor: "#F1F5F9",
-  },
-  rowProduct: { flex: 1, fontSize: 14, fontWeight: "600", color: "#0F172A" },
-  rowExpected: {
-    width: 70,
-    fontSize: 13,
-    fontWeight: "500",
-    color: "#94A3B8",
-    textAlign: "right",
-  },
-  qtyControls: {
-    width: 90,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 8,
-  },
-  rowQty: {
-    minWidth: 20,
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#0F172A",
-    textAlign: "center",
-  },
+  colHeadCount: { width: 104, textAlign: "center" },
 
   footer: {
     paddingHorizontal: 16,

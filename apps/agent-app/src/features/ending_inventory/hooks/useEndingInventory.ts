@@ -5,10 +5,12 @@ import EndingInventoryDao from "@/src/lib/dao/ending-inventory-dao";
 import { countSoldByProduct } from "@/src/features/store/core/count-sold-by-product";
 import { getSalesByRouteSession } from "@/src/features/store/services/sales-services";
 import { useSnackbar } from "@/src/shared/hooks/useSnackbar";
-import { upsertEndingInventoryQty } from "../services/ending-inventory-save-service";
+import { upsertEndingInventoryCounts } from "../services/ending-inventory-save-service";
 import { mergeEndingInventoryRows } from "../core/merge-ending-inventory-rows";
 import { computeExpectedEnding } from "../core/compute-expected-ending";
+import { stepCount } from "../core/step-count";
 import type { EndingInventoryRow } from "../types/ending-inventory-types";
+import type { EndingInventoryCountField } from "../types/ending-inventory-count-field";
 
 /**
  * Loads and manages the ending-inventory count screen for the current route
@@ -19,14 +21,18 @@ import type { EndingInventoryRow } from "../types/ending-inventory-types";
  *          - `items` — current `EndingInventoryRow[]` shown on screen (see
  *            `mergeEndingInventoryRows` for how a row's initial values are derived).
  *          - `saving` — true while `save()`'s persistence is in flight.
- *          - `updateQty(productId, delta)` — adjusts one row's quantity by `delta`
- *            (e.g. +1/-1 from a stepper) and immediately persists just that row.
- *          - `save()` — persists every row's current quantity, e.g. for a final
+ *          - `updateCount(productId, field, delta)` — adjusts one row's bad-order or
+ *            balance count by `delta` (e.g. +1/-1 from a stepper) and immediately
+ *            persists just that row.
+ *          - `setCount(productId, field, value)` — sets one row's bad-order or
+ *            balance count to an exact `value` (typed into the number field
+ *            rather than stepped) and immediately persists just that row.
+ *          - `save()` — persists every row's current counts, e.g. for a final
  *            "Submit" action.
  * @sideEffects On mount (and whenever `sessionId` changes), reloads rows from the
  *              local `session_inventory` / `sales` / `ending_inventory` tables.
- *              `updateQty` and `save` write through to SQLite and the outbox via
- *              `upsertEndingInventoryQty`.
+ *              `updateCount`, `setCount` and `save` write through to SQLite and the
+ *              outbox via `upsertEndingInventoryCounts`.
  */
 export function useEndingInventory() {
   const params = useLocalSearchParams<{
@@ -48,8 +54,9 @@ export function useEndingInventory() {
     const morningItems = SessionInventoryDao.getBySessionId(sessionId);
     // e.g. { "prod_123": { sold: 5, bo: 2 } }, tallied from this session's sales
     const salesCounts = countSoldByProduct(getSalesByRouteSession(sessionId));
-    // expected count left per product: morning qty - sold (BO stays counted, still on the truck), e.g. { "prod_123": 4 }
-    const remaining = computeExpectedEnding(
+    // what should be left per product, split bad orders from good stock,
+    // e.g. { "prod_123": { bo: 2, balance: 4 } }
+    const expected = computeExpectedEnding(
       morningItems.map((item) => ({
         productId: item.productId,
         qty: item.qty,
@@ -61,7 +68,7 @@ export function useEndingInventory() {
     setItems(
       mergeEndingInventoryRows(
         morningItems,
-        remaining,
+        expected,
         EndingInventoryDao.getBySessionId(sessionId),
       ),
     );
@@ -71,48 +78,60 @@ export function useEndingInventory() {
     load();
   }, [load]);
 
-  const updateQty = useCallback(
-    (productId: string, delta: number) => {
-      if (!sessionId || delta === 0) return;
+  // Persist on every change so a typed edit isn't lost if the app closes before "save".
+  const setCount = useCallback(
+    (productId: string, field: EndingInventoryCountField, next: number) => {
+      if (!sessionId) return;
       const item = items.find((it) => it.productId === productId);
-      if (!item) return;
+      // nothing to write if the count didn't actually move
+      if (!item || item[field] === next) return;
 
-      // never let a stepper tap push the count below 0
-      const quantity = Math.max(0, item.quantity + delta);
-      // persist immediately so a single +/- tap isn't lost if the app closes before "save"
-      const id = upsertEndingInventoryQty({
+      const updated = { ...item, [field]: next };
+      // persist immediately so a single tap or edit isn't lost if the app closes before "save"
+      const id = upsertEndingInventoryCounts({
         id: item.id,
         sessionId,
         productId: item.productId,
         productName: item.productName,
-        quantity,
+        endingBo: updated.endingBo,
+        endingBalance: updated.endingBalance,
       });
 
       // id may have just been generated for the first time (row had no id yet), so store it back
       setItems((prev) =>
         prev.map((it) =>
-          it.productId === productId ? { ...it, id, quantity } : it,
+          it.productId === productId ? { ...updated, id } : it,
         ),
       );
     },
     [sessionId, items],
   );
 
+  const updateCount = useCallback(
+    (productId: string, field: EndingInventoryCountField, delta: number) => {
+      const item = items.find((it) => it.productId === productId);
+      if (!item) return;
+      setCount(productId, field, stepCount(item[field], delta));
+    },
+    [items, setCount],
+  );
+
   const save = useCallback(() => {
     if (!sessionId) return;
     setSaving(true);
     try {
-      // Write every row's current count, not just ones the driver tapped +/-
+      // Write every row's current counts, not just ones the driver tapped +/-
       // on — an untouched row (e.g. correctly 0) would otherwise never reach
       // the outbox and silently fail to sync.
       const persisted = items.map((item) => ({
         ...item,
-        id: upsertEndingInventoryQty({
+        id: upsertEndingInventoryCounts({
           id: item.id,
           sessionId,
           productId: item.productId,
           productName: item.productName,
-          quantity: item.quantity,
+          endingBo: item.endingBo,
+          endingBalance: item.endingBalance,
         }),
       }));
       setItems(persisted);
@@ -123,6 +142,14 @@ export function useEndingInventory() {
   }, [sessionId, items, showSuccess]);
 
   return {
-    endingInventory: { sessionId, routeName, items, saving, updateQty, save },
+    endingInventory: {
+      sessionId,
+      routeName,
+      items,
+      saving,
+      updateCount,
+      setCount,
+      save,
+    },
   };
 }
