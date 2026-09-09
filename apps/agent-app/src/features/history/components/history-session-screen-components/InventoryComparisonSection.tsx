@@ -1,32 +1,13 @@
-import { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useHistorySessionContext } from "../../context/HistorySessionContext";
-import {
-  buildInventoryComparison,
-  type InventoryComparisonRow,
-} from "../../core/inventory-comparison";
+import { type InventoryComparisonRow as InventoryComparisonRowData } from "../../core/inventory-comparison";
+import { useInventoryComparison } from "../../hooks/useInventoryComparison";
+import { InventoryComparisonRow, inventoryColumnWidths } from "./InventoryComparisonRow";
 
 const GREEN = "#0b4c29";
-const INK = "#1F2421";
 const MUTED = "#6B7280";
-
-function VarianceCell({ variance }: { variance: number | null }) {
-  if (variance === null) {
-    return <Text style={styles.cellDash}>—</Text>;
-  }
-  if (variance === 0) {
-    return <Ionicons name="checkmark" size={14} color={GREEN} />;
-  }
-  const sign = variance > 0 ? "+" : "";
-  return (
-    <Text style={[styles.varianceValue, variance > 0 ? styles.varianceOver : styles.varianceUnder]}>
-      {sign}
-      {variance}
-    </Text>
-  );
-}
 
 function SectionHint({ sessionId, routeName }: { sessionId: string; routeName: string }) {
   return (
@@ -50,46 +31,88 @@ function SectionHint({ sessionId, routeName }: { sessionId: string; routeName: s
   );
 }
 
-function ComparisonTable({ rows }: { rows: InventoryComparisonRow[] }) {
+function FilterTab({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      style={[styles.filterTab, active && styles.filterTabActive]}
+      activeOpacity={0.7}
+      onPress={onPress}
+    >
+      <Text style={[styles.filterTabText, active && styles.filterTabTextActive]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+/** All / Needs attention switch, shown only when there is something to attend to. */
+function AttentionFilter({
+  attentionCount,
+  showOnlyAttention,
+  onChange,
+}: {
+  attentionCount: number;
+  showOnlyAttention: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <View style={styles.filterRow}>
+      <FilterTab label="All" active={!showOnlyAttention} onPress={() => onChange(false)} />
+      <FilterTab
+        label={`Needs attention (${attentionCount})`}
+        active={showOnlyAttention}
+        onPress={() => onChange(true)}
+      />
+    </View>
+  );
+}
+
+function ComparisonTable({
+  rows,
+  isExpanded,
+  onToggleRow,
+}: {
+  rows: InventoryComparisonRowData[];
+  isExpanded: (productId: string) => boolean;
+  onToggleRow: (productId: string) => void;
+}) {
   return (
     <View style={styles.table}>
       <View style={styles.headRow}>
-        <Text style={[styles.head, styles.colProduct]}>Product</Text>
-        <Text style={[styles.head, styles.colWide]}>Start</Text>
-        <Text style={[styles.head, styles.colNum]}>Sold</Text>
-        <Text style={[styles.head, styles.colWide, styles.headBal]}>Bal</Text>
-        <Text style={[styles.head, styles.colNum]}>BO</Text>
-        <Text style={[styles.head, styles.colNum]}>End</Text>
-        <Text style={[styles.head, styles.colVar]}>VAR</Text>
+        <Text style={[styles.head, styles.headProduct]}>Product</Text>
+        <Text style={[styles.head, { width: inventoryColumnWidths.balance }]}>Balance</Text>
+        <Text style={[styles.head, { width: inventoryColumnWidths.badOrder }]}>Bad orders</Text>
+        <View style={{ width: inventoryColumnWidths.chevron }} />
       </View>
-      {rows.map((row, index) => (
-        <View key={row.productId} style={[styles.row, index % 2 === 1 && styles.rowAlt]}>
-          <Text style={styles.cellProduct} numberOfLines={1}>
-            {row.productName}
-          </Text>
-          <Text style={[styles.cellNum, styles.colWide, styles.cellInk]}>{row.start}</Text>
-          <Text style={[styles.cellNum, styles.cellMutedNum]}>{row.sold}</Text>
-          {/* Balance = good stock that should be left: remaining minus BO units. */}
-          <Text style={[styles.cellNum, styles.colWide, styles.cellBal]}>{row.balance}</Text>
-          <Text style={[styles.cellNum, styles.cellMutedNum]}>{row.bo}</Text>
-          <Text style={[styles.cellNum, styles.cellInk]}>{row.end === null ? "—" : row.end}</Text>
-          <View style={styles.cellVar}>
-            <VarianceCell variance={row.variance} />
-          </View>
-        </View>
-      ))}
+
+      {rows.length === 0 ? (
+        <Text style={styles.reconciledNote}>Everything reconciled.</Text>
+      ) : (
+        rows.map((row, index) => (
+          <InventoryComparisonRow
+            key={row.productId}
+            row={row}
+            expanded={isExpanded(row.productId)}
+            topDivider={index > 0}
+            onToggle={() => onToggleRow(row.productId)}
+          />
+        ))
+      )}
     </View>
   );
 }
 
 export function InventoryComparisonSection() {
   const session = useHistorySessionContext();
-  const rows = useMemo(
-    () => buildInventoryComparison(session.inventory, session.endingInventory, session.salesByStore),
-    [session.inventory, session.endingInventory, session.salesByStore],
-  );
+  const { comparison } = useInventoryComparison();
 
-  if (session.inventory.length === 0) {
+  if (!comparison.hasStock) {
     return (
       <View style={styles.emptyCard}>
         <Text style={styles.emptyText}>No stock loaded for this route.</Text>
@@ -103,7 +126,19 @@ export function InventoryComparisonSection() {
         <SectionHint sessionId={session.sessionId} routeName={session.data?.route_name ?? ""} />
       )}
 
-      <ComparisonTable rows={rows} />
+      {session.hasEndingInventory && comparison.attentionCount > 0 && (
+        <AttentionFilter
+          attentionCount={comparison.attentionCount}
+          showOnlyAttention={comparison.showOnlyAttention}
+          onChange={comparison.setShowOnlyAttention}
+        />
+      )}
+
+      <ComparisonTable
+        rows={comparison.rows}
+        isExpanded={comparison.isExpanded}
+        onToggleRow={comparison.toggleRow}
+      />
 
       {!session.hasEndingInventory && (
         <Text style={styles.pendingNote}>End counts appear here once you log ending inventory.</Text>
@@ -131,6 +166,22 @@ const styles = StyleSheet.create({
   },
   editBtnText: { fontSize: 12, fontWeight: "600", color: GREEN },
 
+  filterRow: {
+    flexDirection: "row",
+    backgroundColor: "#F4F1E8",
+    borderRadius: 10,
+    padding: 3,
+    columnGap: 3,
+  },
+  filterTab: { flex: 1, paddingVertical: 7, borderRadius: 8, alignItems: "center" },
+  filterTabActive: {
+    backgroundColor: "#FEFDF9",
+    borderWidth: 1,
+    borderColor: "#E6E3D8",
+  },
+  filterTabText: { fontSize: 12, fontWeight: "700", color: MUTED },
+  filterTabTextActive: { color: GREEN },
+
   emptyCard: {
     backgroundColor: "#FEFDF9",
     borderRadius: 12,
@@ -149,64 +200,25 @@ const styles = StyleSheet.create({
     borderColor: "#E6E3D8",
     overflow: "hidden",
   },
-
   headRow: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F4F1E8",
     paddingHorizontal: 12,
-    paddingVertical: 9,
+    paddingVertical: 10,
     borderBottomWidth: 1.5,
     borderBottomColor: GREEN,
-    columnGap: 3,
+    columnGap: 4,
   },
-  head: { fontSize: 11, fontWeight: "700", color: GREEN, letterSpacing: 0.2 },
-  headBal: { fontWeight: "800" },
-  colProduct: { flex: 1 },
-  colNum: { width: 30, textAlign: "right" },
-  colWide: { width: 36, textAlign: "right" },
-  colVar: {
-    width: 34,
-    textAlign: "right",
-    borderLeftWidth: 1,
-    borderLeftColor: "#0b4c2926",
-    paddingLeft: 6,
-    marginLeft: 3,
-  },
+  head: { fontSize: 11, fontWeight: "700", color: GREEN, textAlign: "right" },
+  headProduct: { flex: 1, textAlign: "left" },
 
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
+  reconciledNote: {
+    fontSize: 13,
+    color: "#8A8F8B",
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    columnGap: 3,
+    paddingVertical: 16,
   },
-  rowAlt: { backgroundColor: "#FAF7EE" },
-
-  cellProduct: { flex: 1, fontSize: 13, fontWeight: "600", color: INK },
-  cellNum: {
-    width: 30,
-    fontSize: 12,
-    fontWeight: "600",
-    textAlign: "right",
-    fontVariant: ["tabular-nums"],
-  },
-  cellInk: { color: INK },
-  cellBal: { color: GREEN, fontWeight: "800" },
-  cellMutedNum: { color: MUTED, fontWeight: "500" },
-  cellVar: {
-    width: 34,
-    alignItems: "flex-end",
-    borderLeftWidth: 1,
-    borderLeftColor: "#0b4c2926",
-    paddingLeft: 6,
-    marginLeft: 3,
-  },
-
-  cellDash: { fontSize: 12, color: "#C4C8C2" },
-  varianceValue: { fontSize: 12, fontWeight: "800", fontVariant: ["tabular-nums"] },
-  varianceOver: { color: "#B45309" },
-  varianceUnder: { color: "#DC2626" },
 
   pendingNote: {
     fontSize: 12,
