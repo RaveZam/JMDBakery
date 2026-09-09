@@ -4,17 +4,17 @@ test("empty items is an empty map", () => {
   expect(computeExpectedEnding([], {})).toEqual({});
 });
 
-test("no sales yet leaves the full stocked qty expected", () => {
+test("no sales yet leaves the full stocked qty as balance and no bo", () => {
   expect(computeExpectedEnding([{ productId: "p1", qty: 40 }], {})).toEqual({
-    p1: 40,
+    p1: { bo: 0, balance: 40 },
   });
 });
 
-test("bo units are not subtracted, only sold is", () => {
+test("sold and bo are both subtracted from the balance, bo kept on its own", () => {
   const result = computeExpectedEnding([{ productId: "p1", qty: 200 }], {
     p1: { sold: 180, bo: 10 },
   });
-  expect(result).toEqual({ p1: 20 });
+  expect(result).toEqual({ p1: { bo: 10, balance: 10 } });
 });
 
 test("multiple products are computed independently", () => {
@@ -25,7 +25,10 @@ test("multiple products are computed independently", () => {
     ],
     { p1: { sold: 15, bo: 3 } },
   );
-  expect(result).toEqual({ p1: 25, p2: 12 });
+  expect(result).toEqual({
+    p1: { bo: 3, balance: 22 },
+    p2: { bo: 0, balance: 12 },
+  });
 });
 
 test("does not mutate its inputs", () => {
