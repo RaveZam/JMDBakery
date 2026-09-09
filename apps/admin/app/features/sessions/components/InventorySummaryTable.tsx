@@ -5,10 +5,16 @@ import { cn } from "@/lib/utils";
 import { sumInventory } from "../helpers/sessionHelpers";
 import type { InventorySummaryRow } from "../types/session-types";
 
+/** Every cell gets the same horizontal rhythm; only the outer edges relax it. */
+const CELL = "px-3 py-1.5 text-center";
+const CELL_FIRST = "pl-0 pr-3 py-1.5 text-left";
+const CELL_LAST = "pl-3 pr-0 py-1.5 text-center";
+const GROUP_START = "pl-4 pr-3 py-1.5 text-center border-l border-border/50";
+
 function VarianceCell({ variance }: { variance: number }): ReactElement {
   if (variance === 0) {
     return (
-      <span className="inline-flex items-center justify-end gap-1 text-muted-foreground">
+      <span className="inline-flex items-center justify-center gap-1 text-muted-foreground">
         <CheckCircle2 className="h-3 w-3" />0
       </span>
     );
@@ -29,22 +35,21 @@ function VarianceCell({ variance }: { variance: number }): ReactElement {
 }
 
 function InventoryRow({ row }: { row: InventorySummaryRow }): ReactElement {
+  const off = row.boVariance !== 0 || row.balanceVariance !== 0;
   return (
-    <tr
-      className={cn(
-        "border-t border-border/50",
-        row.variance !== 0 && "border-l-2 border-l-destructive/50",
-      )}
-    >
-      <td className="py-1 pr-2">{row.productName}</td>
-      <td className="py-1 text-right">{row.morning}</td>
-      <td className="py-1 text-right">{row.sold}</td>
-      <td className="py-1 text-right font-medium">{row.balance}</td>
-      <td className="py-1 text-right">{row.backOrder}</td>
-      <td className="py-1 text-right">{row.expected}</td>
-      <td className="py-1 text-right">{row.ending}</td>
-      <td className="py-1 pl-2 text-right">
-        <VarianceCell variance={row.variance} />
+    <tr className={cn("border-t border-border/50", off && "border-l-2 border-l-destructive/50")}>
+      <td className={CELL_FIRST}>{row.productName}</td>
+      <td className={CELL}>{row.morning}</td>
+      <td className={CELL}>{row.sold}</td>
+      <td className={GROUP_START}>{row.expectedBo}</td>
+      <td className={CELL}>{row.endingBo}</td>
+      <td className={CELL}>
+        <VarianceCell variance={row.boVariance} />
+      </td>
+      <td className={GROUP_START}>{row.expectedBalance}</td>
+      <td className={CELL}>{row.endingBalance}</td>
+      <td className={CELL_LAST}>
+        <VarianceCell variance={row.balanceVariance} />
       </td>
     </tr>
   );
@@ -58,15 +63,18 @@ function InventoryTotalsRow({
   const totals = sumInventory(rows);
   return (
     <tr className="border-t border-border/50 font-medium">
-      <td className="py-1">Total</td>
-      <td className="py-1 text-right">{totals.morning}</td>
-      <td className="py-1 text-right">{totals.sold}</td>
-      <td className="py-1 text-right font-medium">{totals.balance}</td>
-      <td className="py-1 text-right">{totals.backOrder}</td>
-      <td className="py-1 text-right">{totals.expected}</td>
-      <td className="py-1 text-right">{totals.ending}</td>
-      <td className="py-1 pl-2 text-right">
-        <VarianceCell variance={totals.variance} />
+      <td className={CELL_FIRST}>Total</td>
+      <td className={CELL}>{totals.morning}</td>
+      <td className={CELL}>{totals.sold}</td>
+      <td className={GROUP_START}>{totals.expectedBo}</td>
+      <td className={CELL}>{totals.endingBo}</td>
+      <td className={CELL}>
+        <VarianceCell variance={totals.boVariance} />
+      </td>
+      <td className={GROUP_START}>{totals.expectedBalance}</td>
+      <td className={CELL}>{totals.endingBalance}</td>
+      <td className={CELL_LAST}>
+        <VarianceCell variance={totals.balanceVariance} />
       </td>
     </tr>
   );
@@ -81,21 +89,40 @@ function LoadingRow(): ReactElement {
   );
 }
 
+function InventoryTableHead(): ReactElement {
+  return (
+    <thead>
+      <tr className="text-muted-foreground">
+        <th className={cn(CELL_FIRST, "font-medium align-bottom")} rowSpan={2} />
+        <th className={cn(CELL, "font-medium align-bottom")} rowSpan={2}>
+          Morning
+        </th>
+        <th className={cn(CELL, "font-medium align-bottom")} rowSpan={2}>
+          Sold
+        </th>
+        <th className="px-3 py-1.5 text-center font-medium border-l border-border/50" colSpan={3}>
+          Bad orders
+        </th>
+        <th className="px-3 py-1.5 text-center font-medium border-l border-border/50" colSpan={3}>
+          Balance
+        </th>
+      </tr>
+      <tr className="text-muted-foreground">
+        <th className={cn(GROUP_START, "font-medium")}>Exp</th>
+        <th className={cn(CELL, "font-medium")}>Counted</th>
+        <th className={cn(CELL, "font-medium")}>Var</th>
+        <th className={cn(GROUP_START, "font-medium")}>Exp</th>
+        <th className={cn(CELL, "font-medium")}>Counted</th>
+        <th className={cn(CELL_LAST, "font-medium")}>Var</th>
+      </tr>
+    </thead>
+  );
+}
+
 function InventoryTable({ rows }: { rows: InventorySummaryRow[] }): ReactElement {
   return (
-    <table className="w-full text-xs">
-      <thead>
-        <tr className="text-muted-foreground">
-          <th className="pb-1 text-left font-medium">Product</th>
-          <th className="pb-1 text-right font-medium">Morning</th>
-          <th className="pb-1 text-right font-medium">Sold</th>
-          <th className="pb-1 text-right font-medium">Balance</th>
-          <th className="pb-1 text-right font-medium">B.O.</th>
-          <th className="pb-1 text-right font-medium">Expected</th>
-          <th className="pb-1 text-right font-medium">Ending</th>
-          <th className="pb-1 pl-2 text-right font-medium">Variance</th>
-        </tr>
-      </thead>
+    <table className="w-full text-xs border-separate border-spacing-0">
+      <InventoryTableHead />
       <tbody>
         {rows.map((row) => (
           <InventoryRow key={row.productId} row={row} />
@@ -125,10 +152,11 @@ export function InventorySummaryTable({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3 overflow-x-auto">
       <InventoryTable rows={rows} />
       <p className="text-[11px] text-muted-foreground">
-        Expected = Morning − Sold · Balance = Expected − B.O. · Variance = Ending − Expected
+        Expected B.O. = bad orders logged · Expected balance = Morning − Sold − B.O. ·
+        Variance = Counted − Expected
       </p>
     </div>
   );
