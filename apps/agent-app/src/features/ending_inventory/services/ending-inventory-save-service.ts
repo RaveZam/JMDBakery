@@ -8,22 +8,25 @@ type UpsertEndingInventoryInput = {
   sessionId: string;
   productId: string;
   productName: string;
-  quantity: number;
+  endingBo: number;
+  endingBalance: number;
 };
 
 /**
- * Persists one product's ending-inventory count for a session, locally and to the
+ * Persists one product's ending-inventory counts for a session, locally and to the
  * sync outbox, in a single transaction.
  *
  * @param input.id - Existing row id, if this product was already saved once this
  *                    session (pass the id returned from a prior call). Omit for
  *                    the first save of a product; a new id is generated for it.
- * @param input.sessionId - The route session this count belongs to.
+ * @param input.sessionId - The route session these counts belong to.
  * @param input.productId - Product being counted.
  * @param input.productName - Product name, snapshotted onto the row so it still
  *                             reads correctly if the product is later renamed.
- * @param input.quantity - The ending count to store; caller is responsible for
- *                          clamping to a valid (e.g. non-negative) value.
+ * @param input.endingBo - Bad-order units counted at the end of the route.
+ * @param input.endingBalance - Good stock counted at the end of the route. Caller
+ *                               is responsible for clamping both to a valid
+ *                               (e.g. non-negative) value.
  * @returns The row's id — the same value as `input.id` if one was passed in,
  *          otherwise a freshly generated id. Callers should hold onto this and
  *          pass it back in on the next call for the same product, so repeated
@@ -32,7 +35,7 @@ type UpsertEndingInventoryInput = {
  *              enqueues a matching "create" entry in the outbox for the next
  *              sync push to Supabase.
  */
-export function upsertEndingInventoryQty(
+export function upsertEndingInventoryCounts(
   input: UpsertEndingInventoryInput,
 ): string {
   const createdAt = manilaTimestamp();
@@ -46,7 +49,8 @@ export function upsertEndingInventoryQty(
       sessionId: input.sessionId,
       productId: input.productId,
       snapshotName: input.productName,
-      quantity: input.quantity,
+      endingBo: input.endingBo,
+      endingBalance: input.endingBalance,
       createdAt,
     });
     // queues the same write to be pushed to Supabase next sync, shaped like the remote table's columns
@@ -59,7 +63,8 @@ export function upsertEndingInventoryQty(
         route_session_id: input.sessionId,
         product_id: input.productId,
         snapshot_product_name: input.productName,
-        quantity: input.quantity,
+        ending_bo: input.endingBo,
+        ending_balance: input.endingBalance,
         created_at: createdAt,
       },
     });
