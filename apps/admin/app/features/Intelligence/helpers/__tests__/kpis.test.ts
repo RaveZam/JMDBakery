@@ -127,8 +127,8 @@ describe("computeIntelligenceKpis", () => {
     [5, "medium"],
     [9, "medium"],
     [10, "warning"],
-    [19, "warning"],
-    [20, "critical"],
+    [14, "warning"],
+    [15, "critical"],
     [100, "critical"],
   ])("classifies a %i%% backorder rate as %s", (boRatePct, expectedTone) => {
     // soldQty fixed at 100 so bo / sold * 100 lands exactly on boRatePct.

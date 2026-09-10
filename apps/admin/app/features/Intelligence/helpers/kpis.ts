@@ -8,6 +8,7 @@ import {
   ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
+import { badOrderBand, type BadOrderBand } from "./badOrderBand";
 import { nowInManila, toDateKey, addDays } from "./dateUtils";
 import { toDailyTotals } from "./dailyTotals";
 import { averageRevenueForWeekday } from "./weekdayAverage";
@@ -43,11 +44,16 @@ function collectedOn(payments: CreditPayment[], dateKey: string): number {
     .reduce((sum, p) => sum + p.amount, 0);
 }
 
+const RISK_META: Record<BadOrderBand, { tone: BackorderRiskTone; icon: LucideIcon }> = {
+  healthy: { tone: "healthy", icon: ShieldCheck },
+  "needs-attention": { tone: "medium", icon: AlertCircle },
+  "high-risk": { tone: "warning", icon: AlertTriangle },
+  risky: { tone: "critical", icon: ShieldAlert },
+};
+
 function classifyBackorderRisk(ratePct: number): BackorderRisk {
-  if (ratePct < 5) return { tone: "healthy", label: "Healthy", icon: ShieldCheck };
-  if (ratePct < 10) return { tone: "medium", label: "Medium", icon: AlertCircle };
-  if (ratePct < 20) return { tone: "warning", label: "At Risk", icon: AlertTriangle };
-  return { tone: "critical", label: "Critical", icon: ShieldAlert };
+  const { band, label } = badOrderBand(ratePct);
+  return { label, ...RISK_META[band] };
 }
 
 /** Computes the four Intelligence KPIs from a window of sales records and the

@@ -25,12 +25,12 @@ describe("BoRateTable", () => {
     expect(screen.getByText("5.0%")).toBeTruthy();
   });
 
-  test("labels a row at or above the critical threshold as Critical", () => {
+  test("labels a row at or above the risky threshold as Risky", () => {
     const rows: BoRateRow[] = [{ key: "Worst", sold: 50, bo: 50, boRatePct: 50 }];
 
     render(<BoRateTable title="t" caption="c" rows={rows} />);
 
-    expect(screen.getByText("Critical")).toBeTruthy();
+    expect(screen.getByText("Risky")).toBeTruthy();
   });
 
   test("labels a healthy row as Healthy", () => {

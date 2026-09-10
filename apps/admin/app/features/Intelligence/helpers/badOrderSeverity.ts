@@ -1,5 +1,7 @@
+import { badOrderBand, type BadOrderBand } from "./badOrderBand";
+
 export type BadOrderSeverity = {
-  level: "critical" | "watch" | "healthy";
+  level: BadOrderBand;
   label: string;
   /** Tailwind text colour for the rate value. */
   textClass: string;
@@ -7,31 +9,15 @@ export type BadOrderSeverity = {
   fillClass: string;
 };
 
-const CRITICAL_RATE_PCT = 20;
-const WATCH_RATE_PCT = 10;
+const STYLE: Record<BadOrderBand, Pick<BadOrderSeverity, "textClass" | "fillClass">> = {
+  healthy: { textClass: "text-foreground", fillClass: "bg-primary" },
+  "needs-attention": { textClass: "text-gold", fillClass: "bg-gold" },
+  "high-risk": { textClass: "text-orange-600", fillClass: "bg-orange-600" },
+  risky: { textClass: "text-destructive", fillClass: "bg-destructive" },
+};
 
 /** Buckets a bad order rate into the severity shown beside it. */
 export function badOrderSeverity(badOrderRatePct: number): BadOrderSeverity {
-  if (badOrderRatePct >= CRITICAL_RATE_PCT) {
-    return {
-      level: "critical",
-      label: "Critical",
-      textClass: "text-destructive",
-      fillClass: "bg-destructive",
-    };
-  }
-  if (badOrderRatePct >= WATCH_RATE_PCT) {
-    return {
-      level: "watch",
-      label: "Watch",
-      textClass: "text-gold",
-      fillClass: "bg-gold",
-    };
-  }
-  return {
-    level: "healthy",
-    label: "Healthy",
-    textClass: "text-foreground",
-    fillClass: "bg-primary",
-  };
+  const { band, label } = badOrderBand(badOrderRatePct);
+  return { level: band, label, ...STYLE[band] };
 }

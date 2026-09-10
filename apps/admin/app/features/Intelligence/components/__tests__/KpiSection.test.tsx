@@ -42,18 +42,18 @@ describe("KpiSection", () => {
     render(
       <KpiSection
         kpis={makeKpis({
-          backorderRatePct: 22.5,
+          backorderRatePct: 16,
           backorderRisk: {
             tone: "critical",
-            label: "Critical",
+            label: "Risky",
             icon: ShieldCheck,
           },
         })}
       />,
     );
 
-    expect(screen.getByText("Critical")).toBeTruthy();
-    expect(screen.getByText("Bad order rate 22.5% this month")).toBeTruthy();
+    expect(screen.getByText("Risky")).toBeTruthy();
+    expect(screen.getByText("Bad order rate 16.0% this month")).toBeTruthy();
   });
 
   test("rounds the predicted and projected revenue figures", () => {
