@@ -17,7 +17,7 @@ const solidTone: Partial<Record<KpiCardTone, string>> = {
   primary: "bg-primary",
   healthy: "bg-primary",
   medium: "bg-amber-600",
-  warning: "bg-amber-600",
+  warning: "bg-orange-600",
   critical: "bg-red-600",
 };
 
