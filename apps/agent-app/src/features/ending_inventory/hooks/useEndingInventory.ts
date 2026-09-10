@@ -13,26 +13,22 @@ import type { EndingInventoryRow } from "../types/ending-inventory-types";
 import type { EndingInventoryCountField } from "../types/ending-inventory-count-field";
 
 /**
- * Loads and manages the ending-inventory count screen for the current route
- * session, read from `sessionId`/`routeName` navigation params.
+ * Runs the ending-inventory count screen for one route session, taken from the
+ * sessionId and routeName navigation params.
  *
- * @returns `{ endingInventory }` where:
- *          - `sessionId` / `routeName` — the session being counted, from route params.
- *          - `items` — current `EndingInventoryRow[]` shown on screen (see
- *            `mergeEndingInventoryRows` for how a row's initial values are derived).
- *          - `saving` — true while `save()`'s persistence is in flight.
- *          - `updateCount(productId, field, delta)` — adjusts one row's bad-order or
- *            balance count by `delta` (e.g. +1/-1 from a stepper) and immediately
- *            persists just that row.
- *          - `setCount(productId, field, value)` — sets one row's bad-order or
- *            balance count to an exact `value` (typed into the number field
- *            rather than stepped) and immediately persists just that row.
- *          - `save()` — persists every row's current counts, e.g. for a final
- *            "Submit" action.
- * @sideEffects On mount (and whenever `sessionId` changes), reloads rows from the
- *              local `session_inventory` / `sales` / `ending_inventory` tables.
- *              `updateCount`, `setCount` and `save` write through to SQLite and the
- *              outbox via `upsertEndingInventoryCounts`.
+ * @returns endingInventory with:
+ *   - sessionId, routeName — the session being counted
+ *   - items — the rows shown on screen (mergeEndingInventoryRows builds the
+ *     initial values)
+ *   - saving — true while save() is writing
+ *   - updateCount(productId, field, delta) — step one row's bad-order or balance
+ *     count and save that row now
+ *   - setCount(productId, field, value) — set one row's count to an exact typed
+ *     value and save that row now
+ *   - save() — write every row's counts, for the Submit action
+ * @sideEffects Loads rows from the local session_inventory, sales and
+ *   ending_inventory tables on mount and whenever sessionId changes. Writes go
+ *   through SQLite and the outbox via upsertEndingInventoryCounts.
  */
 export function useEndingInventory() {
   const params = useLocalSearchParams<{
