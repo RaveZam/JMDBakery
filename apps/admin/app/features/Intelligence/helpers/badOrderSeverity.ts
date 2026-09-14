@@ -9,7 +9,10 @@ export type BadOrderSeverity = {
   fillClass: string;
 };
 
-const STYLE: Record<BadOrderBand, Pick<BadOrderSeverity, "textClass" | "fillClass">> = {
+const STYLE: Record<
+  BadOrderBand,
+  Pick<BadOrderSeverity, "textClass" | "fillClass">
+> = {
   healthy: { textClass: "text-foreground", fillClass: "bg-primary" },
   "needs-attention": { textClass: "text-gold", fillClass: "bg-gold" },
   "high-risk": { textClass: "text-orange-600", fillClass: "bg-orange-600" },
