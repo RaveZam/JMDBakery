@@ -6,7 +6,6 @@ import {
   type ForecastChartState,
 } from "../hooks/useForecastChart";
 import { bridgeForecastSeam } from "../helpers/bridgeForecastSeam";
-import { ForecastRangeToggle } from "./ForecastRangeToggle";
 import { ForecastPlot } from "./ForecastPlot";
 
 function ChartMessage({
@@ -53,10 +52,6 @@ export function ForecastChart(): React.ReactElement {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-base">{forecast.series.title}</CardTitle>
-          <ForecastRangeToggle
-            range={forecast.range}
-            onChange={forecast.setRange}
-          />
         </div>
         {forecast.series.note ? (
           <p className="mt-1 text-xs text-muted-foreground">
@@ -65,9 +60,6 @@ export function ForecastChart(): React.ReactElement {
         ) : null}
       </CardHeader>
       <CardContent>
-        {/* The loading state lives inside the fixed-height plot area so the
-            header and range buttons stay mounted and clickable while fetching,
-            and the card does not collapse and reflow the page. */}
         <div className="h-[280px] w-full">
           <PlotArea forecast={forecast} />
         </div>

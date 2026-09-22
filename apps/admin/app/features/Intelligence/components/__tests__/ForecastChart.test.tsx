@@ -17,8 +17,6 @@ import { ForecastChart } from "../ForecastChart";
 
 function makeState(overrides: Partial<ForecastChartState> = {}): ForecastChartState {
   return {
-    range: "weekly",
-    setRange: vi.fn(),
     isLoading: false,
     error: null,
     series: {
@@ -78,15 +76,6 @@ describe("ForecastChart", () => {
 
     expect(screen.getByTestId("forecast-plot")).toBeTruthy();
     expect(screen.getByText("3 points")).toBeTruthy();
-  });
-
-  test("shows the range toggle and passes range/onChange from the hook", () => {
-    const setRange = vi.fn();
-    useForecastChart.mockReturnValue(makeState({ range: "monthly", setRange }));
-
-    render(<ForecastChart />);
-
-    expect(screen.getByText("Monthly").className).toContain("text-white");
   });
 
   test("renders the series title as the card heading", () => {

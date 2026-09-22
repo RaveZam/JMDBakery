@@ -71,13 +71,18 @@ export function ForecastPlot({
           x2={series.forecastEnd}
           fill="rgb(148,163,184)"
           fillOpacity={0.12}
-          strokeOpacity={0}
+          strokeOpacity={2}
         />
         <XAxis dataKey="label" tick={AXIS_TICK} />
         <YAxis tick={AXIS_TICK} tickFormatter={series.yFormatter} />
         <Tooltip content={<ForecastTooltip />} />
         <Legend />
-        <Area type="monotone" dataKey="actual" name="Actual" {...ACTUAL_STYLE} />
+        <Area
+          type="monotone"
+          dataKey="actual"
+          name="Actual"
+          {...ACTUAL_STYLE}
+        />
         <Line
           type="monotone"
           dataKey="forecast"

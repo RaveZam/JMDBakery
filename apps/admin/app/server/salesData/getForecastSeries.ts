@@ -9,29 +9,12 @@ export type SalesPoint = {
   total_sales: number;
 };
 
-async function callForecastRpc(
-  fn:
-    | "get_forecast_daily_sales"
-    | "get_forecast_weekly_sales"
-    | "get_forecast_monthly_sales",
-): Promise<SalesPoint[]> {
+/** Weekly revenue, trailing 6 months. Backs the next-month forecast. */
+export async function getWeeklySales(): Promise<SalesPoint[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc(fn);
+  const { data, error } = await supabase.rpc("get_forecast_weekly_sales");
   if (error) throw new Error(error.message);
 
-  return (data ?? []) as unknown as SalesPoint[];
+  return (data ?? []) as SalesPoint[];
 }
-
-/** Daily revenue, trailing 30 days. Backs the 7-day forecast. */
-export const getDailySales = async (): Promise<SalesPoint[]> =>
-  callForecastRpc("get_forecast_daily_sales");
-
-/** Weekly revenue, trailing 6 months. Backs the next-month forecast. */
-export const getWeeklySales = async (): Promise<SalesPoint[]> =>
-  callForecastRpc("get_forecast_weekly_sales");
-
-/** Monthly revenue, trailing 24 months. Backs the yearly Holt-Winters
- * forecast, which needs two full seasons to fit. */
-export const getMonthlySales = async (): Promise<SalesPoint[]> =>
-  callForecastRpc("get_forecast_monthly_sales");

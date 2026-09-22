@@ -56,6 +56,7 @@ function projectedWeeks(
 }
 
 export function forecastNextMonth(weekly: SalesPoint[]): ForecastChartData {
+  console.log("forecastNextMonth", weekly);
   const title = "Next Month Revenue Forecast";
   const now = nowInManila();
 
