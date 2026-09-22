@@ -1,48 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  useForecastChart,
-  type ForecastChartState,
-} from "../../hooks/useForecastChart";
-import { bridgeForecastSeam } from "../../helpers/bridgeForecastSeam";
-import { ForecastPlot } from "./ForecastPlot";
-
-function ChartMessage({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement {
-  return (
-    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-      {children}
-    </div>
-  );
-}
-
-function PlotArea({
-  forecast,
-}: {
-  forecast: ForecastChartState;
-}): React.ReactElement {
-  const data = bridgeForecastSeam(forecast.series.data);
-
-  if (forecast.isLoading) {
-    return (
-      <ChartMessage>
-        <div className="h-8 w-8 rounded-full border-2 border-muted border-t-emerald-600 animate-spin" />
-      </ChartMessage>
-    );
-  }
-  if (forecast.error)
-    return <ChartMessage>Could not load forecast data.</ChartMessage>;
-  if (data.length === 0) {
-    return (
-      <ChartMessage>Not enough sales history for this forecast.</ChartMessage>
-    );
-  }
-  return <ForecastPlot series={forecast.series} data={data} />;
-}
+import { useForecastChart } from "../../hooks/useForecastChart";
+import { PlotArea } from "./PlotArea";
 
 export function ForecastChart(): React.ReactElement {
   const forecast = useForecastChart();
@@ -61,7 +21,7 @@ export function ForecastChart(): React.ReactElement {
       </CardHeader>
       <CardContent>
         <div className="h-[280px] w-full">
-          <PlotArea forecast={forecast} />
+          <PlotArea />
         </div>
       </CardContent>
     </Card>
