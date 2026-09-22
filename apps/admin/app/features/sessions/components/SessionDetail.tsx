@@ -91,7 +91,11 @@ function DetailHeadline({
   );
 }
 
-export function SessionDetail({ session }: { session: SessionRow }): ReactElement {
+export function SessionDetail({
+  session,
+}: {
+  session: SessionRow;
+}): ReactElement {
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const payments = useSessionPayments(session.id);
 

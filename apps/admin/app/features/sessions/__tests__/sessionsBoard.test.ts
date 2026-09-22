@@ -16,6 +16,7 @@ function session(overrides: Partial<SessionRow> = {}): SessionRow {
     sessionDate: "2026-07-15",
     createdAt: "2026-07-15T08:30:00.000+00:00",
     status: "completed",
+    inventoryVerified: "",
     totalStores: 4,
     visitedStores: 4,
     ...overrides,

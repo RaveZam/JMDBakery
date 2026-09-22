@@ -77,7 +77,8 @@ function SessionInventoryPortal({
   session: SessionRow;
   onClose: () => void;
 }): ReactElement {
-  const { rows, loading } = useSessionInventory(session.id, true);
+  const { rows, loading, inventoryVerified, handleApproveInventory } =
+    useSessionInventory(session.id, true, session.inventoryVerified);
 
   return createPortal(
     <div
@@ -92,6 +93,24 @@ function SessionInventoryPortal({
           <ModalHeader titleId={titleId} session={session} onClose={onClose} />
           <div className="px-5 py-4">
             <InventorySummaryTable rows={rows} loading={loading} />
+            {inventoryVerified === "pending" ? (
+              <Button
+                onClick={() => {
+                  handleApproveInventory();
+                }}
+                className="text-xs text-white"
+              >
+                Approve Inventory
+              </Button>
+            ) : inventoryVerified === "verified" ? (
+              <Button disabled={true} className="text-xs text-white">
+                Verified
+              </Button>
+            ) : (
+              <Button disabled={true} className="text-xs text-white">
+                Not requested
+              </Button>
+            )}
           </div>
         </ModalPanel>
       </div>
@@ -121,6 +140,10 @@ export function SessionInventoryModal({
 
   if (typeof document === "undefined") return null;
   return (
-    <SessionInventoryPortal titleId={titleId} session={session} onClose={onClose} />
+    <SessionInventoryPortal
+      titleId={titleId}
+      session={session}
+      onClose={onClose}
+    />
   );
 }

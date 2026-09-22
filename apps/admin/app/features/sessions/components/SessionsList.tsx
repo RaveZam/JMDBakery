@@ -32,12 +32,18 @@ const EMPTY_FILTER_MESSAGES: Record<Exclude<SessionFilter, "all">, string> = {
 function EmptyFilter({ filter }: { filter: SessionFilter }): ReactElement {
   return (
     <div className="rounded-xl border border-dashed border-border/70 py-12 text-center text-sm text-muted-foreground">
-      {filter === "all" ? "No sessions to show." : EMPTY_FILTER_MESSAGES[filter]}
+      {filter === "all"
+        ? "No sessions to show."
+        : EMPTY_FILTER_MESSAGES[filter]}
     </div>
   );
 }
 
-function DetailPanel({ session }: { session: SessionRow | null }): ReactElement {
+function DetailPanel({
+  session,
+}: {
+  session: SessionRow | null;
+}): ReactElement {
   if (!session) {
     return (
       <div className="hidden flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/70 py-24 text-center xl:flex">
@@ -55,7 +61,10 @@ function DetailPanel({ session }: { session: SessionRow | null }): ReactElement 
 function SessionColumn({
   page,
   selection,
-}: Pick<ReturnType<typeof useSessionsBoard>, "page" | "selection">): ReactElement {
+}: Pick<
+  ReturnType<typeof useSessionsBoard>,
+  "page" | "selection"
+>): ReactElement {
   return (
     <div className="space-y-3">
       {page.sessions.map((session) => (

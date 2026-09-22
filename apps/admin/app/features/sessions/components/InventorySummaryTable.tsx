@@ -24,9 +24,7 @@ function VarianceCell({ variance }: { variance: number }): ReactElement {
     <span
       className={cn(
         "font-medium",
-        isShort
-          ? "text-destructive"
-          : "text-amber-600 dark:text-amber-400",
+        isShort ? "text-destructive" : "text-amber-600 dark:text-amber-400",
       )}
     >
       {isShort ? variance : `+${variance}`}
@@ -37,7 +35,12 @@ function VarianceCell({ variance }: { variance: number }): ReactElement {
 function InventoryRow({ row }: { row: InventorySummaryRow }): ReactElement {
   const off = row.boVariance !== 0 || row.balanceVariance !== 0;
   return (
-    <tr className={cn("border-t border-border/50", off && "border-l-2 border-l-destructive/50")}>
+    <tr
+      className={cn(
+        "border-t border-border/50",
+        off && "border-l-2 border-l-destructive/50",
+      )}
+    >
       <td className={CELL_FIRST}>{row.productName}</td>
       <td className={CELL}>{row.morning}</td>
       <td className={CELL}>{row.sold}</td>
@@ -93,17 +96,26 @@ function InventoryTableHead(): ReactElement {
   return (
     <thead>
       <tr className="text-muted-foreground">
-        <th className={cn(CELL_FIRST, "font-medium align-bottom")} rowSpan={2} />
+        <th
+          className={cn(CELL_FIRST, "font-medium align-bottom")}
+          rowSpan={2}
+        />
         <th className={cn(CELL, "font-medium align-bottom")} rowSpan={2}>
           Morning
         </th>
         <th className={cn(CELL, "font-medium align-bottom")} rowSpan={2}>
           Sold
         </th>
-        <th className="px-3 py-1.5 text-center font-medium border-l border-border/50" colSpan={3}>
+        <th
+          className="px-3 py-1.5 text-center font-medium border-l border-border/50"
+          colSpan={3}
+        >
           Bad orders
         </th>
-        <th className="px-3 py-1.5 text-center font-medium border-l border-border/50" colSpan={3}>
+        <th
+          className="px-3 py-1.5 text-center font-medium border-l border-border/50"
+          colSpan={3}
+        >
           Balance
         </th>
       </tr>
@@ -119,7 +131,11 @@ function InventoryTableHead(): ReactElement {
   );
 }
 
-function InventoryTable({ rows }: { rows: InventorySummaryRow[] }): ReactElement {
+function InventoryTable({
+  rows,
+}: {
+  rows: InventorySummaryRow[];
+}): ReactElement {
   return (
     <table className="w-full text-xs border-separate border-spacing-0">
       <InventoryTableHead />
@@ -155,8 +171,8 @@ export function InventorySummaryTable({
     <div className="space-y-3 overflow-x-auto">
       <InventoryTable rows={rows} />
       <p className="text-[11px] text-muted-foreground">
-        Expected B.O. = bad orders logged · Expected balance = Morning − Sold − B.O. ·
-        Variance = Counted − Expected
+        Expected B.O. = bad orders logged · Expected balance = Morning − Sold −
+        B.O. · Variance = Counted − Expected
       </p>
     </div>
   );
