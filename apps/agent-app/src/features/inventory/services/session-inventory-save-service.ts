@@ -39,7 +39,7 @@ export function removeMorningInventoryItem(inventoryId: string): void {
   });
 }
 
-export function addMorningInventoryItem(input: AddInventoryInput): void {
+export function addMorningInventoryItem(input: AddInventoryInput): string {
   const id = generateUUID();
   const createdAt = manilaTimestamp();
   getDb().withTransactionSync(() => {
@@ -67,4 +67,5 @@ export function addMorningInventoryItem(input: AddInventoryInput): void {
       },
     });
   });
+  return id;
 }
