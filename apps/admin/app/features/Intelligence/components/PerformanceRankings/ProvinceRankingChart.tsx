@@ -6,7 +6,7 @@ import type { CreditPayment } from "@/app/features/records/types";
 import {
   computeProvinceRanking,
   type ProvinceRevenue,
-} from "../helpers/computeProvinceRanking";
+} from "../../helpers/computeProvinceRanking";
 import { MetricRail } from "./MetricRail";
 import { PanelCard } from "./PanelCard";
 

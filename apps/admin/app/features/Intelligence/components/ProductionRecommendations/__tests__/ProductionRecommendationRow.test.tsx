@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
 import { ProductionRecommendationRow } from "../ProductionRecommendationRow";
-import type { ProductionRecommendation } from "../../helpers/computeProductionRecommendations";
+import type { ProductionRecommendation } from "../../../helpers/computeProductionRecommendations";
 
 function makeRec(overrides: Partial<ProductionRecommendation> = {}): ProductionRecommendation {
   return {

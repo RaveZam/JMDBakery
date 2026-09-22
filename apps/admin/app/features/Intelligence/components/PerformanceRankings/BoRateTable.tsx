@@ -1,8 +1,8 @@
-import type { BoRateRow } from "../helpers/computeBoRateByKey";
+import type { BoRateRow } from "../../helpers/computeBoRateByKey";
 import {
   badOrderSeverity,
   type BadOrderSeverity,
-} from "../helpers/badOrderSeverity";
+} from "../../helpers/badOrderSeverity";
 import { MetricRail } from "./MetricRail";
 import { PanelCard } from "./PanelCard";
 

@@ -1,4 +1,4 @@
-import type { ProductionRecommendation } from "../helpers/computeProductionRecommendations";
+import type { ProductionRecommendation } from "../../helpers/computeProductionRecommendations";
 
 export function ProductionRecommendationRow({
   rec,

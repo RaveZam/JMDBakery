@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
 import { BoReasonTable } from "../BoReasonTable";
-import type { BoReasonRow } from "../../helpers/computeBoReasonRanking";
+import type { BoReasonRow } from "../../../helpers/computeBoReasonRanking";
 
 describe("BoReasonTable", () => {
   test("shows an empty-state message when there are no rows", () => {

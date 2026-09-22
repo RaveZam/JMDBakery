@@ -1,4 +1,4 @@
-import type { ProductionRecommendation } from "../helpers/computeProductionRecommendations";
+import type { ProductionRecommendation } from "../../helpers/computeProductionRecommendations";
 import { Card } from "@/components/ui/card";
 import { ProductionRecommendationRow } from "./ProductionRecommendationRow";
 

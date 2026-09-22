@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { ShieldCheck } from "lucide-react";
 import { describe, expect, test } from "vitest";
 import { KpiSection } from "../KpiSection";
-import type { IntelligenceKpis } from "../../types";
+import type { IntelligenceKpis } from "../../../types";
 
 function makeKpis(overrides: Partial<IntelligenceKpis> = {}): IntelligenceKpis {
   return {

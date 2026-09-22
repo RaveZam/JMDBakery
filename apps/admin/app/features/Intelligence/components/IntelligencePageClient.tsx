@@ -7,10 +7,10 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { parseRecordsFiltersLast30Days } from "@/lib/selectors/filters";
 import { computeIntelligenceKpis } from "../helpers/kpis";
 import { IntelligenceHeader } from "./IntelligenceHeader";
-import { KpiSection } from "./KpiSection";
+import { KpiSection } from "./KpiSection/KpiSection";
 import { ForecastChart } from "./ForecastChart/ForecastChart";
-import { ProductionRecommendations } from "./ProductionRecommendations";
-import { PerformanceRankings } from "./PerformanceRankings";
+import { ProductionRecommendations } from "./ProductionRecommendations/ProductionRecommendations";
+import { PerformanceRankings } from "./PerformanceRankings/PerformanceRankings";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 

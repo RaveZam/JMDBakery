@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { KpiCard } from "@/app/features/dashboard/components/KpiCard";
-import type { IntelligenceKpis } from "../types";
+import type { IntelligenceKpis } from "../../types";
 
 export function KpiSection({ kpis }: { kpis: IntelligenceKpis }) {
   const isUp = kpis.revenueChangePct >= 0;

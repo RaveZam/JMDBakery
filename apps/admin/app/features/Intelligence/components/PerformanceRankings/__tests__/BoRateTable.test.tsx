@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
 import { BoRateTable } from "../BoRateTable";
-import type { BoRateRow } from "../../helpers/computeBoRateByKey";
+import type { BoRateRow } from "../../../helpers/computeBoRateByKey";
 
 describe("BoRateTable", () => {
   test("shows an empty-state message when there are no rows", () => {

@@ -12,7 +12,7 @@ import {
   Legend,
   ReferenceArea,
 } from "recharts";
-import type { ChartPoint, ForecastChartData } from "../types";
+import type { ChartPoint, ForecastChartData } from "../../types";
 import { ForecastTooltip } from "./ForecastTooltip";
 
 const ACTUAL_COLOR = "#10b981";

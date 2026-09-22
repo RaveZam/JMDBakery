@@ -1,4 +1,4 @@
-import type { BoReasonRow } from "../helpers/computeBoReasonRanking";
+import type { BoReasonRow } from "../../helpers/computeBoReasonRanking";
 import { MetricRail } from "./MetricRail";
 import { PanelCard } from "./PanelCard";
 
