@@ -105,10 +105,10 @@ describe("computeIntelligenceKpis", () => {
     expect(kpis.projectedRevenueNext7Days).toBe(totalRevenue);
   });
 
-  test("computes the backorder rate as bo / sold", () => {
+  test("computes the bad order rate as bo / sold", () => {
     const records = [makeRecord({ soldQty: 80, boQty: 20 })];
 
-    expect(computeIntelligenceKpis(records).backorderRatePct).toBe(25);
+    expect(computeIntelligenceKpis(records).badOrderRatePct).toBe(25);
   });
 
   test("counts units from credit orders too, since those pieces still moved", () => {
@@ -118,7 +118,7 @@ describe("computeIntelligenceKpis", () => {
     ];
 
     // bo / sold = 20 / 80; the credit row's units count the same as the cash row's.
-    expect(computeIntelligenceKpis(records).backorderRatePct).toBe(25);
+    expect(computeIntelligenceKpis(records).badOrderRatePct).toBe(25);
   });
 
   test.each([
@@ -130,11 +130,11 @@ describe("computeIntelligenceKpis", () => {
     [14, "warning"],
     [15, "critical"],
     [100, "critical"],
-  ])("classifies a %i%% backorder rate as %s", (boRatePct, expectedTone) => {
+  ])("classifies a %i%% bad order rate as %s", (boRatePct, expectedTone) => {
     // soldQty fixed at 100 so bo / sold * 100 lands exactly on boRatePct.
     const records = [makeRecord({ soldQty: 100, boQty: boRatePct })];
 
-    expect(computeIntelligenceKpis(records).backorderRisk.tone).toBe(expectedTone);
+    expect(computeIntelligenceKpis(records).badOrderRisk.tone).toBe(expectedTone);
   });
 
   test("returns zeroed kpis without dividing by zero when there are no records", () => {
@@ -144,7 +144,7 @@ describe("computeIntelligenceKpis", () => {
     expect(kpis.revenueChangePct).toBe(0);
     expect(kpis.predictedRevenueTomorrow).toBe(0);
     expect(kpis.projectedRevenueNext7Days).toBe(0);
-    expect(kpis.backorderRatePct).toBe(0);
-    expect(kpis.backorderRisk.tone).toBe("healthy");
+    expect(kpis.badOrderRatePct).toBe(0);
+    expect(kpis.badOrderRisk.tone).toBe("healthy");
   });
 });

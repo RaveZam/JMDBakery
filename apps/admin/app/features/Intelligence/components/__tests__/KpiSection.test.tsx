@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { ShieldCheck } from "lucide-react";
 import { describe, expect, test } from "vitest";
 import { KpiSection } from "../KpiSection";
-import type { IntelligenceKpis } from "../../helpers/kpis";
+import type { IntelligenceKpis } from "../../types";
 
 function makeKpis(overrides: Partial<IntelligenceKpis> = {}): IntelligenceKpis {
   return {
@@ -12,8 +12,8 @@ function makeKpis(overrides: Partial<IntelligenceKpis> = {}): IntelligenceKpis {
     tomorrowWeekday: 3,
     predictedRevenueTomorrow: 900,
     projectedRevenueNext7Days: 6000,
-    backorderRatePct: 4.2,
-    backorderRisk: { tone: "healthy", label: "Healthy", icon: ShieldCheck },
+    badOrderRatePct: 4.2,
+    badOrderRisk: { tone: "healthy", label: "Healthy", icon: ShieldCheck },
     ...overrides,
   };
 }
@@ -38,12 +38,12 @@ describe("KpiSection", () => {
     expect(screen.getByText("Your typical sales on Sunday")).toBeTruthy();
   });
 
-  test("shows the badorder risk label and rate", () => {
+  test("shows the bad order risk label and rate", () => {
     render(
       <KpiSection
         kpis={makeKpis({
-          backorderRatePct: 16,
-          backorderRisk: {
+          badOrderRatePct: 16,
+          badOrderRisk: {
             tone: "critical",
             label: "Risky",
             icon: ShieldCheck,

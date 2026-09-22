@@ -12,25 +12,11 @@ import { badOrderBand, type BadOrderBand } from "./badOrderBand";
 import { nowInManila, toDateKey, addDays } from "./dateUtils";
 import { toDailyTotals } from "./dailyTotals";
 import { averageRevenueForWeekday } from "./weekdayAverage";
-
-export type BackorderRiskTone = "healthy" | "medium" | "warning" | "critical";
-
-export type BackorderRisk = {
-  tone: BackorderRiskTone;
-  label: string;
-  icon: LucideIcon;
-};
-
-export type IntelligenceKpis = {
-  revenueToday: number;
-  revenueYesterday: number;
-  revenueChangePct: number;
-  tomorrowWeekday: number;
-  predictedRevenueTomorrow: number;
-  projectedRevenueNext7Days: number;
-  backorderRatePct: number;
-  backorderRisk: BackorderRisk;
-};
+import type {
+  BadOrderRisk,
+  BadOrderRiskTone,
+  IntelligenceKpis,
+} from "../types";
 
 function revenueOn(records: SalesRecord[], dateKey: string): number {
   return records
@@ -44,14 +30,17 @@ function collectedOn(payments: CreditPayment[], dateKey: string): number {
     .reduce((sum, p) => sum + p.amount, 0);
 }
 
-const RISK_META: Record<BadOrderBand, { tone: BackorderRiskTone; icon: LucideIcon }> = {
+const RISK_META: Record<
+  BadOrderBand,
+  { tone: BadOrderRiskTone; icon: LucideIcon }
+> = {
   healthy: { tone: "healthy", icon: ShieldCheck },
   "needs-attention": { tone: "medium", icon: AlertCircle },
   "high-risk": { tone: "warning", icon: AlertTriangle },
   risky: { tone: "critical", icon: ShieldAlert },
 };
 
-function classifyBackorderRisk(ratePct: number): BackorderRisk {
+function classifyBadOrderRisk(ratePct: number): BadOrderRisk {
   const { band, label } = badOrderBand(ratePct);
   return { label, ...RISK_META[band] };
 }
@@ -84,31 +73,23 @@ export function computeIntelligenceKpis(
       ? 0
       : ((revenueToday - revenueYesterday) / revenueYesterday) * 100;
 
-  const dailyTotals = toDailyTotals(cashRecords, payments);
-  const tomorrowWeekday = addDays(today, 1).getDay();
-  const predictedRevenueTomorrow = averageRevenueForWeekday(
-    dailyTotals,
-    tomorrowWeekday,
-  );
+  // const dailyTotals = toDailyTotals(cashRecords, payments);
 
-  let projectedRevenueNext7Days = 0;
-  for (let weekday = 0; weekday < 7; weekday++) {
-    projectedRevenueNext7Days += averageRevenueForWeekday(dailyTotals, weekday);
-  }
+  // let projectedRevenueNext7Days = 0;
+  // for (let weekday = 0; weekday < 7; weekday++) {
+  //   projectedRevenueNext7Days += averageRevenueForWeekday(dailyTotals, weekday);
+  // }
 
   const totalSold = records.reduce((sum, r) => sum + r.soldQty, 0);
-  const totalBackordered = records.reduce((sum, r) => sum + r.boQty, 0);
-  const backorderRatePct =
-    totalSold === 0 ? 0 : (totalBackordered / totalSold) * 100;
+  const totalBadOrdered = records.reduce((sum, r) => sum + r.boQty, 0);
+  const badOrderRatePct =
+    totalSold === 0 ? 0 : (totalBadOrdered / totalSold) * 100;
 
   return {
     revenueToday,
     revenueYesterday,
     revenueChangePct,
-    tomorrowWeekday,
-    predictedRevenueTomorrow,
-    projectedRevenueNext7Days,
-    backorderRatePct,
-    backorderRisk: classifyBackorderRisk(backorderRatePct),
+    badOrderRatePct,
+    badOrderRisk: classifyBadOrderRisk(badOrderRatePct),
   };
 }

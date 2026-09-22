@@ -1,10 +1,6 @@
-import { TrendingUp, TrendingDown, CalendarDays, BarChart2 } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { KpiCard } from "@/app/features/dashboard/components/KpiCard";
-import type { IntelligenceKpis } from "../helpers/kpis";
-
-const WEEKDAY_NAMES = [
-  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
-];
+import type { IntelligenceKpis } from "../types";
 
 export function KpiSection({ kpis }: { kpis: IntelligenceKpis }) {
   const isUp = kpis.revenueChangePct >= 0;
@@ -21,25 +17,11 @@ export function KpiSection({ kpis }: { kpis: IntelligenceKpis }) {
           icon={isUp ? TrendingUp : TrendingDown}
         />
         <KpiCard
-          title="Predicted sales tomorrow"
-          primary={`₱${Math.round(kpis.predictedRevenueTomorrow).toLocaleString()}`}
-          secondary={`Your typical sales on ${WEEKDAY_NAMES[kpis.tomorrowWeekday]}`}
-          tone="primary"
-          icon={CalendarDays}
-        />
-        <KpiCard
-          title="Projected 7-day revenue"
-          primary={`₱${Math.round(kpis.projectedRevenueNext7Days).toLocaleString()}`}
-          secondary="Based on your weekly sales this month"
-          tone="primary"
-          icon={BarChart2}
-        />
-        <KpiCard
           title="Bad order risk level"
-          primary={kpis.backorderRisk.label}
-          secondary={`Bad order rate ${kpis.backorderRatePct.toFixed(1)}% this month`}
-          tone={kpis.backorderRisk.tone}
-          icon={kpis.backorderRisk.icon}
+          primary={kpis.badOrderRisk.label}
+          secondary={`Bad order rate ${kpis.badOrderRatePct.toFixed(1)}% this month`}
+          tone={kpis.badOrderRisk.tone}
+          icon={kpis.badOrderRisk.icon}
         />
       </div>
     </section>

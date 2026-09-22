@@ -1,3 +1,5 @@
+import type { LucideIcon } from "lucide-react";
+
 export type ForecastRange = "weekly" | "monthly" | "yearly";
 
 /** One point on the forecast chart: a period label with an actual value,
@@ -29,4 +31,20 @@ export type { SalesPoint } from "@/app/server/salesData/getForecastSeries";
 export type DailyTotal = {
   date: string; // YYYY-MM-DD
   revenue: number;
+};
+
+export type BadOrderRiskTone = "healthy" | "medium" | "warning" | "critical";
+
+export type BadOrderRisk = {
+  tone: BadOrderRiskTone;
+  label: string;
+  icon: LucideIcon;
+};
+
+export type IntelligenceKpis = {
+  revenueToday: number;
+  revenueYesterday: number;
+  revenueChangePct: number;
+  badOrderRatePct: number;
+  badOrderRisk: BadOrderRisk;
 };
