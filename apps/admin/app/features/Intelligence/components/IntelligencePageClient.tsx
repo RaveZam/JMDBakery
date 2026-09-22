@@ -8,7 +8,7 @@ import { parseRecordsFiltersLast30Days } from "@/lib/selectors/filters";
 import { computeIntelligenceKpis } from "../helpers/kpis";
 import { IntelligenceHeader } from "./IntelligenceHeader";
 import { KpiSection } from "./KpiSection";
-import { ForecastChart } from "./ForecastChart";
+import { ForecastChart } from "./ForecastChart/ForecastChart";
 import { ProductionRecommendations } from "./ProductionRecommendations";
 import { PerformanceRankings } from "./PerformanceRankings";
 

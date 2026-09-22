@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useForecastChart,
   type ForecastChartState,
-} from "../hooks/useForecastChart";
-import { bridgeForecastSeam } from "../helpers/bridgeForecastSeam";
+} from "../../hooks/useForecastChart";
+import { bridgeForecastSeam } from "../../helpers/bridgeForecastSeam";
 import { ForecastPlot } from "./ForecastPlot";
 
 function ChartMessage({
