@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import SessionInventoryDao, {
   type InventoryItem,
@@ -11,7 +11,15 @@ import {
 } from "../services/session-inventory-save-service";
 import { cancelSession } from "@/src/features/sessions/services/sessionLocalService";
 import { useProducts } from "./useProducts";
-import type { Inventory } from "../types/inventory-types";
+import type {
+  Inventory,
+  InventoryVerificationStatus,
+} from "../types/inventory-types";
+import {
+  requestVerification,
+  pollVerificationStatus,
+  cancelVerification,
+} from "../services/route-services";
 
 export function useInventory(): { inventory: Inventory } {
   const { sessionId, routeName } = useLocalSearchParams<{
@@ -22,6 +30,19 @@ export function useInventory(): { inventory: Inventory } {
   const [items, setItems] = useState<InventoryItem[]>(() =>
     sessionId ? SessionInventoryDao.getBySessionId(sessionId) : [],
   );
+
+  const [pendingVerification, setPendingVerification] =
+    useState<InventoryVerificationStatus>("");
+
+  useEffect(() => {
+    if (
+      !sessionId ||
+      pendingVerification === "verified" ||
+      pendingVerification === "cancelled"
+    )
+      return;
+    return pollVerificationStatus(sessionId, setPendingVerification);
+  }, [sessionId, pendingVerification]);
 
   const refreshInventory = useCallback(() => {
     if (!sessionId) return;
@@ -94,8 +115,14 @@ export function useInventory(): { inventory: Inventory } {
     return true;
   }, [sessionId, items.length]);
 
-  function handleContinue() {
-    if (!finishInventory()) return;
+  function handleRequestVerification() {
+    if (!sessionId) return;
+    requestVerification(sessionId, "pending");
+    setPendingVerification("pending");
+  }
+
+  function handleStartRoute() {
+    finishInventory();
     router.replace({
       pathname: "/main/routes/session",
       params: { sessionId, routeName },
@@ -105,6 +132,8 @@ export function useInventory(): { inventory: Inventory } {
   const cancelInventorySession = useCallback(() => {
     if (!sessionId) return;
     cancelSession(sessionId);
+    cancelVerification(sessionId);
+    setPendingVerification("cancelled");
     router.replace("/main/routes");
   }, [sessionId]);
 
@@ -117,8 +146,10 @@ export function useInventory(): { inventory: Inventory } {
       adjustItemQty,
       setItemQty,
       removeItem,
-      handleContinue,
+      handleStartRoute,
+      handleRequestVerification,
       cancelInventorySession,
+      pendingVerification,
     },
   };
 }
