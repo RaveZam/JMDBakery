@@ -2,12 +2,14 @@ import { View, Text, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useInventoryRoute } from "../../hooks/useInventoryRoute";
+import { useMorningInventory } from "../../context/useMorningInventory";
 
 const HEADER_BG = "#0b4c29";
 
 export function InventoryHeader() {
   const insets = useSafeAreaInsets();
   const { routeName } = useInventoryRoute();
+  const { inventory } = useMorningInventory();
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
@@ -17,6 +19,12 @@ export function InventoryHeader() {
       </Text>
       <Text style={styles.headerSub}>
         Record the stock you loaded for today.
+      </Text>
+      <Text style={styles.headerSub}>
+        Pending verification:{" "}
+        {inventory.pendingVerification
+          ? inventory.pendingVerification
+          : "Not yet requested"}
       </Text>
     </View>
   );

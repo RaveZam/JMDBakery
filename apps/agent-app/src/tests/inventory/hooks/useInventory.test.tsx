@@ -20,6 +20,13 @@ jest.mock("@/src/lib/dao/session-inventory-dao", () => ({
   default: { getBySessionId: () => [] },
 }));
 
+jest.mock("@/src/features/inventory/services/route-services", () => ({
+  requestVerification: jest.fn(),
+  cancelVerification: jest.fn(),
+  fetchVerificationStatus: jest.fn().mockResolvedValue(""),
+  pollVerificationStatus: jest.fn(() => () => {}),
+}));
+
 beforeEach(() => {
   jest.clearAllMocks();
 });

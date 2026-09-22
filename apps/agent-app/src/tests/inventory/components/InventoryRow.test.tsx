@@ -13,8 +13,10 @@ function makeInventory(overrides: Partial<Inventory> = {}): Inventory {
     adjustItemQty: jest.fn(),
     setItemQty: jest.fn(),
     removeItem: jest.fn(),
-    handleContinue: jest.fn(),
+    handleStartRoute: jest.fn(),
+    handleRequestVerification: jest.fn(),
     cancelInventorySession: jest.fn(),
+    pendingVerification: "",
     ...overrides,
   };
 }

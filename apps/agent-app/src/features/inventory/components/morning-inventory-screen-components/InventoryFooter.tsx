@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useMorningInventory } from "@/src/features/inventory/context/useMorningInventory";
-import { ConfirmActionModal } from "@/src/shared/components/ConfirmActionModal";
 
 const HEADER_BG = "#0b4c29";
 
@@ -23,18 +21,37 @@ function confirmCancel(cancelInventorySession: () => void) {
 
 export function InventoryFooter() {
   const { inventory } = useMorningInventory();
-  const [confirmVisible, setConfirmVisible] = useState(false);
 
   return (
     <View style={styles.footer}>
-      <TouchableOpacity
-        style={styles.continueBtn}
-        activeOpacity={0.85}
-        onPress={() => setConfirmVisible(true)}
-      >
-        <Text style={styles.continueBtnText}>Continue to Route</Text>
-        <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
-      </TouchableOpacity>
+      {inventory.pendingVerification === "pending" ? (
+        <TouchableOpacity
+          style={styles.continueBtn}
+          activeOpacity={0.85}
+          onPress={() => inventory.handleRequestVerification()}
+        >
+          <Text style={styles.continueBtnText}>Pending...</Text>
+          <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+        </TouchableOpacity>
+      ) : inventory.pendingVerification === "verified" ? (
+        <TouchableOpacity
+          style={styles.continueBtn}
+          activeOpacity={0.85}
+          onPress={() => inventory.handleStartRoute()}
+        >
+          <Text style={styles.continueBtnText}>Start</Text>
+          <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={styles.continueBtn}
+          activeOpacity={0.85}
+          onPress={() => inventory.handleRequestVerification()}
+        >
+          <Text style={styles.continueBtnText}>Request Verification</Text>
+          <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={styles.cancelBtn}
@@ -43,19 +60,6 @@ export function InventoryFooter() {
       >
         <Text style={styles.cancelBtnText}>Cancel Session</Text>
       </TouchableOpacity>
-
-      <ConfirmActionModal
-        visible={confirmVisible}
-        title="Continue to Route"
-        body="Are you sure you want to start, inventory is not editable after this point."
-        confirmLabel="Continue"
-        icon="arrow-forward"
-        onConfirm={() => {
-          setConfirmVisible(false);
-          inventory.handleContinue();
-        }}
-        onCancel={() => setConfirmVisible(false)}
-      />
     </View>
   );
 }

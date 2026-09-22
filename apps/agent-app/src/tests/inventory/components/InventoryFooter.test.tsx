@@ -15,14 +15,16 @@ function makeInventory(overrides: Partial<Inventory> = {}): Inventory {
     adjustItemQty: jest.fn(),
     setItemQty: jest.fn(),
     removeItem: jest.fn(),
-    handleContinue: jest.fn(),
+    handleStartRoute: jest.fn(),
+    handleRequestVerification: jest.fn(),
     cancelInventorySession: jest.fn(),
+    pendingVerification: "",
     ...overrides,
   };
 }
 
-function renderFooter() {
-  const inventory = makeInventory();
+function renderFooter(overrides: Partial<Inventory> = {}) {
+  const inventory = makeInventory(overrides);
   render(
     <MorningInventoryContext.Provider value={{ inventory }}>
       <InventoryFooter />
@@ -35,14 +37,28 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-test("'Continue to Route' asks for confirmation before continuing", () => {
-  const inventory = renderFooter();
+test("before verification, 'Request Verification' requests verification", () => {
+  const inventory = renderFooter({ pendingVerification: "" });
 
-  fireEvent.press(screen.getByText("Continue to Route"));
-  expect(inventory.handleContinue).not.toHaveBeenCalled();
+  fireEvent.press(screen.getByText("Request Verification"));
 
-  fireEvent.press(screen.getByText("Continue"));
-  expect(inventory.handleContinue).toHaveBeenCalled();
+  expect(inventory.handleRequestVerification).toHaveBeenCalled();
+});
+
+test("while pending, the button shows 'Pending...' and re-requests verification", () => {
+  const inventory = renderFooter({ pendingVerification: "pending" });
+
+  fireEvent.press(screen.getByText("Pending..."));
+
+  expect(inventory.handleRequestVerification).toHaveBeenCalled();
+});
+
+test("once verified, 'Start' starts the route", () => {
+  const inventory = renderFooter({ pendingVerification: "verified" });
+
+  fireEvent.press(screen.getByText("Start"));
+
+  expect(inventory.handleStartRoute).toHaveBeenCalled();
 });
 
 test("'Cancel Session' asks for confirmation before cancelling", () => {
