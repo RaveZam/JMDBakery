@@ -25,12 +25,21 @@ const AXIS_TICK = { fontSize: 11 };
 // Series styling is hoisted so the chart tree below stays readable. These are
 // spread onto Recharts elements, which is safe -- Recharts keys off the
 // element type, not how its props were supplied.
-const ACTUAL_STYLE = {
+const SALES_STYLE = {
   stroke: ACTUAL_COLOR,
   strokeWidth: 2,
   fill: `url(#${FILL_ID})`,
   dot: { r: 3, fill: ACTUAL_COLOR, strokeWidth: 0 },
   activeDot: { r: 5, fill: "#059669", strokeWidth: 0 },
+  connectNulls: false,
+} as const;
+
+const BO_STYLE = {
+  stroke: "#ff0000",
+  strokeWidth: 2,
+  fill: "#a81515",
+  dot: { r: 3, fill: "#f10707", strokeWidth: 0 },
+  activeDot: { r: 5, fill: "#ff0000", strokeWidth: 0 },
   connectNulls: false,
 } as const;
 
@@ -77,12 +86,8 @@ export function ForecastPlot({
         <YAxis tick={AXIS_TICK} tickFormatter={series.yFormatter} />
         <Tooltip content={<ForecastTooltip />} />
         <Legend />
-        <Area
-          type="monotone"
-          dataKey="actual"
-          name="Actual"
-          {...ACTUAL_STYLE}
-        />
+        <Area type="monotone" dataKey="actual" name="Sales" {...SALES_STYLE} />
+        <Area type="monotone" dataKey="actual" name="BO" {...BO_STYLE} />
         <Line
           type="monotone"
           dataKey="forecast"
