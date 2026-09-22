@@ -2,19 +2,43 @@
 
 import { useEffect, useState } from "react";
 
-import { getSessionInventory } from "../services/sessionsService";
-import type { InventorySummaryRow } from "../types/session-types";
+import {
+  approveInventory,
+  getSessionInventory,
+} from "../services/sessionsService";
+import type {
+  InventorySummaryRow,
+  InventoryVerificationStatus,
+} from "../types/session-types";
 
 export function useSessionInventory(
   sessionId: string,
   open: boolean,
+  initialInventoryVerified: InventoryVerificationStatus,
 ): {
   rows: InventorySummaryRow[];
   loading: boolean;
+  inventoryVerified: InventoryVerificationStatus;
+  handleApproveInventory: () => Promise<void>;
 } {
   const [rows, setRows] = useState<InventorySummaryRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [inventoryVerified, setInventoryVerified] = useState(
+    initialInventoryVerified,
+  );
+
+  const handleApproveInventory = async () => {
+    try {
+      await approveInventory(sessionId);
+      setInventoryVerified("verified");
+    } catch (err) {
+      console.error(
+        `Failed to approve inventory for session ${sessionId}`,
+        err,
+      );
+    }
+  };
 
   useEffect(() => {
     if (!open || loaded) return;
@@ -39,5 +63,5 @@ export function useSessionInventory(
     };
   }, [open, loaded, sessionId]);
 
-  return { rows, loading };
+  return { rows, loading, inventoryVerified, handleApproveInventory };
 }
