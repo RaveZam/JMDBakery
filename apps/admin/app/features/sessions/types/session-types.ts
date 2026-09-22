@@ -1,3 +1,9 @@
+export type InventoryVerificationStatus =
+  | ""
+  | "pending"
+  | "verified"
+  | "cancelled";
+
 export type SessionRow = {
   id: string;
   routeName: string;
@@ -5,6 +11,7 @@ export type SessionRow = {
   sessionDate: string;
   createdAt: string | null;
   status: "ongoing" | "completed" | "cancelled";
+  inventoryVerified: InventoryVerificationStatus;
   totalStores: number;
   visitedStores: number;
 };

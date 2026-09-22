@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { computeInventoryVariance } from "@/lib/computeInventoryVariance";
 import type {
   InventorySummaryRow,
+  InventoryVerificationStatus,
   SessionRow,
   SessionStoreRow,
   SessionStoreSaleRow,
@@ -16,8 +17,18 @@ type SessionQueryRow = {
   session_date: string;
   created_at: string | null;
   status: string;
+  inventory_verified: InventoryVerificationStatus;
   session_stores: { visited: boolean }[] | null;
 };
+
+export async function approveInventory(sessionId: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("route_sessions")
+    .update({ inventory_verified: "verified" })
+    .eq("id", sessionId);
+  if (error) throw new Error(error.message);
+}
 
 function mapSessionRow(row: SessionQueryRow): SessionRow {
   const storeRows = row.session_stores ?? [];
@@ -28,6 +39,7 @@ function mapSessionRow(row: SessionQueryRow): SessionRow {
     sessionDate: row.session_date,
     createdAt: row.created_at,
     status: row.status as "ongoing" | "completed" | "cancelled",
+    inventoryVerified: row.inventory_verified,
     totalStores: storeRows.length,
     visitedStores: storeRows.filter((r) => r.visited).length,
   };
@@ -39,7 +51,7 @@ export async function getSessions(): Promise<SessionRow[]> {
   const { data, error } = await supabase
     .from("route_sessions")
     .select(
-      "id, route_name, conducted_by_name, session_date, created_at, status, session_stores(visited)",
+      "id, route_name, conducted_by_name, session_date, created_at, status, inventory_verified, session_stores(visited)",
     )
     .order("created_at", { ascending: false })
     .limit(100);
@@ -154,7 +166,13 @@ function mapInventorySummaryRow(
 ): InventorySummaryRow {
   // expected/variance are derived here, not read from the RPC — see computeInventoryVariance.
   const { expectedBo, expectedBalance, boVariance, balanceVariance } =
-    computeInventoryVariance(row.morning, row.sold, row.back_order, row.ending_bo, row.ending_balance);
+    computeInventoryVariance(
+      row.morning,
+      row.sold,
+      row.back_order,
+      row.ending_bo,
+      row.ending_balance,
+    );
   return {
     productId: row.product_id,
     productName: row.product_name,
