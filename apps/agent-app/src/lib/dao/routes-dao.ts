@@ -26,6 +26,13 @@ const RoutesDao = {
     );
   },
 
+  updateVerifyPending(id: string, status: string) {
+    getDb().runSync(
+      `UPDATE route_sessions SET inventory_verified = ? WHERE id = ?`,
+      [status, id],
+    );
+  },
+
   deleteRoute(id: string) {
     const db = getDb();
     db.runSync(

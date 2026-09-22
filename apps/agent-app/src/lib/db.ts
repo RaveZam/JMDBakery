@@ -55,6 +55,7 @@ export async function initDb(): Promise<void> {
       conducted_by_name           TEXT,
       status                      TEXT NOT NULL DEFAULT 'ongoing' CHECK(status IN ('ongoing', 'completed', 'cancelled')),
       morning_inventory_finished  INTEGER NOT NULL DEFAULT 0,
+      inventory_verified          TEXT,
       created_at                  TEXT NOT NULL
     );
 
@@ -245,6 +246,7 @@ const ADDED_COLUMNS: [addColumn: string, followUp?: string][] = [
     `ALTER TABLE route_sessions ADD COLUMN morning_inventory_finished INTEGER NOT NULL DEFAULT 0`,
   ],
   [`ALTER TABLE route_sessions ADD COLUMN conducted_by_name TEXT`],
+  [`ALTER TABLE route_sessions ADD COLUMN inventory_verified TEXT`],
   [
     `ALTER TABLE session_inventory ADD COLUMN snapshot_price REAL`,
     BACKFILL_SNAPSHOT_PRICE,
@@ -259,7 +261,9 @@ const ADDED_COLUMNS: [addColumn: string, followUp?: string][] = [
   [
     `ALTER TABLE credit_entry_sales ADD COLUMN payment_type TEXT NOT NULL DEFAULT 'cash'`,
   ],
-  [`ALTER TABLE ending_inventory ADD COLUMN ending_bo INTEGER NOT NULL DEFAULT 0`],
+  [
+    `ALTER TABLE ending_inventory ADD COLUMN ending_bo INTEGER NOT NULL DEFAULT 0`,
+  ],
   [
     `ALTER TABLE ending_inventory ADD COLUMN ending_balance INTEGER NOT NULL DEFAULT 0`,
   ],
