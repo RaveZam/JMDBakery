@@ -5,8 +5,8 @@ import type { DataPoint } from "../../types";
 describe("computeForecastBounds", () => {
   test("reports the label of the first and last forecast point", () => {
     const data: DataPoint[] = [
-      { label: "Jan", actual: 100 },
-      { label: "Feb", actual: 110 },
+      { label: "Jan", salesAmount: 100 },
+      { label: "Feb", salesAmount: 110 },
       { label: "Mar", forecast: 120 },
       { label: "Apr", forecast: 130 },
       { label: "May", forecast: 140 },
@@ -20,8 +20,8 @@ describe("computeForecastBounds", () => {
 
   test("treats a seam point (actual + forecast) as part of the forecast span", () => {
     const data: DataPoint[] = [
-      { label: "Jan", actual: 100 },
-      { label: "Feb", actual: 110, forecast: 110 },
+      { label: "Jan", salesAmount: 100 },
+      { label: "Feb", salesAmount: 110, forecast: 110 },
       { label: "Mar", forecast: 120 },
     ];
 
@@ -29,7 +29,7 @@ describe("computeForecastBounds", () => {
   });
 
   test("returns empty bounds when there is no forecast data", () => {
-    const data: DataPoint[] = [{ label: "Jan", actual: 100 }];
+    const data: DataPoint[] = [{ label: "Jan", salesAmount: 100 }];
 
     expect(computeForecastBounds(data)).toEqual({
       forecastStart: "",

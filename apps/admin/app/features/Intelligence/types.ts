@@ -2,12 +2,18 @@ import type { LucideIcon } from "lucide-react";
 
 export type ForecastRange = "weekly" | "monthly" | "yearly";
 
-/** One point on the forecast chart: a period label with an actual value,
- * a forecast value, or both (the seam point carries both). */
+/** One point on the forecast chart: a period label with actual sales/BO
+ * figures, forecast figures, or both (the seam point carries both). Amount
+ * is pesos, units is piece count -- both are always present on an actual
+ * point; the display toggle picks which pair the chart reads. */
 export type DataPoint = {
   label: string;
-  actual?: number;
+  salesAmount?: number;
+  salesUnits?: number;
+  boAmount?: number;
+  boUnits?: number;
   forecast?: number;
+  boForecast?: number;
 };
 
 /** A DataPoint prepared for Recharts. `isSeam` marks the bridged point whose
@@ -25,7 +31,7 @@ export interface ForecastChartData {
   note?: string;
 }
 
-export type { SalesPoint } from "@/app/server/salesData/getForecastSeries";
+export type { ForecastData } from "@/app/server/salesData/getForecastSeries";
 
 /** A single day's revenue, used by the KPI helpers. */
 export type DailyTotal = {

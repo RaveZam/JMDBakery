@@ -1,7 +1,9 @@
-import type { DataPoint, ForecastChartData, SalesPoint } from "../types";
+import type { DataPoint, ForecastChartData } from "../types";
+import type { ForecastData } from "@/app/server/salesData/getForecastSeries";
 import * as ss from "simple-statistics";
 import { MONTH_LABELS, nowInManila, toDateKey, addDays } from "./dateUtils";
 import { computeForecastBounds } from "./computeForecastBounds";
+import { DisplayMetric } from "../components/ForecastChart/DisplayMetricToggle";
 
 const WEEKS_PER_MONTH = 4;
 const ACTUALS_WINDOW_DAYS = 31;
@@ -29,13 +31,11 @@ function weekLabel(period: string): string {
 
 function projectedWeeks(
   line: (x: number) => number,
+  line2: (x: number) => number,
   completedCount: number,
   now: Date,
   currentWeekHasActual: boolean,
 ): DataPoint[] {
-  const monthName = MONTH_LABELS[now.getUTCMonth()];
-  const nextMonthName = MONTH_LABELS[(now.getUTCMonth() + 1) % 12];
-
   // The completed weeks occupy x = 0 .. completedCount - 1, so the in-progress
   // week sits at x = completedCount. If it already has sales it is drawn as an
   // actual, so the projection starts at the week after it (x = completedCount +
@@ -43,21 +43,36 @@ function projectedWeeks(
   const firstStep = currentWeekHasActual ? 1 : 0;
   const firstWeek = weekOfMonth(now.getUTCDate()) + firstStep;
 
+  // Always project exactly WEEKS_PER_MONTH weeks forward, rolling into as many
+  // following months as needed -- not "rest of this month, then one more week".
   const labels: string[] = [];
-  for (let week = firstWeek; week <= WEEKS_PER_MONTH; week++) {
+  let week = firstWeek;
+  let monthOffset = 0;
+  for (let i = 0; i < WEEKS_PER_MONTH; i++) {
+    if (week > WEEKS_PER_MONTH) {
+      week = 1;
+      monthOffset++;
+    }
+    const monthName = MONTH_LABELS[(now.getUTCMonth() + monthOffset) % 12];
     labels.push(`${monthName} W${week}`);
+    week++;
   }
-  labels.push(`${nextMonthName} W1`);
 
   return labels.map((label, step) => ({
     label,
     forecast: Math.max(0, Math.round(line(completedCount + firstStep + step))),
+    boForecast: Math.max(
+      0,
+      Math.round(line2(completedCount + firstStep + step)),
+    ),
   }));
 }
 
-export function forecastNextMonth(weekly: SalesPoint[]): ForecastChartData {
-  console.log("forecastNextMonth", weekly);
-  const title = "Next Month Revenue Forecast";
+export function forecastNextMonth(
+  weekly: ForecastData[],
+  displayMetric: DisplayMetric = "pesos",
+): ForecastChartData {
+  const title = "Sales vs BO Forecast";
   const now = nowInManila();
 
   // The in-progress week is left out of the regression fit: it holds only a few
@@ -72,22 +87,39 @@ export function forecastNextMonth(weekly: SalesPoint[]): ForecastChartData {
   }
 
   const line = ss.linearRegressionLine(
-    ss.linearRegression(completedWeeks.map((w, i) => [i, w.total_sales])),
+    ss.linearRegression(
+      completedWeeks.map((w, i) => [
+        i,
+        (displayMetric === "pesos" ? w.total_sales_amount : w.total_sales) ?? 0,
+      ]),
+    ),
+  );
+
+  const line2 = ss.linearRegressionLine(
+    ss.linearRegression(
+      completedWeeks.map((w, i) => [
+        i,
+        (displayMetric === "pesos" ? w.total_bo_amount : w.total_bo) ?? 0,
+      ]),
+    ),
   );
 
   const windowStart = toDateKey(weekStart(addDays(now, -ACTUALS_WINDOW_DAYS)));
   const currentWeekActual = weekly.find((w) => w.period === currentWeek);
 
-  // Appended in chronological order, so no re-sort is needed -- sorting by
-  // month name would misorder a December-to-January span. Weeks in the trailing
-  // window (including the in-progress one if it has sales) come first, then the
-  // projection.
   const data: DataPoint[] = [
     ...weekly
       .filter((w) => w.period >= windowStart && w.period <= currentWeek)
-      .map((w) => ({ label: weekLabel(w.period), actual: w.total_sales })),
+      .map((w) => ({
+        label: weekLabel(w.period),
+        salesAmount: w.total_sales_amount,
+        salesUnits: w.total_sales,
+        boAmount: w.total_bo_amount,
+        boUnits: w.total_bo,
+      })),
     ...projectedWeeks(
       line,
+      line2,
       completedWeeks.length,
       now,
       currentWeekActual != null,
