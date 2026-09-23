@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useInventoryRoute } from "../../hooks/useInventoryRoute";
 import { useMorningInventory } from "../../context/useMorningInventory";
+import { PulsingDot } from "@/src/shared/components/PulsingDot";
 
 const HEADER_BG = "#0b4c29";
 
@@ -20,12 +21,17 @@ export function InventoryHeader() {
       <Text style={styles.headerSub}>
         Record the stock you loaded for today.
       </Text>
-      <Text style={styles.headerSub}>
-        Pending verification:{" "}
-        {inventory.pendingVerification
-          ? inventory.pendingVerification
-          : "Not yet requested"}
-      </Text>
+      <View style={styles.statusRow}>
+        <Text style={[styles.headerSub, styles.statusText]}>
+          Pending verification:{" "}
+          {inventory.pendingVerification
+            ? inventory.pendingVerification
+            : "Not yet requested"}
+        </Text>
+        {inventory.pendingVerification === "pending" && (
+          <PulsingDot color="#4ADE80" />
+        )}
+      </View>
     </View>
   );
 }
@@ -51,4 +57,11 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   headerSub: { fontSize: 13, color: "#BBF7D0", marginTop: 6 },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 6,
+  },
+  statusText: { marginTop: 0 },
 });

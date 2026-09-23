@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useMorningInventory } from "@/src/features/inventory/context/useMorningInventory";
+import { PulsingDot } from "@/src/shared/components/PulsingDot";
 
 const HEADER_BG = "#0b4c29";
 
@@ -30,6 +31,7 @@ export function InventoryFooter() {
           activeOpacity={0.85}
           onPress={() => inventory.handleRequestVerification()}
         >
+          <PulsingDot color="#4ADE80" />
           <Text style={styles.continueBtnText}>Pending...</Text>
           <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
         </TouchableOpacity>
