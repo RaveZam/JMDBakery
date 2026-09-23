@@ -79,10 +79,13 @@ function mapSessionStore(
  * window of sales rows, cached 5min client-side via React Query. Each page
  * applies its own date-range filter/aggregation against this in memory.
  */
-export const getSalesDataset = async (): Promise<SalesRecord[]> => {
+export const getSalesDataset = async (
+  dateStart?: string,
+  dateEnd?: string,
+): Promise<SalesRecord[]> => {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("route_sessions")
     .select(
       `
@@ -93,8 +96,13 @@ export const getSalesDataset = async (): Promise<SalesRecord[]> => {
       )
     `,
     )
-    .gte("session_date", windowStartDate())
-    .order("session_date", { ascending: false });
+    .gte("session_date", dateStart || windowStartDate());
+
+  if (dateEnd) query = query.lte("session_date", dateEnd);
+
+  const { data, error } = await query.order("session_date", {
+    ascending: false,
+  });
 
   if (error) throw new Error(error.message);
 
