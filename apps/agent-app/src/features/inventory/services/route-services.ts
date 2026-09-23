@@ -63,7 +63,12 @@ export function pollVerificationStatus(
 ): () => void {
   const id = setInterval(() => {
     fetchVerificationStatus(routeId)
-      .then(onUpdate)
+      .then((status) => {
+        onUpdate(status);
+        if (status === "verified" || status === "cancelled") {
+          clearInterval(id);
+        }
+      })
       .catch((error) => console.warn("verification poll failed", error));
   }, 3000);
   return () => clearInterval(id);

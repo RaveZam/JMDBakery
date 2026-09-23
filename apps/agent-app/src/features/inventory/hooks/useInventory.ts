@@ -35,14 +35,16 @@ export function useInventory(): { inventory: Inventory } {
     useState<InventoryVerificationStatus>("");
 
   useEffect(() => {
-    if (
-      !sessionId ||
-      pendingVerification === "verified" ||
-      pendingVerification === "cancelled"
-    )
-      return;
-    return pollVerificationStatus(sessionId, setPendingVerification);
-  }, [sessionId, pendingVerification]);
+    if (!sessionId) return;
+    return pollVerificationStatus(sessionId, (status) => {
+      setPendingVerification((current) => {
+        // A local request/verification is already ahead of what just came
+        // back from Supabase (outbox hasn't pushed yet) - don't regress it.
+        if (status === "" && current !== "") return current;
+        return status;
+      });
+    });
+  }, [sessionId]);
 
   const refreshInventory = useCallback(() => {
     if (!sessionId) return;
