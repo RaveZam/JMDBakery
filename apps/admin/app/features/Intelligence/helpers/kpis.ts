@@ -61,9 +61,7 @@ export function computeIntelligenceKpis(
   const today = nowInManila();
   const todayKey = toDateKey(today);
   const yesterdayKey = toDateKey(addDays(today, -1));
-
   const cashRecords = excludeCreditSales(records);
-
   const revenueToday =
     revenueOn(cashRecords, todayKey) + collectedOn(payments, todayKey);
   const revenueYesterday =
@@ -72,13 +70,6 @@ export function computeIntelligenceKpis(
     revenueYesterday === 0
       ? 0
       : ((revenueToday - revenueYesterday) / revenueYesterday) * 100;
-
-  // const dailyTotals = toDailyTotals(cashRecords, payments);
-
-  // let projectedRevenueNext7Days = 0;
-  // for (let weekday = 0; weekday < 7; weekday++) {
-  //   projectedRevenueNext7Days += averageRevenueForWeekday(dailyTotals, weekday);
-  // }
 
   const totalSold = records.reduce((sum, r) => sum + r.soldQty, 0);
   const totalBadOrdered = records.reduce((sum, r) => sum + r.boQty, 0);
