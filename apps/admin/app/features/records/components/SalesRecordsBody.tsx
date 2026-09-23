@@ -1,22 +1,20 @@
 "use client";
 
-import type { useRecordsFilter } from "../hooks/useRecordsFilter";
+import { useRecordsFilters } from "../context/RecordsFiltersContext";
 import { RecordsTable } from "./RecordsTable";
 import { RecordsPagination } from "./RecordsPagination";
 
-export function SalesRecordsBody({
-  filter,
-}: {
-  filter: ReturnType<typeof useRecordsFilter>;
-}) {
+export function SalesRecordsBody() {
+  const { records, pageRecords, pagination } = useRecordsFilters();
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6">
-      <RecordsTable records={filter.pageRecords} />
+      <RecordsTable records={pageRecords} />
       <RecordsPagination
-        page={filter.page}
-        totalPages={filter.totalPages}
-        totalRecords={filter.records.length}
-        onPageChange={filter.setPage}
+        page={pagination.page}
+        totalPages={pagination.totalPages}
+        totalRecords={records.length}
+        onPageChange={pagination.setPage}
       />
     </div>
   );

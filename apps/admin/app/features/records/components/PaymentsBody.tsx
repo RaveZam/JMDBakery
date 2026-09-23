@@ -2,12 +2,16 @@
 
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { usePaymentsFilter } from "../hooks/usePaymentsFilter";
+import { useRecordsFilters } from "../context/RecordsFiltersContext";
 import { PaymentsTable } from "./PaymentsTable";
 import { PaymentsEmptyState } from "./PaymentsEmptyState";
 import { RecordsPagination } from "./RecordsPagination";
 
-export function PaymentsBody({ search }: { search: string }) {
-  const payments = usePaymentsFilter(search);
+// Payments has no view/province/agent/product of its own -- it shares only
+// the search box with the sales-records filters, via context.
+export function PaymentsBody() {
+  const { filters } = useRecordsFilters();
+  const payments = usePaymentsFilter(filters.search);
 
   if (payments.isLoading) return <LoadingSpinner />;
 

@@ -1,9 +1,13 @@
+"use client";
+
 import { Receipt, PackageCheck, PackageX, Percent } from "lucide-react";
 import { KpiCard } from "@/app/features/dashboard/components/KpiCard";
-import type { RecordsStats } from "../helpers/computeRecordsSummary";
+import { useRecordsFilters } from "../context/RecordsFiltersContext";
 import { RecordsPaymentSummary } from "./RecordsPaymentSummary";
 
-export function RecordsSummary({ summary }: { summary: RecordsStats }) {
+export function RecordsSummary() {
+  const { summary } = useRecordsFilters();
+
   // Six cards on one row at xl. Narrower screens step down rather than
   // squeezing, since the money values stop fitting well below ~190px a card.
   return (
