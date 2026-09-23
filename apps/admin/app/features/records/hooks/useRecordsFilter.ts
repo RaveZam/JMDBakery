@@ -1,40 +1,43 @@
-import { useMemo, useState } from "react";
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
-import { RECORDS_PAGE_SIZE, type RecordView } from "../types";
-import { filterRecords } from "../helpers/filterRecords";
-import { searchRecords } from "../helpers/searchRecords";
-import { computeRecordsSummary } from "../helpers/computeRecordsSummary";
+import { RECORDS_PAGE_SIZE } from "../types";
 import { usePagination } from "./usePagination";
+import { useRecordsFieldFilters } from "./useRecordsFieldFilters";
+import { useFilteredRecords } from "./useFilteredRecords";
 
-export function useRecordsFilter(allRecords: SalesRecord[]) {
-  const [view, setView] = useState<RecordView>("all");
-  const [search, setSearch] = useState("");
+/**
+ * Owns the Records page's view/search/province/agent/product filters and
+ * derives the matching records, summary, and current page from them.
+ *
+ * dateStart/dateEnd are passed in rather than owned here -- they also drive
+ * the server-side fetch one level up, in RecordsClient (see
+ * useRecordsDateRange).
+ */
+export function useRecordsFilter(
+  allRecords: SalesRecord[],
+  dateStart: string,
+  dateEnd: string,
+) {
+  const filters = useRecordsFieldFilters(allRecords);
+  const { view, search, province, agent, product } = filters;
 
-  const records = useMemo(
-    () => filterRecords(allRecords, view, search),
-    [allRecords, view, search],
-  );
-
-  // The summary describes the whole dataset, not the open tab, so it stays
-  // put as the user switches views.
-  const summary = useMemo(
-    () => computeRecordsSummary(searchRecords(allRecords, search)),
-    [allRecords, search],
-  );
+  const { records, summary } = useFilteredRecords(allRecords, {
+    view,
+    search,
+    dateStart,
+    dateEnd,
+    province,
+    agent,
+    product,
+  });
   const { page, setPage, totalPages, pageRecords } = usePagination(
     records,
     RECORDS_PAGE_SIZE,
-    `${view}:${search}`,
+    `${view}:${search}:${dateStart}:${dateEnd}:${province}:${agent}:${product}`,
   );
 
   return {
-    view,
-    setView,
-    search,
-    setSearch,
-    page,
-    setPage,
-    totalPages,
+    filters,
+    pagination: { page, setPage, totalPages },
     records,
     pageRecords,
     summary,
