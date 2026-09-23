@@ -61,8 +61,8 @@ describe("ForecastChart", () => {
         series: {
           title: "7-day revenue forecast",
           data: [
-            { label: "Mon", actual: 100 },
-            { label: "Tue", actual: 120 },
+            { label: "Mon", salesAmount: 100 },
+            { label: "Tue", salesAmount: 120 },
             { label: "Wed", forecast: 130 },
           ],
           forecastStart: "Wed",

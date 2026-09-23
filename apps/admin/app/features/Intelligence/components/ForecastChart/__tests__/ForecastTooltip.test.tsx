@@ -16,20 +16,20 @@ function makeEntry(overrides: Record<string, unknown> = {}) {
 describe("ForecastTooltip", () => {
   test("renders nothing when inactive", () => {
     const { container } = render(
-      <ForecastTooltip active={false} payload={[makeEntry()]} label="Mon" />,
+      <ForecastTooltip active={false} payload={[makeEntry()]} label="Mon" displayMetric="pesos" />,
     );
 
     expect(container.firstChild).toBeNull();
   });
 
   test("renders nothing with an empty payload", () => {
-    const { container } = render(<ForecastTooltip active payload={[]} label="Mon" />);
+    const { container } = render(<ForecastTooltip active payload={[]} label="Mon" displayMetric="pesos" />);
 
     expect(container.firstChild).toBeNull();
   });
 
   test("shows the label and a peso-formatted value per entry", () => {
-    render(<ForecastTooltip active payload={[makeEntry({ value: 1234.5 })]} label="Mon" />);
+    render(<ForecastTooltip active payload={[makeEntry({ value: 1234.5 })]} label="Mon" displayMetric="pesos" />);
 
     expect(screen.getByText("Mon")).toBeTruthy();
     expect(screen.getByText("Actual: ₱1,235")).toBeTruthy();
@@ -41,7 +41,7 @@ describe("ForecastTooltip", () => {
       makeEntry({ dataKey: "forecast", name: "Forecast", value: 500, payload: { isSeam: true } }),
     ];
 
-    render(<ForecastTooltip active payload={seamPayload} label="Mon" />);
+    render(<ForecastTooltip active payload={seamPayload} label="Mon" displayMetric="pesos" />);
 
     expect(screen.getByText("Actual: ₱500")).toBeTruthy();
     expect(screen.queryByText("Forecast: ₱500")).toBeNull();
@@ -53,7 +53,7 @@ describe("ForecastTooltip", () => {
       makeEntry({ dataKey: "forecast", name: "Forecast", value: 600 }),
     ];
 
-    render(<ForecastTooltip active payload={payload} label="Mon" />);
+    render(<ForecastTooltip active payload={payload} label="Mon" displayMetric="pesos" />);
 
     expect(screen.getByText("Actual: ₱500")).toBeTruthy();
     expect(screen.getByText("Forecast: ₱600")).toBeTruthy();
