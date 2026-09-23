@@ -43,13 +43,13 @@ describe("useForecastChart", () => {
 
   test("builds the chart series from the fetched weeks via forecastNextMonth", async () => {
     getWeeklySales.mockResolvedValue([
-      { period: "2026-07-06", total_sales: 100 },
-      { period: "2026-07-13", total_sales: 120 },
+      { period: "2026-07-06", total_sales_amount: 100 },
+      { period: "2026-07-13", total_sales_amount: 120 },
     ]);
 
     const { result } = renderHook(() => useForecastChart(), { wrapper });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(result.current.series.title).toBe("Next Month Revenue Forecast");
+    expect(result.current.series.title).toBe("Sales vs BO Forecast");
   });
 });
