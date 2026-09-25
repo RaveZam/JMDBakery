@@ -51,6 +51,9 @@ export type IntelligenceKpis = {
   revenueToday: number;
   revenueYesterday: number;
   revenueChangePct: number;
+  revenueThisMonth: number;
   badOrderRatePct: number;
   badOrderRisk: BadOrderRisk;
+  totalBadOrderQty: number;
+  totalBadOrderAmount: number;
 };

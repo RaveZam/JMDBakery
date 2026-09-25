@@ -18,7 +18,7 @@ const solidTone: Partial<Record<KpiCardTone, string>> = {
   healthy: "bg-primary",
   medium: "bg-amber-600",
   warning: "bg-orange-600",
-  critical: "bg-red-600",
+  critical: "bg-red-800",
 };
 
 export function KpiCard({

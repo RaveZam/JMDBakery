@@ -71,8 +71,18 @@ export function computeIntelligenceKpis(
       ? 0
       : ((revenueToday - revenueYesterday) / revenueYesterday) * 100;
 
+  // `records`/`payments` already arrive as the last month's window (see
+  // getSalesDataset/getCreditPayments), so summing all of it is the month total.
+  const revenueThisMonth =
+    cashRecords.reduce((sum, r) => sum + r.total, 0) +
+    payments.reduce((sum, p) => sum + p.amount, 0);
+
   const totalSold = records.reduce((sum, r) => sum + r.soldQty, 0);
   const totalBadOrdered = records.reduce((sum, r) => sum + r.boQty, 0);
+  const totalBadOrderAmount = records.reduce(
+    (sum, r) => sum + r.boQty * r.unitPrice,
+    0,
+  );
   const badOrderRatePct =
     totalSold === 0 ? 0 : (totalBadOrdered / totalSold) * 100;
 
@@ -80,7 +90,10 @@ export function computeIntelligenceKpis(
     revenueToday,
     revenueYesterday,
     revenueChangePct,
+    revenueThisMonth,
     badOrderRatePct,
     badOrderRisk: classifyBadOrderRisk(badOrderRatePct),
+    totalBadOrderQty: totalBadOrdered,
+    totalBadOrderAmount,
   };
 }

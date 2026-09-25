@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, PackageX, Banknote } from "lucide-react";
 import { KpiCard } from "@/app/features/dashboard/components/KpiCard";
 import type { IntelligenceKpis } from "../../types";
 
@@ -15,6 +15,19 @@ export function KpiSection({ kpis }: { kpis: IntelligenceKpis }) {
           secondary={`Today ₱${kpis.revenueToday.toLocaleString()} vs Yesterday ₱${kpis.revenueYesterday.toLocaleString()}`}
           tone="primary"
           icon={isUp ? TrendingUp : TrendingDown}
+        />
+        <KpiCard
+          title="Revenue this month"
+          primary={"₱" + kpis.revenueThisMonth.toLocaleString()}
+          tone="primary"
+          icon={Banknote}
+        />
+        <KpiCard
+          title="Bad orders"
+          primary={"₱" + kpis.totalBadOrderAmount.toLocaleString()}
+          secondary={`${kpis.totalBadOrderQty.toLocaleString()} pcs`}
+          tone="critical"
+          icon={PackageX}
         />
         <KpiCard
           title="Bad order risk level"
