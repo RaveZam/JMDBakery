@@ -8,6 +8,7 @@ import { useSessionPayments } from "../hooks/useSessionPayments";
 import type { SessionRow } from "../types/session-types";
 import { SessionDetailHeader } from "./SessionDetailHeader";
 import { SessionInventoryModal } from "./SessionInventoryModal";
+import { SessionSalesSummary } from "./SessionSalesSummary";
 import { StoreEntryList } from "./StoreEntryList";
 
 export function SessionDetail({
@@ -26,6 +27,7 @@ export function SessionDetail({
         onViewInventory={() => setInventoryOpen(true)}
       />
       <CardContent className="space-y-2">
+        <SessionSalesSummary sessionId={session.id} />
         <StoreEntryList
           session={session}
           paymentsByStore={payments.paymentsByStore}

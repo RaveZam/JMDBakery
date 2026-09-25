@@ -59,3 +59,28 @@ export type SessionPaymentRow = {
   recordedByName: string | null;
   createdAt: string;
 };
+
+export type SessionSaleRow = {
+  productName: string;
+  price: number;
+  quantitySold: number;
+  quantityBO: number;
+  total: number;
+};
+
+export type SessionProductSummaryRow = {
+  productName: string;
+  price: number;
+  piecesSold: number;
+  revenue: number;
+  piecesBO: number;
+  boValue: number;
+};
+
+export type SessionSalesSummary = {
+  revenue: number;
+  piecesSold: number;
+  boValue: number;
+  piecesBO: number;
+  products: SessionProductSummaryRow[];
+};
