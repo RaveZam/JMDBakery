@@ -19,15 +19,13 @@ export function RecordsExportButton() {
   const { records } = useRecordsFilters();
 
   return (
-    <div className="flex justify-end">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => downloadRecordsPDF(records)}
-      >
-        <FileDown />
-        Export PDF
-      </Button>
-    </div>
+    <Button
+      variant="outline"
+      className="h-10 shrink-0 rounded-xl"
+      onClick={() => downloadRecordsPDF(records)}
+    >
+      <FileDown />
+      Export PDF
+    </Button>
   );
 }

@@ -13,7 +13,7 @@ export function RecordsDateRangeFilter() {
         value={dateRange.dateStart}
         onChange={(e) => dateRange.setDateStart(e.target.value)}
         max={dateRange.dateEnd || undefined}
-        className="w-auto"
+        className="w-40"
         aria-label="Start date"
       />
       <span className="text-sm text-muted-foreground">to</span>
@@ -22,7 +22,7 @@ export function RecordsDateRangeFilter() {
         value={dateRange.dateEnd}
         onChange={(e) => dateRange.setDateEnd(e.target.value)}
         min={dateRange.dateStart || undefined}
-        className="w-auto"
+        className="w-40"
         aria-label="End date"
       />
     </div>

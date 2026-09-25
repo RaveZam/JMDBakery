@@ -15,6 +15,7 @@ export function RecordsSearchInput() {
         onChange={(e) => filters.setSearch(e.target.value)}
         placeholder="Search store…"
         className="pl-9"
+        aria-label="Search store"
       />
     </div>
   );

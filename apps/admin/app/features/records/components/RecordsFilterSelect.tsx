@@ -1,7 +1,8 @@
 "use client";
 
+// Matches the shared Input so the filter row lines up.
 const selectClassName =
-  "h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
+  "h-10 w-44 truncate rounded-xl border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 /** Native dropdown for an exact-match filter (agent, product), with an "all" option. */
 export function RecordsFilterSelect({
