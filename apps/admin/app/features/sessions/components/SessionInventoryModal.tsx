@@ -92,7 +92,13 @@ function SessionInventoryPortal({
         <ModalPanel>
           <ModalHeader titleId={titleId} session={session} onClose={onClose} />
           <div className="px-5 py-4">
-            <InventorySummaryTable rows={rows} loading={loading} />
+            <InventorySummaryTable
+              rows={rows}
+              loading={loading}
+              countFinished={session.status === "completed"}
+            />
+          </div>
+          <div className="flex justify-end border-t px-5 py-4">
             {inventoryVerified === "pending" ? (
               <Button
                 onClick={() => {

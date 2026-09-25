@@ -3,13 +3,17 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { sumInventory } from "../helpers/sessionHelpers";
+import { useBlurredAreaBox } from "../hooks/useBlurredAreaBox";
 import type { InventorySummaryRow } from "../types/session-types";
+import { InventoryLoadingWatermark } from "./InventoryLoadingWatermark";
 
 /** Every cell gets the same horizontal rhythm; only the outer edges relax it. */
 const CELL = "px-3 py-1.5 text-center";
 const CELL_FIRST = "pl-0 pr-3 py-1.5 text-left";
 const CELL_LAST = "pl-3 pr-0 py-1.5 text-center";
 const GROUP_START = "pl-4 pr-3 py-1.5 text-center border-l border-border/50";
+/** Hides numbers the agent hasn't counted yet. */
+const BLURRED = "blur-[3px] select-none";
 
 function VarianceCell({ variance }: { variance: number }): ReactElement {
   if (variance === 0) {
@@ -32,8 +36,16 @@ function VarianceCell({ variance }: { variance: number }): ReactElement {
   );
 }
 
-function InventoryRow({ row }: { row: InventorySummaryRow }): ReactElement {
-  const off = row.boVariance !== 0 || row.balanceVariance !== 0;
+function InventoryRow({
+  row,
+  countFinished,
+}: {
+  row: InventorySummaryRow;
+  countFinished: boolean;
+}): ReactElement {
+  const off =
+    countFinished && (row.boVariance !== 0 || row.balanceVariance !== 0);
+  const blur = !countFinished && BLURRED;
   return (
     <tr
       className={cn(
@@ -43,15 +55,15 @@ function InventoryRow({ row }: { row: InventorySummaryRow }): ReactElement {
     >
       <td className={CELL_FIRST}>{row.productName}</td>
       <td className={CELL}>{row.morning}</td>
-      <td className={CELL}>{row.sold}</td>
-      <td className={GROUP_START}>{row.expectedBo}</td>
-      <td className={CELL}>{row.endingBo}</td>
-      <td className={CELL}>
+      <td className={cn(CELL, blur)}>{row.sold}</td>
+      <td className={cn(GROUP_START, blur)}>{row.expectedBo}</td>
+      <td className={cn(CELL, blur)}>{row.endingBo}</td>
+      <td className={cn(CELL, blur)}>
         <VarianceCell variance={row.boVariance} />
       </td>
-      <td className={GROUP_START}>{row.expectedBalance}</td>
-      <td className={CELL}>{row.endingBalance}</td>
-      <td className={CELL_LAST}>
+      <td className={cn(GROUP_START, blur)}>{row.expectedBalance}</td>
+      <td className={cn(CELL, blur)}>{row.endingBalance}</td>
+      <td className={cn(CELL_LAST, blur)}>
         <VarianceCell variance={row.balanceVariance} />
       </td>
     </tr>
@@ -60,23 +72,26 @@ function InventoryRow({ row }: { row: InventorySummaryRow }): ReactElement {
 
 function InventoryTotalsRow({
   rows,
+  countFinished,
 }: {
   rows: InventorySummaryRow[];
+  countFinished: boolean;
 }): ReactElement {
   const totals = sumInventory(rows);
+  const blur = !countFinished && BLURRED;
   return (
     <tr className="border-t border-border/50 font-medium">
       <td className={CELL_FIRST}>Total</td>
       <td className={CELL}>{totals.morning}</td>
-      <td className={CELL}>{totals.sold}</td>
-      <td className={GROUP_START}>{totals.expectedBo}</td>
-      <td className={CELL}>{totals.endingBo}</td>
-      <td className={CELL}>
+      <td className={cn(CELL, blur)}>{totals.sold}</td>
+      <td className={cn(GROUP_START, blur)}>{totals.expectedBo}</td>
+      <td className={cn(CELL, blur)}>{totals.endingBo}</td>
+      <td className={cn(CELL, blur)}>
         <VarianceCell variance={totals.boVariance} />
       </td>
-      <td className={GROUP_START}>{totals.expectedBalance}</td>
-      <td className={CELL}>{totals.endingBalance}</td>
-      <td className={CELL_LAST}>
+      <td className={cn(GROUP_START, blur)}>{totals.expectedBalance}</td>
+      <td className={cn(CELL, blur)}>{totals.endingBalance}</td>
+      <td className={cn(CELL_LAST, blur)}>
         <VarianceCell variance={totals.balanceVariance} />
       </td>
     </tr>
@@ -133,30 +148,45 @@ function InventoryTableHead(): ReactElement {
 
 function InventoryTable({
   rows,
+  countFinished,
 }: {
   rows: InventorySummaryRow[];
+  countFinished: boolean;
 }): ReactElement {
+  const { tableRef, box } = useBlurredAreaBox();
   return (
-    <table className="w-full text-xs border-separate border-spacing-0">
-      <InventoryTableHead />
-      <tbody>
-        {rows.map((row) => (
-          <InventoryRow key={row.productId} row={row} />
-        ))}
-      </tbody>
-      <tfoot>
-        <InventoryTotalsRow rows={rows} />
-      </tfoot>
-    </table>
+    <div className="relative">
+      <table
+        ref={tableRef}
+        className="w-full text-xs border-separate border-spacing-0"
+      >
+        <InventoryTableHead />
+        <tbody>
+          {rows.map((row) => (
+            <InventoryRow
+              key={row.productId}
+              row={row}
+              countFinished={countFinished}
+            />
+          ))}
+        </tbody>
+        <tfoot>
+          <InventoryTotalsRow rows={rows} countFinished={countFinished} />
+        </tfoot>
+      </table>
+      {!countFinished && box && <InventoryLoadingWatermark box={box} />}
+    </div>
   );
 }
 
 export function InventorySummaryTable({
   rows,
   loading,
+  countFinished,
 }: {
   rows: InventorySummaryRow[];
   loading: boolean;
+  countFinished: boolean;
 }): ReactElement {
   if (loading) return <LoadingRow />;
   if (rows.length === 0) {
@@ -169,11 +199,17 @@ export function InventorySummaryTable({
 
   return (
     <div className="space-y-3 overflow-x-auto">
-      <InventoryTable rows={rows} />
-      <p className="text-[11px] text-muted-foreground">
-        Expected B.O. = bad orders logged · Expected balance = Morning − Sold −
-        B.O. · Variance = Counted − Expected
-      </p>
+      <InventoryTable rows={rows} countFinished={countFinished} />
+      {countFinished ? (
+        <p className="text-[11px] text-muted-foreground">
+          Expected B.O. = bad orders logged · Expected balance = Morning − Sold
+          − B.O. · Variance = Counted − Expected
+        </p>
+      ) : (
+        <p className="text-[11px] text-muted-foreground">
+          Sold, bad orders and balance show once the agent ends the route.
+        </p>
+      )}
     </div>
   );
 }
