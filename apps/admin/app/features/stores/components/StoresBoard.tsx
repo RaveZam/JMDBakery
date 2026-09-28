@@ -35,10 +35,18 @@ export function StoresBoard({
   onSearchChange,
 }: StoresBoardProps): ReactElement {
   if (isLoading) {
-    return <ScrollArea><StoresBoardSkeleton /></ScrollArea>;
+    return (
+      <ScrollArea>
+        <StoresBoardSkeleton />
+      </ScrollArea>
+    );
   }
   if (stores.length === 0) {
-    return <ScrollArea><StoresEmptyState /></ScrollArea>;
+    return (
+      <ScrollArea>
+        <StoresEmptyState />
+      </ScrollArea>
+    );
   }
 
   // Measured against the top earner overall, so a filtered row still shows
@@ -56,7 +64,10 @@ export function StoresBoard({
 
       <ScrollArea>
         {visibleStores.length === 0 ? (
-          <StoresNoResults search={search} onClearSearch={() => onSearchChange("")} />
+          <StoresNoResults
+            search={search}
+            onClearSearch={() => onSearchChange("")}
+          />
         ) : (
           <StoresList stores={visibleStores} leaderRevenue={leaderRevenue} />
         )}
