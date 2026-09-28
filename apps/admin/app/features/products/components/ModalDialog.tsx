@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react";
 
-import { ModalOverlay } from "./ModalOverlay";
+import { ModalOverlay } from "@/components/ModalOverlay";
 import { ModalPane } from "./ModalPane";
 
 type ModalDialogProps = {

@@ -4,8 +4,8 @@ import type { ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
-import { ModalOverlay } from "@/app/features/products/components/ModalOverlay";
-import { useCloseOnEscape } from "@/app/features/records/hooks/useCloseOnEscape";
+import { ModalOverlay } from "@/components/ModalOverlay";
+import { useCloseOnEscape } from "@/hooks/useCloseOnEscape";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { formatCurrencyPHP } from "@/lib/utils";
 import { manilaTimestamp } from "@/lib/manilaTimestamp";

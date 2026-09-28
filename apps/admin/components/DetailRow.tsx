@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 
-export function RecordDetailRow({
+export function DetailRow({
   label,
   value,
 }: {

@@ -1,27 +1,17 @@
 "use client";
 
-import { useEffect, useState, type ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
-import { ModalOverlay } from "@/app/features/products/components/ModalOverlay";
+import { ModalOverlay } from "@/components/ModalOverlay";
+import { useCloseOnEscape } from "@/hooks/useCloseOnEscape";
 import { StoreLocationContact } from "./StoreLocationContact";
 import { StoreTopProductsPanel } from "./StoreTopProductsPanel";
 import { StoreCreditPanel } from "./credit/StoreCreditPanel";
 import { StoreDetailTabs, type StoreDetailTab } from "./StoreDetailTabs";
 import { manilaTimestamp } from "@/lib/manilaTimestamp";
 import type { StoreCreditByStore } from "../types/store-types";
-
-function useCloseOnEscape(active: boolean, onClose: () => void): void {
-  useEffect(() => {
-    if (!active) return;
-    function handleKey(e: KeyboardEvent): void {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [active, onClose]);
-}
 
 function StoreDetailHeader({
   store,
