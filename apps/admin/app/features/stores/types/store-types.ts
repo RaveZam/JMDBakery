@@ -74,3 +74,24 @@ export type StoreStats = {
   totalRevenue: number;
   topProvince: string | null;
 };
+
+export const STORE_SALES_PAGE_SIZE = 20;
+
+// One line in the Sales Log panel: a single product on a single sale, in the
+// last 30 days.
+export type StoreSale = {
+  id: string;
+  productName: string;
+  unitPrice: number;
+  quantitySold: number;
+  quantityBadOrder: number;
+  badOrderReason: string | null;
+  total: number;
+  agentName: string | null;
+  createdAt: string;
+};
+
+export type StoreSalesPage = {
+  sales: StoreSale[];
+  totalCount: number;
+};
