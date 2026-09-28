@@ -12,7 +12,7 @@ export function PlotArea({
   displayMetric: DisplayMetric;
 }): React.ReactElement {
   const forecast = useForecastChart(displayMetric);
-  const data = bridgeForecastSeam(forecast.series.data);
+  const data = bridgeForecastSeam(forecast.series.data, displayMetric);
 
   if (forecast.isLoading) {
     return (

@@ -21,6 +21,27 @@ describe("bridgeForecastSeam", () => {
     });
   });
 
+  test("bridges salesUnits/boUnits instead of amounts when displaying pieces", () => {
+    const data: DataPoint[] = [
+      { label: "Mon", salesAmount: 1000, salesUnits: 50, boAmount: 200, boUnits: 10 },
+      { label: "Tue", salesAmount: 1200, salesUnits: 60, boAmount: 240, boUnits: 12 },
+      { label: "Wed", forecast: 70 },
+    ];
+
+    const bridged = bridgeForecastSeam(data, "pieces");
+
+    expect(bridged[1]).toEqual({
+      label: "Tue",
+      salesAmount: 1200,
+      salesUnits: 60,
+      boAmount: 240,
+      boUnits: 12,
+      forecast: 60,
+      boForecast: 12,
+      isSeam: true,
+    });
+  });
+
   test("leaves points untouched when there is no forecast to bridge into", () => {
     const data: DataPoint[] = [
       { label: "Mon", salesAmount: 100 },
