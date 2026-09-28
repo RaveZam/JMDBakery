@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 
 import { formatCurrencyPHP } from "@/lib/utils";
+import { StoreSalesLog } from "./StoreSalesLog";
 import type { GroupedStoreRow } from "../types/store-types";
 
 function StatCard({
@@ -83,6 +84,8 @@ export function StoreLocationContact({ store }: { store: GroupedStoreRow }): Rea
         </h3>
         <StatCard label="Revenue" value={formatCurrencyPHP(store.totalRevenue)} />
       </section>
+
+      <StoreSalesLog storeIds={store.memberIds} />
     </div>
   );
 }
