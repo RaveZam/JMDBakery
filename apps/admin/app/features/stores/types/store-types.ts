@@ -18,7 +18,11 @@ export type StoreRow = {
 // single-element array when no duplicates were found for that store).
 export type GroupedStoreRow = StoreRow & { memberIds: string[] };
 
-export type TopProduct = { productName: string; revenue: number };
+export type TopProduct = {
+  productName: string;
+  revenue: number;
+  quantitySold: number;
+};
 
 // All-time, unlike revenue, which is windowed: a debt taken three months ago
 // is still owed today.

@@ -3,12 +3,9 @@ import { Trophy } from "lucide-react";
 
 import { formatCurrencyPHP } from "@/lib/utils";
 import { useStoreTopProducts } from "../hooks/useStoreTopProducts";
+import type { TopProduct } from "../types/store-types";
 
-function TopProductsList({
-  products,
-}: {
-  products: { productName: string; revenue: number }[];
-}): ReactElement {
+function TopProductsList({ products }: { products: TopProduct[] }): ReactElement {
   const maxRevenue = products[0]?.revenue ?? 1;
 
   return (
@@ -17,11 +14,13 @@ function TopProductsList({
         <li key={item.productName}>
           <div className="mb-1 flex items-baseline justify-between gap-2">
             <span className="truncate text-xs font-medium">
-              <span className="mr-1 tabular-nums text-muted-foreground">{i + 1}.</span>
+              <span className="mr-1 tabular-nums text-muted-foreground">
+                {i + 1}.
+              </span>
               {item.productName}
             </span>
             <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-              {formatCurrencyPHP(item.revenue)}
+              {item.quantitySold} pcs · {formatCurrencyPHP(item.revenue)}
             </span>
           </div>
           <div className="h-1 w-full rounded-full bg-muted">

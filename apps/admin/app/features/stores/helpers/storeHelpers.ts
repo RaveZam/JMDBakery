@@ -80,13 +80,17 @@ export function computeStoreStats(stores: GroupedStoreRow[]): StoreStats {
 // results is one TopProduct[] per store id; flatten and sum by
 // product name into a single ranked list.
 export function mergeTopProducts(results: TopProduct[][]): TopProduct[] {
-  const merged = new Map<string, number>();
+  const merged = new Map<string, { revenue: number; quantitySold: number }>();
   for (const products of results) {
-    for (const { productName, revenue } of products) {
-      merged.set(productName, (merged.get(productName) ?? 0) + revenue);
+    for (const { productName, revenue, quantitySold } of products) {
+      const existing = merged.get(productName) ?? { revenue: 0, quantitySold: 0 };
+      merged.set(productName, {
+        revenue: existing.revenue + revenue,
+        quantitySold: existing.quantitySold + quantitySold,
+      });
     }
   }
-  return Array.from(merged, ([productName, revenue]) => ({ productName, revenue })).sort(
+  return Array.from(merged, ([productName, totals]) => ({ productName, ...totals })).sort(
     (a, b) => b.revenue - a.revenue,
   );
 }

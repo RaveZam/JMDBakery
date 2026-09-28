@@ -18,6 +18,7 @@ type StoreWithRevenueRow = {
 type TopProductRow = {
   product_name: string;
   revenue: number | string;
+  quantity_sold: number | string;
 };
 
 export async function getStoresWithRevenue(): Promise<StoreRow[]> {
@@ -54,5 +55,6 @@ export async function getStoreTopProducts(
   return ((data ?? []) as TopProductRow[]).map((p) => ({
     productName: p.product_name,
     revenue: Number(p.revenue),
+    quantitySold: Number(p.quantity_sold),
   }));
 }
