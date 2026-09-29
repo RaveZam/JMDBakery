@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import type { Product, ProductInput } from "../types/product-types";
 import {
@@ -33,6 +34,7 @@ export function useProductsState(
   async function handleAdd(input: ProductInput): Promise<void> {
     const created = await addProduct(input);
     setProducts((prev) => [created, ...prev]);
+    toast.success("Product Created");
   }
 
   async function handleSave(input: ProductInput): Promise<void> {
@@ -40,12 +42,14 @@ export function useProductsState(
     await updateProduct(editing.id, input);
     setProducts((prev) => replaceProduct(prev, editing.id, input));
     setEditing(null);
+    toast.success("Product Updated");
   }
 
   async function handleDelete(): Promise<void> {
     if (!deleting) return;
     await deleteProduct(deleting.id);
     setProducts((prev) => removeProduct(prev, deleting.id));
+    toast.success("Product Deleted");
   }
 
   return {

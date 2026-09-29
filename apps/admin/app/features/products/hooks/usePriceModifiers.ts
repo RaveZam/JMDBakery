@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import type { PriceModifier, PriceModifierInput } from "../types/product-types";
 import {
@@ -63,6 +64,7 @@ export function usePriceModifiers(productId: string): UsePriceModifiersResult {
       const created = await addPriceModifier(productId, input);
       //appends the row Supabase returned (has the generated id) rather than a locally-guessed one
       setRows((prev) => [...prev, created]);
+      toast.success("Price Modifier Created");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add price modifier.");
     }
@@ -75,6 +77,7 @@ export function usePriceModifiers(productId: string): UsePriceModifiersResult {
       //patches just the matching row in place; everything else in the list is untouched
       setRows((prev) => prev.map((row) => (row.id === id ? { ...row, ...input } : row)));
       setEditingModifierId(null);
+      toast.success("Price Modifier Updated");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update price modifier.");
     }
@@ -85,6 +88,7 @@ export function usePriceModifiers(productId: string): UsePriceModifiersResult {
     try {
       await deletePriceModifier(id);
       setRows((prev) => prev.filter((row) => row.id !== id));
+      toast.success("Price Modifier Deleted");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete price modifier.");
     }
