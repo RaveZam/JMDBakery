@@ -9,19 +9,22 @@ function sale(overrides: Partial<SessionSaleRow>): SessionSaleRow {
     quantitySold: 0,
     quantityBO: 0,
     total: 0,
+    paymentType: "cash",
     ...overrides,
   };
 }
 
 describe("summarizeSessionSales", () => {
-  test("totals revenue and pieces across every sale", () => {
+  test("totals cash and credit separately across every sale", () => {
     const summary = summarizeSessionSales([
-      sale({ productName: "Pan de Sal", quantitySold: 5, total: 50 }),
-      sale({ productName: "Ensaymada", price: 20, quantitySold: 2, total: 40 }),
+      sale({ productName: "Pan de Sal", quantitySold: 5, total: 50, paymentType: "cash" }),
+      sale({ productName: "Ensaymada", price: 20, quantitySold: 2, total: 40, paymentType: "credit" }),
     ]);
 
-    expect(summary.revenue).toBe(90);
-    expect(summary.piecesSold).toBe(7);
+    expect(summary.cashTotal).toBe(50);
+    expect(summary.cashPieces).toBe(5);
+    expect(summary.creditTotal).toBe(40);
+    expect(summary.creditPieces).toBe(2);
   });
 
   test("groups the same product from different stores into one row", () => {
@@ -33,8 +36,10 @@ describe("summarizeSessionSales", () => {
     expect(summary.products).toHaveLength(1);
     expect(summary.products[0]).toMatchObject({
       productName: "Pan de Sal",
-      piecesSold: 8,
-      revenue: 80,
+      cashPieces: 8,
+      cashRevenue: 80,
+      creditPieces: 0,
+      creditRevenue: 0,
     });
   });
 
@@ -47,7 +52,7 @@ describe("summarizeSessionSales", () => {
     expect(summary.products).toHaveLength(2);
   });
 
-  test("values bad order pieces at price without adding them to revenue", () => {
+  test("values bad order pieces at price without adding them to a total", () => {
     const summary = summarizeSessionSales([
       sale({ productName: "Pan de Sal", price: 10, quantitySold: 5, quantityBO: 3, total: 50 }),
     ]);
@@ -55,7 +60,21 @@ describe("summarizeSessionSales", () => {
     expect(summary.products[0].boValue).toBe(30);
     expect(summary.piecesBO).toBe(3);
     expect(summary.boValue).toBe(30);
-    expect(summary.revenue).toBe(50);
+    expect(summary.cashTotal).toBe(50);
+  });
+
+  test("product breakdown splits cash and credit revenue per product", () => {
+    const summary = summarizeSessionSales([
+      sale({ productName: "Ensaymada", price: 20, quantitySold: 1, total: 20, paymentType: "cash" }),
+      sale({ productName: "Ensaymada", price: 20, quantitySold: 5, total: 100, paymentType: "credit" }),
+    ]);
+
+    expect(summary.products[0].cashPieces).toBe(1);
+    expect(summary.products[0].cashRevenue).toBe(20);
+    expect(summary.products[0].creditPieces).toBe(5);
+    expect(summary.products[0].creditRevenue).toBe(100);
+    expect(summary.cashTotal).toBe(20);
+    expect(summary.creditTotal).toBe(100);
   });
 
   test("sorts products by revenue, highest first", () => {
@@ -76,8 +95,10 @@ describe("summarizeSessionSales", () => {
     const summary = summarizeSessionSales([]);
 
     expect(summary).toEqual({
-      revenue: 0,
-      piecesSold: 0,
+      cashTotal: 0,
+      cashPieces: 0,
+      creditTotal: 0,
+      creditPieces: 0,
       boValue: 0,
       piecesBO: 0,
       products: [],

@@ -9,6 +9,7 @@ type SaleQueryRow = {
   quantity_sold: number;
   quantity_bo: number;
   total: number | string;
+  payment_type: "cash" | "credit";
 };
 
 // Every sale logged across this session's visits, cash and credit together.
@@ -31,7 +32,7 @@ export async function getSessionSales(
   const { data, error } = await supabase
     .from("sales")
     .select(
-      "snapshot_product_name, snapshot_price, quantity_sold, quantity_bo, total",
+      "snapshot_product_name, snapshot_price, quantity_sold, quantity_bo, total, payment_type",
     )
     .in("session_store_id", sessionStoreIds);
 
@@ -44,5 +45,6 @@ export async function getSessionSales(
     quantitySold: row.quantity_sold,
     quantityBO: row.quantity_bo,
     total: Number(row.total),
+    paymentType: row.payment_type,
   }));
 }

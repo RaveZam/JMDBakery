@@ -7,23 +7,38 @@ import { sumSales } from "../helpers/sessionHelpers";
 import type { SessionStoreSaleRow } from "../types/session-types";
 import { SalePaymentTypeTag } from "./SalePaymentTypeTag";
 
-function SalesTotalsRow({
+function TotalsRow({
+  label,
+  figures,
+}: {
+  label: string;
+  figures: { quantitySold: number; quantityBO: number; total: number };
+}): ReactElement {
+  return (
+    <tr className="border-t border-border/50">
+      <td className="py-1 font-medium">{label}</td>
+      <td />
+      <td />
+      <td className="py-1 text-right font-medium">{figures.quantitySold}</td>
+      <td className="py-1 text-right font-medium">{figures.quantityBO}</td>
+      <td className="py-1 text-right font-medium">
+        {formatCurrencyPHP(figures.total)}
+      </td>
+    </tr>
+  );
+}
+
+function SalesTotalsRows({
   sales,
 }: {
   sales: SessionStoreSaleRow[];
 }): ReactElement {
   const totals = sumSales(sales);
   return (
-    <tr className="border-t border-border/50">
-      <td className="py-1 font-medium">Total</td>
-      <td />
-      <td />
-      <td className="py-1 text-right font-medium">{totals.quantitySold}</td>
-      <td className="py-1 text-right font-medium">{totals.quantityBO}</td>
-      <td className="py-1 text-right font-medium">
-        {formatCurrencyPHP(totals.total)}
-      </td>
-    </tr>
+    <>
+      <TotalsRow label="Cash total" figures={totals.cash} />
+      <TotalsRow label="Credit total" figures={totals.credit} />
+    </>
   );
 }
 
@@ -87,7 +102,7 @@ export function StoreSalesTable({
         ))}
       </tbody>
       <tfoot>
-        <SalesTotalsRow sales={sales} />
+        <SalesTotalsRows sales={sales} />
       </tfoot>
     </table>
   );

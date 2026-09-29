@@ -15,9 +15,9 @@ export function visitRate(visited: number, total: number): string {
   return `${Math.round((visited / total) * 100)}%`;
 }
 
-export function sumSales(
-  sales: { quantitySold: number; quantityBO: number; total: number }[],
-): { quantitySold: number; quantityBO: number; total: number } {
+type SaleFigures = { quantitySold: number; quantityBO: number; total: number };
+
+function sumFigures(sales: SaleFigures[]): SaleFigures {
   return sales.reduce(
     (sum, s) => ({
       quantitySold: sum.quantitySold + s.quantitySold,
@@ -26,6 +26,15 @@ export function sumSales(
     }),
     { quantitySold: 0, quantityBO: 0, total: 0 },
   );
+}
+
+export function sumSales(
+  sales: (SaleFigures & { paymentType: "cash" | "credit" })[],
+): { cash: SaleFigures; credit: SaleFigures } {
+  return {
+    cash: sumFigures(sales.filter((s) => s.paymentType === "cash")),
+    credit: sumFigures(sales.filter((s) => s.paymentType === "credit")),
+  };
 }
 
 export function sumInventory(

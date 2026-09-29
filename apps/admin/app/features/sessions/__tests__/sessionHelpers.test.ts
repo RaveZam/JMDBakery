@@ -41,28 +41,33 @@ describe("visitRate", () => {
 });
 
 describe("sumSales", () => {
-  test("adds up sold quantity, bad orders and total across sales", () => {
+  test("splits sold quantity, bad orders and total by payment type", () => {
     const sales = [
-      { quantitySold: 10, quantityBO: 1, total: 100 },
-      { quantitySold: 5, quantityBO: 2, total: 50 },
+      { quantitySold: 10, quantityBO: 1, total: 100, paymentType: "cash" as const },
+      { quantitySold: 5, quantityBO: 2, total: 50, paymentType: "credit" as const },
     ];
 
     expect(sumSales(sales)).toEqual({
-      quantitySold: 15,
-      quantityBO: 3,
-      total: 150,
+      cash: { quantitySold: 10, quantityBO: 1, total: 100 },
+      credit: { quantitySold: 5, quantityBO: 2, total: 50 },
     });
   });
 
-  test("returns zeroes when there are no sales", () => {
-    expect(sumSales([])).toEqual({ quantitySold: 0, quantityBO: 0, total: 0 });
+  test("returns zeroes for both totals when there are no sales", () => {
+    expect(sumSales([])).toEqual({
+      cash: { quantitySold: 0, quantityBO: 0, total: 0 },
+      credit: { quantitySold: 0, quantityBO: 0, total: 0 },
+    });
   });
 
-  test("returns the single sale's figures when there is only one", () => {
-    expect(sumSales([{ quantitySold: 7, quantityBO: 1, total: 70 }])).toEqual({
-      quantitySold: 7,
-      quantityBO: 1,
-      total: 70,
+  test("keeps a payment type's total at zero when only the other type was sold", () => {
+    const sales = [
+      { quantitySold: 7, quantityBO: 1, total: 70, paymentType: "cash" as const },
+    ];
+
+    expect(sumSales(sales)).toEqual({
+      cash: { quantitySold: 7, quantityBO: 1, total: 70 },
+      credit: { quantitySold: 0, quantityBO: 0, total: 0 },
     });
   });
 });

@@ -12,25 +12,36 @@ function groupByProduct(
   for (const sale of sales) {
     const key = `${sale.productName}:${sale.price}`;
     const boValue = sale.price * sale.quantityBO;
+    const isCash = sale.paymentType === "cash";
+    const cashPieces = isCash ? sale.quantitySold : 0;
+    const cashRevenue = isCash ? sale.total : 0;
+    const creditPieces = isCash ? 0 : sale.quantitySold;
+    const creditRevenue = isCash ? 0 : sale.total;
     const existing = byProduct.get(key);
     if (existing) {
-      existing.piecesSold += sale.quantitySold;
-      existing.revenue += sale.total;
+      existing.cashPieces += cashPieces;
+      existing.cashRevenue += cashRevenue;
+      existing.creditPieces += creditPieces;
+      existing.creditRevenue += creditRevenue;
       existing.piecesBO += sale.quantityBO;
       existing.boValue += boValue;
     } else {
       byProduct.set(key, {
         productName: sale.productName,
         price: sale.price,
-        piecesSold: sale.quantitySold,
-        revenue: sale.total,
+        cashPieces,
+        cashRevenue,
+        creditPieces,
+        creditRevenue,
         piecesBO: sale.quantityBO,
         boValue,
       });
     }
   }
 
-  return Array.from(byProduct.values()).sort((a, b) => b.revenue - a.revenue);
+  return Array.from(byProduct.values()).sort(
+    (a, b) => b.cashRevenue + b.creditRevenue - (a.cashRevenue + a.creditRevenue),
+  );
 }
 
 // A sale never earns revenue for its B.O. pieces -- boValue values them at
@@ -40,10 +51,14 @@ export function summarizeSessionSales(
   sales: SessionSaleRow[],
 ): SessionSalesSummary {
   const products = groupByProduct(sales);
+  const cashSales = sales.filter((s) => s.paymentType === "cash");
+  const creditSales = sales.filter((s) => s.paymentType === "credit");
 
   return {
-    revenue: products.reduce((sum, p) => sum + p.revenue, 0),
-    piecesSold: products.reduce((sum, p) => sum + p.piecesSold, 0),
+    cashTotal: cashSales.reduce((sum, s) => sum + s.total, 0),
+    cashPieces: cashSales.reduce((sum, s) => sum + s.quantitySold, 0),
+    creditTotal: creditSales.reduce((sum, s) => sum + s.total, 0),
+    creditPieces: creditSales.reduce((sum, s) => sum + s.quantitySold, 0),
     boValue: products.reduce((sum, p) => sum + p.boValue, 0),
     piecesBO: products.reduce((sum, p) => sum + p.piecesBO, 0),
     products,

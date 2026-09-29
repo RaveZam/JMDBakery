@@ -8,17 +8,23 @@ function ProductTotalsRow({
 }: {
   products: SessionProductSummaryRow[];
 }): ReactElement {
-  const piecesSold = products.reduce((sum, p) => sum + p.piecesSold, 0);
-  const revenue = products.reduce((sum, p) => sum + p.revenue, 0);
+  const cashPieces = products.reduce((sum, p) => sum + p.cashPieces, 0);
+  const cashRevenue = products.reduce((sum, p) => sum + p.cashRevenue, 0);
+  const creditPieces = products.reduce((sum, p) => sum + p.creditPieces, 0);
+  const creditRevenue = products.reduce((sum, p) => sum + p.creditRevenue, 0);
   const piecesBO = products.reduce((sum, p) => sum + p.piecesBO, 0);
   const boValue = products.reduce((sum, p) => sum + p.boValue, 0);
   return (
     <tr className="border-t border-border/50">
       <td className="py-1 font-medium">Total</td>
       <td />
-      <td className="py-1 text-right font-medium">{piecesSold}</td>
+      <td className="py-1 text-right font-medium">{cashPieces}</td>
       <td className="py-1 text-right font-medium">
-        {formatCurrencyPHP(revenue)}
+        {formatCurrencyPHP(cashRevenue)}
+      </td>
+      <td className="py-1 text-right font-medium">{creditPieces}</td>
+      <td className="py-1 text-right font-medium">
+        {formatCurrencyPHP(creditRevenue)}
       </td>
       <td className="py-1 text-right font-medium">{piecesBO}</td>
       <td className="py-1 text-right font-medium">
@@ -39,8 +45,14 @@ function ProductSummaryRow({
       <td className="py-1 pr-2 whitespace-nowrap text-muted-foreground">
         {formatCurrencyPHP(product.price)}
       </td>
-      <td className="py-1 text-right">{product.piecesSold}</td>
-      <td className="py-1 text-right">{formatCurrencyPHP(product.revenue)}</td>
+      <td className="py-1 text-right">{product.cashPieces}</td>
+      <td className="py-1 text-right">
+        {formatCurrencyPHP(product.cashRevenue)}
+      </td>
+      <td className="py-1 text-right">{product.creditPieces}</td>
+      <td className="py-1 text-right">
+        {formatCurrencyPHP(product.creditRevenue)}
+      </td>
       <td className="py-1 text-right">{product.piecesBO}</td>
       <td className="py-1 text-right">{formatCurrencyPHP(product.boValue)}</td>
     </tr>
@@ -58,8 +70,10 @@ export function SessionProductSummaryTable({
         <tr className="text-muted-foreground">
           <th className="pb-1 text-left font-medium">Product</th>
           <th className="pb-1 text-left font-medium">Price</th>
-          <th className="pb-1 text-right font-medium">Sold</th>
-          <th className="pb-1 text-right font-medium">Revenue</th>
+          <th className="pb-1 text-right font-medium">Cash pcs</th>
+          <th className="pb-1 text-right font-medium">Cash</th>
+          <th className="pb-1 text-right font-medium">Credit pcs</th>
+          <th className="pb-1 text-right font-medium">Credit</th>
           <th className="pb-1 text-right font-medium">B.O.</th>
           <th className="pb-1 text-right font-medium">B.O. value</th>
         </tr>

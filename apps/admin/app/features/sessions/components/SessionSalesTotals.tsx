@@ -12,7 +12,7 @@ function TotalBlock({
   label: string;
   amount: number;
   pieces: number;
-  tone: "primary" | "destructive";
+  tone: "primary" | "accent" | "destructive";
 }): ReactElement {
   return (
     <div>
@@ -21,7 +21,13 @@ function TotalBlock({
       </p>
       <p className="mt-0.5 text-lg font-semibold">
         <Figure
-          className={tone === "primary" ? "text-primary" : "text-destructive"}
+          className={
+            tone === "primary"
+              ? "text-primary"
+              : tone === "accent"
+                ? "text-blue-700 dark:text-blue-300"
+                : "text-destructive"
+          }
         >
           {formatCurrencyPHP(amount)}
         </Figure>
@@ -34,23 +40,33 @@ function TotalBlock({
 }
 
 export function SessionSalesTotals({
-  revenue,
-  piecesSold,
+  cashTotal,
+  cashPieces,
+  creditTotal,
+  creditPieces,
   boValue,
   piecesBO,
 }: {
-  revenue: number;
-  piecesSold: number;
+  cashTotal: number;
+  cashPieces: number;
+  creditTotal: number;
+  creditPieces: number;
   boValue: number;
   piecesBO: number;
 }): ReactElement {
   return (
     <div className="flex gap-6">
       <TotalBlock
-        label="Revenue"
-        amount={revenue}
-        pieces={piecesSold}
+        label="Cash collected"
+        amount={cashTotal}
+        pieces={cashPieces}
         tone="primary"
+      />
+      <TotalBlock
+        label="Credited"
+        amount={creditTotal}
+        pieces={creditPieces}
+        tone="accent"
       />
       <TotalBlock
         label="Bad order"

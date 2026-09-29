@@ -34,8 +34,10 @@ export function SessionSalesSummary({
   return (
     <div className="space-y-3 rounded-xl border bg-background px-3 py-3">
       <SessionSalesTotals
-        revenue={summary.revenue}
-        piecesSold={summary.piecesSold}
+        cashTotal={summary.cashTotal}
+        cashPieces={summary.cashPieces}
+        creditTotal={summary.creditTotal}
+        creditPieces={summary.creditPieces}
         boValue={summary.boValue}
         piecesBO={summary.piecesBO}
       />
