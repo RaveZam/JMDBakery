@@ -7,6 +7,7 @@
     "start": "expo start",
     "test": "jest",
     "reset-project": "node ./scripts/reset-project.js",
+    "generate:ph-address": "node ./scripts/generate-ph-address-data.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
