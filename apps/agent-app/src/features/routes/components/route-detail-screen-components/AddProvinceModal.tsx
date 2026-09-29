@@ -1,16 +1,11 @@
-import {
-  StyleSheet,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Text,
-  Modal,
-} from "react-native";
+import { StyleSheet, View, TouchableOpacity, Text, Modal } from "react-native";
 import { useState } from "react";
 import { ThemedText } from "@/src/shared/components/ThemedText";
+import { SearchableSelectField } from "@/src/shared/components/SearchableSelectField";
 import { Colors } from "@/src/shared/constants/Colors";
 import { modalStyles as m } from "@/src/shared/styles/modalStyles";
 import { createProvince } from "../../services/province-save-service";
+import { listProvinces } from "@/src/lib/ph-address/list-provinces";
 
 type AddProvinceModalProps = {
   routeId: string;
@@ -54,17 +49,13 @@ export function AddProvinceModal({
             Add Province/Municipality
           </ThemedText>
 
-          <View style={styles.modalField}>
-            <Text style={styles.label}>Province or Municipality name</Text>
-            <TextInput
-              value={provinceName}
-              onChangeText={setProvinceName}
-              placeholder="e.g. Makati, Quezon City"
-              placeholderTextColor="#94A3B8"
-              style={styles.modalInput}
-              autoFocus
-            />
-          </View>
+          <SearchableSelectField
+            label="Province or Municipality name"
+            value={provinceName}
+            options={listProvinces()}
+            onChange={setProvinceName}
+            placeholder="e.g. Makati, Quezon City"
+          />
 
           <View style={styles.modalButtonsRow}>
             <TouchableOpacity
@@ -104,24 +95,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     color: Colors.light.text,
-  },
-  modalField: {
-    gap: 4,
-  },
-  label: {
-    fontSize: 13,
-    color: "#64748B",
-    marginBottom: 4,
-  },
-  modalInput: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    fontSize: 14,
-    color: "#0F172A",
   },
   modalButtonsRow: {
     flexDirection: "row",
