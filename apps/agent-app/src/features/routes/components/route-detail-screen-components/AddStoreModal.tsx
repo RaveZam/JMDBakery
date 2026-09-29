@@ -14,6 +14,8 @@ import { ThemedText } from "@/src/shared/components/ThemedText";
 import { Colors } from "@/src/shared/constants/Colors";
 import { modalStyles as m } from "@/src/shared/styles/modalStyles";
 import { createStore, StoreFields } from "../../services/store-save-service";
+import { AddressFields } from "./AddressFields";
+import type { Address } from "@/src/shared/helpers/applyAddressChange";
 
 type AddStoreModalProps = {
   provinceId: string;
@@ -45,6 +47,8 @@ export function AddStoreModal({
   });
   const setField = (key: keyof StoreFields, value: string) =>
     setFields((prev) => ({ ...prev, [key]: value }));
+  const setAddress = (address: Address) =>
+    setFields((prev) => ({ ...prev, ...address }));
 
   const canSubmit = fields.name.trim().length > 0;
 
@@ -92,23 +96,13 @@ export function AddStoreModal({
                 placeholder="e.g. Guadalupe Market"
                 autoFocus
               />
-              <Field
-                label="Province"
-                value={fields.province}
-                onChangeText={(v) => setField("province", v)}
-                placeholder="e.g. Metro Manila"
-              />
-              <Field
-                label="City"
-                value={fields.city}
-                onChangeText={(v) => setField("city", v)}
-                placeholder="e.g. Makati City"
-              />
-              <Field
-                label="Barangay"
-                value={fields.barangay}
-                onChangeText={(v) => setField("barangay", v)}
-                placeholder="e.g. Guadalupe Nuevo"
+              <AddressFields
+                address={{
+                  province: fields.province,
+                  city: fields.city,
+                  barangay: fields.barangay,
+                }}
+                onChange={setAddress}
               />
               <Field
                 label="Contact name"
