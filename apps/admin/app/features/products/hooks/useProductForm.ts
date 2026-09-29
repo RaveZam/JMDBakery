@@ -15,7 +15,7 @@ type UseProductFormResult = {
 
 export function useProductForm(
   initialValues: ProductInput | undefined,
-  onSubmit: (input: ProductInput) => void,
+  onSubmit: (input: ProductInput) => Promise<void>,
 ): UseProductFormResult {
   const [name, setName] = useState(initialValues?.name ?? "");
   const [price, setPrice] = useState(
@@ -23,14 +23,18 @@ export function useProductForm(
   );
   const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>): void {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     const result = validateProductInput(name, price);
     if ("error" in result) {
       setError(result.error);
       return;
     }
-    onSubmit(result.input);
+    try {
+      await onSubmit(result.input);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save product.");
+    }
   }
 
   return { name, setName, price, setPrice, error, handleSubmit };

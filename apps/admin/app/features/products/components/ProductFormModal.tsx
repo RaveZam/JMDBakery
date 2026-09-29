@@ -17,7 +17,7 @@ type ProductFormModalProps = {
   productId?: string;
   initialValues?: ProductInput;
   onClose: () => void;
-  onSubmit: (input: ProductInput) => void;
+  onSubmit: (input: ProductInput) => Promise<void>;
 };
 
 export function ProductFormModal({
@@ -28,8 +28,8 @@ export function ProductFormModal({
   onSubmit,
 }: ProductFormModalProps): ReactElement | null {
   const titleId = `${useId()}-title`;
-  const form = useProductForm(initialValues, (input) => {
-    onSubmit(input);
+  const form = useProductForm(initialValues, async (input) => {
+    await onSubmit(input);
     onClose();
   });
 
