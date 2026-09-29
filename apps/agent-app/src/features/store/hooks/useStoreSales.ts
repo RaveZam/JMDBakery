@@ -92,7 +92,7 @@ export function useStoreSales() {
     //off product X) apply on top of that snapshotted price, based on this
     //session store's province.
     const storeProvince =
-      getSessionStoreById(sessionStoreId)?.store_province ?? null;
+      getSessionStoreById(sessionStoreId)?.province_name ?? null;
     const modifiers = ProvincePriceModifiersDao.getAllProvincePriceModifiers();
 
     setProducts(

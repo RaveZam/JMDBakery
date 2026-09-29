@@ -40,7 +40,7 @@ const mockedByStore = getSalesBySessionStore as jest.Mock;
 
 // This session store has no province modifiers in play by default.
 jest.mock("@/src/features/store/services/store-services", () => ({
-  getSessionStoreById: jest.fn(() => ({ store_province: null })),
+  getSessionStoreById: jest.fn(() => ({ province_name: null })),
 }));
 
 jest.mock("@/src/features/store/services/store-credit-service", () => ({
@@ -76,7 +76,7 @@ beforeEach(() => {
   mockedByStore.mockReturnValue([]);
   jest
     .requireMock("@/src/features/store/services/store-services")
-    .getSessionStoreById.mockReturnValue({ store_province: null });
+    .getSessionStoreById.mockReturnValue({ province_name: null });
   jest
     .requireMock("@/src/lib/dao/province-price-modifiers-dao")
     .ProvincePriceModifiersDao.getAllProvincePriceModifiers.mockReturnValue([]);
@@ -99,12 +99,37 @@ test("applies a matching province price modifier to the product's price", () => 
   jest
     .requireMock("@/src/features/store/services/store-services")
     .getSessionStoreById.mockReturnValue({
-      store_province: "Isabela - Tuguegarao",
+      province_name: "Isabela - Tuguegarao",
     });
   jest
     .requireMock("@/src/lib/dao/province-price-modifiers-dao")
     .ProvincePriceModifiersDao.getAllProvincePriceModifiers.mockReturnValue([
       { product_id: "p1", province_keyword: "tuguegarao", price_modifier: -1 },
+    ]);
+
+  const { result } = renderHook(() => useStoreSales());
+
+  expect(result.current.adder.catalog.products).toEqual([
+    { id: "p1", name: "Pandesal", price: 9 },
+  ]);
+});
+
+// Regression: store_province is stores.province, a free-text field that can
+// hold the store's city (e.g. "Santiago City"). Pricing must key off
+// province_name instead — the actual province from the provinces table,
+// joined through session_stores.province_id — or a city-keyed store gets
+// priced for the wrong province, or misses a modifier entirely.
+test("prices by province_name, not by the store's raw store_province field", () => {
+  jest
+    .requireMock("@/src/features/store/services/store-services")
+    .getSessionStoreById.mockReturnValue({
+      store_province: "Santiago City",
+      province_name: "Isabela",
+    });
+  jest
+    .requireMock("@/src/lib/dao/province-price-modifiers-dao")
+    .ProvincePriceModifiersDao.getAllProvincePriceModifiers.mockReturnValue([
+      { product_id: "p1", province_keyword: "isabela", price_modifier: -1 },
     ]);
 
   const { result } = renderHook(() => useStoreSales());
