@@ -3,7 +3,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { useEffect, useId } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatSessionDate } from "../helpers/sessionHelpers";
@@ -77,7 +77,7 @@ function SessionInventoryPortal({
   session: SessionRow;
   onClose: () => void;
 }): ReactElement {
-  const { rows, loading, inventoryVerified, handleApproveInventory } =
+  const { rows, loading, approving, inventoryVerified, handleApproveInventory } =
     useSessionInventory(session.id, true, session.inventoryVerified);
 
   return createPortal(
@@ -104,9 +104,14 @@ function SessionInventoryPortal({
                 onClick={() => {
                   handleApproveInventory();
                 }}
+                disabled={approving}
                 className="text-xs text-white"
               >
-                Approve Inventory
+                {approving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Approve Inventory"
+                )}
               </Button>
             ) : inventoryVerified === "verified" ? (
               <Button disabled={true} className="text-xs text-white">
