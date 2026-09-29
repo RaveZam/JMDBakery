@@ -14,12 +14,11 @@ function messageFor(searchError: unknown): string {
 
 /**
  * Drives the "add existing store" list: holds the search term, runs the online
- * lookup, and adds a picked store to the province. Seeds the term with the
- * province name and searches on open, since that is the answer the agent wants
- * almost every time.
+ * lookup, and adds a picked store to the province. The lookup matches a store's
+ * name or province against the term, so the agent can search by either.
  */
 export function useStoreSearch(provinceId: string, provinceName: string) {
-  const [term, setTerm] = useState(provinceName);
+  const [term, setTerm] = useState("");
   const [results, setResults] = useState<ExistingStore[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,9 +40,10 @@ export function useStoreSearch(provinceId: string, provinceName: string) {
   );
 
   useEffect(() => {
-    setTerm(provinceName);
-    search(provinceName);
-  }, [provinceName, search]);
+    setTerm("");
+    setResults([]);
+    setError(null);
+  }, [provinceName]);
 
   // Dropping the added store keeps the list showing only what is still addable.
   const add = useCallback(

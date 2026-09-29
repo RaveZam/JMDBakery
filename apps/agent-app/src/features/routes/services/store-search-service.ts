@@ -30,12 +30,16 @@ export async function searchStoresByProvince(
     );
   }
 
+  // Strip characters that have meaning in PostgREST's filter syntax so a
+  // typed term can't terminate the `.or()` expression or add its own clause.
+  const safeTerm = term.replace(/[,()"'\\]/g, "");
+  const pattern = `%${safeTerm}%`;
   const { data, error } = await supabase
     .from("stores")
     .select(
       "id, store_name, province_id, province, city, barangay, contact_number, contact_name, created_by, created_by_name",
     )
-    .ilike("province", `%${term}%`)
+    .or(`store_name.ilike.${pattern},province.ilike.${pattern}`)
     .order("store_name")
     .limit(100);
 

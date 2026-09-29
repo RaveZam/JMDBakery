@@ -18,7 +18,7 @@ jest.mock("@/src/lib/network", () => ({
 const mock = {
   rows: [] as Record<string, unknown>[],
   error: null as { message: string } | null,
-  ilikeCalls: [] as { column: string; pattern: string }[],
+  orCalls: [] as string[],
 };
 
 jest.mock("@/src/lib/supabase", () => ({
@@ -26,8 +26,8 @@ jest.mock("@/src/lib/supabase", () => ({
     from: jest.fn(() => {
       const builder = {
         select: () => builder,
-        ilike: (column: string, pattern: string) => {
-          mock.ilikeCalls.push({ column, pattern });
+        or: (filter: string) => {
+          mock.orCalls.push(filter);
           return builder;
         },
         order: () => builder,
@@ -67,7 +67,7 @@ beforeEach(() => {
   provinceId = seedProvince(seedRoute(), "Echague");
   mock.rows = [];
   mock.error = null;
-  mock.ilikeCalls = [];
+  mock.orCalls = [];
   (isWifiConnected as jest.Mock).mockResolvedValue(true);
 });
 
@@ -76,7 +76,9 @@ test("matches the province as a case-insensitive substring", async () => {
 
   const results = await searchStoresByProvince("echa", provinceId);
 
-  expect(mock.ilikeCalls).toEqual([{ column: "province", pattern: "%echa%" }]);
+  expect(mock.orCalls).toEqual([
+    "store_name.ilike.%echa%,province.ilike.%echa%",
+  ]);
   expect(results).toEqual([
     {
       id: "remote-1",
@@ -88,6 +90,24 @@ test("matches the province as a case-insensitive substring", async () => {
       contactPhone: "0917",
       createdByName: "Agent A",
     },
+  ]);
+});
+
+test("matches the store name as a case-insensitive substring", async () => {
+  mock.rows = [remoteStore({ store_name: "Colleague Store", province: "Nowhere" })];
+
+  const results = await searchStoresByProvince("colleague", provinceId);
+
+  expect(results.map((store) => store.name)).toEqual(["Colleague Store"]);
+});
+
+test("strips characters that have meaning in the filter syntax", async () => {
+  mock.rows = [remoteStore()];
+
+  await searchStoresByProvince('echa,id.eq."x"(', provinceId);
+
+  expect(mock.orCalls).toEqual([
+    "store_name.ilike.%echaid.eq.x%,province.ilike.%echaid.eq.x%",
   ]);
 });
 
@@ -113,7 +133,7 @@ test("an empty term searches for nothing rather than everything", async () => {
   mock.rows = [remoteStore()];
 
   expect(await searchStoresByProvince("   ", provinceId)).toEqual([]);
-  expect(mock.ilikeCalls).toEqual([]);
+  expect(mock.orCalls).toEqual([]);
 });
 
 test("explains itself when offline instead of returning an empty list", async () => {
