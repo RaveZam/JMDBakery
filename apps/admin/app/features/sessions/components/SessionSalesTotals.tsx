@@ -11,7 +11,7 @@ function TotalBlock({
 }: {
   label: string;
   amount: number;
-  pieces: number;
+  pieces?: number;
   tone: "primary" | "accent" | "destructive";
 }): ReactElement {
   return (
@@ -32,9 +32,11 @@ function TotalBlock({
           {formatCurrencyPHP(amount)}
         </Figure>
       </p>
-      <p className="text-xs text-muted-foreground">
-        <Figure>{pieces}</Figure> pcs
-      </p>
+      {pieces === undefined ? null : (
+        <p className="text-xs text-muted-foreground">
+          <Figure>{pieces}</Figure> pcs
+        </p>
+      )}
     </div>
   );
 }
@@ -46,6 +48,7 @@ export function SessionSalesTotals({
   creditPieces,
   boValue,
   piecesBO,
+  collectedTotal,
 }: {
   cashTotal: number;
   cashPieces: number;
@@ -53,6 +56,7 @@ export function SessionSalesTotals({
   creditPieces: number;
   boValue: number;
   piecesBO: number;
+  collectedTotal: number;
 }): ReactElement {
   return (
     <div className="flex gap-6">
@@ -62,6 +66,13 @@ export function SessionSalesTotals({
         pieces={cashPieces}
         tone="primary"
       />
+      {collectedTotal > 0 ? (
+        <TotalBlock
+          label="Collected from credits"
+          amount={collectedTotal}
+          tone="primary"
+        />
+      ) : null}
       <TotalBlock
         label="Credited"
         amount={creditTotal}

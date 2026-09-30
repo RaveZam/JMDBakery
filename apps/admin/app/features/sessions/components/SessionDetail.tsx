@@ -27,7 +27,10 @@ export function SessionDetail({
         onViewInventory={() => setInventoryOpen(true)}
       />
       <CardContent className="space-y-2">
-        <SessionSalesSummary sessionId={session.id} />
+        <SessionSalesSummary
+          sessionId={session.id}
+          collectedTotal={payments.collectedTotal}
+        />
         <StoreEntryList
           session={session}
           paymentsByStore={payments.paymentsByStore}
