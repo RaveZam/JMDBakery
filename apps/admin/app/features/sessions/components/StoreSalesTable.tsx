@@ -44,13 +44,18 @@ function SalesTotalsRows({
 
 function SalesRow({ sale }: { sale: SessionStoreSaleRow }): ReactElement {
   return (
-    <tr className="border-t border-border/50">
+    <tr
+      className={`border-t border-border/50 ${sale.quantityBO > 0 ? "bg-destructive/5" : ""}`}
+    >
       <td className="py-1 pr-2">{sale.productName}</td>
       <td className="py-1 pr-2 whitespace-nowrap text-muted-foreground">
         {manilaTimestamp.time(sale.createdAt)}
       </td>
       <td className="py-1 pr-2">
-        <SalePaymentTypeTag paymentType={sale.paymentType} />
+        {/* A bad-order-only row has no payment, so no cash/credit tag. */}
+        {sale.quantitySold > 0 ? (
+          <SalePaymentTypeTag paymentType={sale.paymentType} />
+        ) : null}
       </td>
       <td className="py-1 text-right">{sale.quantitySold}</td>
       <td className="py-1 text-right">{sale.quantityBO}</td>
