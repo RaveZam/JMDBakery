@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/src/shared/constants/Colors";
 import useLogin from "../hooks/useLogin";
 import useSessionRedirect from "../hooks/useSessionRedirect";
+import { PasswordField } from "../components/PasswordField";
 
 function signInButtonLabel(loading: boolean, syncing: boolean): string {
   if (syncing) return "Syncing your data…";
@@ -61,18 +62,7 @@ function AuthScreen(): ReactElement {
             />
           </View>
 
-          {/* Password */}
-          <View style={styles.inputWrap}>
-            <Ionicons name="lock-closed-outline" size={16} color="#94A3B8" style={styles.inputIcon} />
-            <TextInput
-              placeholder="Password"
-              placeholderTextColor="#94A3B8"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              style={styles.input}
-            />
-          </View>
+          <PasswordField value={password} onChangeText={setPassword} />
 
           <TouchableOpacity
             style={[styles.button, busy ? styles.buttonDisabled : null]}
