@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { createClient } from "@/utils/supabase/client";
 
 function AuthEmailInput({
@@ -47,9 +48,8 @@ function AuthPasswordInput({
       <label htmlFor="auth-password" className="text-sm font-medium">
         Password
       </label>
-      <Input
+      <PasswordInput
         id="auth-password"
-        type="password"
         placeholder="••••••••"
         value={value}
         onChange={(e) => onChange(e.target.value)}

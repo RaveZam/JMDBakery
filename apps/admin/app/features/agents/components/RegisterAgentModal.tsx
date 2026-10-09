@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export type NewAgent = { email: string; name: string; password: string };
 
@@ -153,9 +154,8 @@ function RegisterAgentForm({
         <label htmlFor={passwordId} className="text-sm font-medium">
           Password
         </label>
-        <Input
+        <PasswordInput
           id={passwordId}
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
@@ -167,9 +167,8 @@ function RegisterAgentForm({
         <label htmlFor={confirmId} className="text-sm font-medium">
           Confirm password
         </label>
-        <Input
+        <PasswordInput
           id={confirmId}
-          type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="••••••••"
