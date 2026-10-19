@@ -95,6 +95,7 @@ export function AgentsClient({
         <ConfirmDeleteModal
           title={`Delete ${pendingDeleteAgent.name}?`}
           description={`This will permanently delete the account for ${pendingDeleteAgent.email}. This action cannot be undone.`}
+          confirmationText={pendingDeleteAgent.name}
           onClose={() => setPendingDeleteId(null)}
           onConfirm={handleConfirmDelete}
         />

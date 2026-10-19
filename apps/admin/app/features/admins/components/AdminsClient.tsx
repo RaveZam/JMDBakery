@@ -95,6 +95,7 @@ export function AdminsClient({
         <ConfirmDeleteModal
           title={`Delete ${pendingDeleteAdmin.name}?`}
           description={`This will permanently delete the account for ${pendingDeleteAdmin.email}. This action cannot be undone.`}
+          confirmationText={pendingDeleteAdmin.name}
           onClose={() => setPendingDeleteId(null)}
           onConfirm={handleConfirmDelete}
         />
