@@ -1,5 +1,6 @@
 "use server";
 
+import { requireUser } from "@/app/server/auth/requireUser";
 import { createClient } from "@/utils/supabase/server";
 import type { Product, ProductInput } from "../types/product-types";
 
@@ -22,6 +23,7 @@ export async function getProducts(): Promise<Product[]> {
 
 export async function addProduct(input: ProductInput): Promise<Product> {
   const supabase = await createClient();
+  await requireUser();
   const { data, error } = await supabase
     .from("products")
     .insert({ product_name: input.name, product_price: input.price })
@@ -39,6 +41,7 @@ export async function addProduct(input: ProductInput): Promise<Product> {
 
 export async function updateProduct(id: string, input: ProductInput): Promise<void> {
   const supabase = await createClient();
+  await requireUser();
   const { error } = await supabase
     .from("products")
     .update({ product_name: input.name, product_price: input.price })
@@ -53,6 +56,7 @@ export async function updateProduct(id: string, input: ProductInput): Promise<vo
 // it so they don't outlive the product they belong to.
 export async function deleteProduct(id: string): Promise<void> {
   const supabase = await createClient();
+  await requireUser();
   const deletedAt = new Date().toISOString();
 
   const { error } = await supabase
