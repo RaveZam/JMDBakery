@@ -148,7 +148,7 @@ export function Sidebar(): ReactElement {
       </div>
 
       <div className="mt-4 flex items-center gap-2 border-t border-border/70 pt-4">
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <AccountCard />
         </div>
         <ThemeToggle />
