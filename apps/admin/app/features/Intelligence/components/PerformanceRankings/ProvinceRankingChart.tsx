@@ -1,14 +1,18 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import type { SalesRecord } from "@/app/server/salesData/getBaseData";
 import type { CreditPayment } from "@/app/features/records/types";
 import {
   computeProvinceRanking,
   type ProvinceRevenue,
 } from "../../helpers/computeProvinceRanking";
-import { MetricRail } from "./MetricRail";
+import { flipOrder } from "../../helpers/flipOrder";
+import { FlipOrderButton } from "./FlipOrderButton";
 import { PanelCard } from "./PanelCard";
+import { RankingRow } from "./RankingRow";
+
+const VISIBLE_ROW_COUNT = 5;
 
 function ProvinceRow({
   province,
@@ -20,27 +24,17 @@ function ProvinceRow({
   topRevenue: number;
 }) {
   return (
-    <li className="border-b border-border/50 py-3 last:border-0">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="flex min-w-0 items-baseline gap-2">
-          <span className="font-mono text-xs tabular-nums text-muted-foreground">
-            {String(rank).padStart(2, "0")}
-          </span>
-          <span className="truncate text-sm font-medium">
-            {province.province}
-          </span>
+    <RankingRow
+      rank={rank}
+      label={
+        <span className="truncate text-sm font-medium">
+          {province.province}
         </span>
-        <span className="font-mono text-sm font-semibold tabular-nums">
-          ₱{Math.round(province.revenue).toLocaleString()}
-        </span>
-      </div>
-      <div className="mt-2">
-        <MetricRail
-          fraction={topRevenue === 0 ? 0 : province.revenue / topRevenue}
-          fillClass="bg-primary"
-        />
-      </div>
-    </li>
+      }
+      value={`₱${Math.round(province.revenue).toLocaleString()}`}
+      fraction={topRevenue === 0 ? 0 : province.revenue / topRevenue}
+      fillClass="bg-primary"
+    />
   );
 }
 
@@ -52,29 +46,35 @@ export function ProvinceRankingChart({
   payments: CreditPayment[];
 }): ReactElement {
   const ranking = computeProvinceRanking(records, payments);
+  const [isFlipped, setIsFlipped] = useState(false);
   const topRevenue = ranking[0]?.revenue ?? 0;
+  const visibleRanking = flipOrder(ranking, isFlipped).slice(
+    0,
+    VISIBLE_ROW_COUNT,
+  );
 
   return (
     <PanelCard
+      isEmpty={ranking.length === 0}
       title="Province ranking"
-      caption="Revenue collected by province, highest first"
+      caption="Revenue collected, highest first"
+      action={
+        <FlipOrderButton
+          isFlipped={isFlipped}
+          onFlip={() => setIsFlipped(!isFlipped)}
+        />
+      }
     >
-      {ranking.length === 0 ? (
-        <p className="py-6 text-sm text-muted-foreground">
-          No data for this period.
-        </p>
-      ) : (
-        <ul>
-          {ranking.map((province, index) => (
-            <ProvinceRow
-              key={province.province}
-              province={province}
-              rank={index + 1}
-              topRevenue={topRevenue}
-            />
-          ))}
-        </ul>
-      )}
+      <ul>
+        {visibleRanking.map((province, index) => (
+          <ProvinceRow
+            key={province.province}
+            province={province}
+            rank={index + 1}
+            topRevenue={topRevenue}
+          />
+        ))}
+      </ul>
     </PanelCard>
   );
 }

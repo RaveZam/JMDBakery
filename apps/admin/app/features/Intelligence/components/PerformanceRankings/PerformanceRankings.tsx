@@ -32,12 +32,12 @@ export function PerformanceRankings({
         <ProvinceRankingChart records={records} payments={payments} />
         <BoRateTable
           title="Product bad order rate"
-          caption="Worst products first, by share of units returned"
+          caption="Share of units returned, worst first"
           rows={productBoRate}
         />
         <BoRateTable
           title="Agent bad order rate"
-          caption="Worst performing agent, by share of units returned"
+          caption="Share of units returned, worst first"
           rows={agentBoRate}
         />
         <BoReasonTable rows={boReasons} />
