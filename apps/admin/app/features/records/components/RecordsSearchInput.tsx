@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { requireUser } from "@/app/server/auth/requireUser";
 import { Input } from "@/components/ui/input";
 import { useRecordsFilters } from "../context/RecordsFiltersContext";
 
@@ -12,6 +13,9 @@ export function RecordsSearchInput() {
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         value={filters.search}
+        // Checks the account once when the user starts searching, not on
+        // every keystroke.
+        onFocus={() => requireUser()}
         onChange={(e) => filters.setSearch(e.target.value)}
         placeholder="Search store…"
         className="pl-9"
