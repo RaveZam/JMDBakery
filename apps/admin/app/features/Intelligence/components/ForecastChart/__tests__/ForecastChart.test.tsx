@@ -15,7 +15,9 @@ vi.mock("../ForecastPlot", () => ({
 
 import { ForecastChart } from "../ForecastChart";
 
-function makeState(overrides: Partial<ForecastChartState> = {}): ForecastChartState {
+function makeState(
+  overrides: Partial<ForecastChartState> = {},
+): ForecastChartState {
   return {
     isLoading: false,
     error: null,
@@ -48,11 +50,15 @@ describe("ForecastChart", () => {
   });
 
   test("shows an empty-history message when there is no data to plot", () => {
-    useForecastChart.mockReturnValue(makeState({ series: { ...makeState().series, data: [] } }));
+    useForecastChart.mockReturnValue(
+      makeState({ series: { ...makeState().series, data: [] } }),
+    );
 
     render(<ForecastChart />);
 
-    expect(screen.getByText("Not enough sales history for this forecast.")).toBeTruthy();
+    expect(
+      screen.getByText("Not enough sales history for this forecast."),
+    ).toBeTruthy();
   });
 
   test("renders the plot with the bridged data once loaded", () => {

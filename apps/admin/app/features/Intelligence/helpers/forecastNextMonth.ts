@@ -3,7 +3,6 @@ import type { ForecastData } from "@/app/server/salesData/getForecastSeries";
 import * as ss from "simple-statistics";
 import { MONTH_LABELS, nowInManila, toDateKey, addDays } from "./dateUtils";
 import { computeForecastBounds } from "./computeForecastBounds";
-import { DisplayMetric } from "../components/ForecastChart/DisplayMetricToggle";
 
 const WEEKS_PER_MONTH = 4;
 const ACTUALS_WINDOW_DAYS = 31;
@@ -68,10 +67,7 @@ function projectedWeeks(
   }));
 }
 
-export function forecastNextMonth(
-  weekly: ForecastData[],
-  displayMetric: DisplayMetric = "pesos",
-): ForecastChartData {
+export function forecastNextMonth(weekly: ForecastData[]): ForecastChartData {
   const title = "Sales vs BO Forecast";
   const now = nowInManila();
 
@@ -88,19 +84,13 @@ export function forecastNextMonth(
 
   const line = ss.linearRegressionLine(
     ss.linearRegression(
-      completedWeeks.map((w, i) => [
-        i,
-        (displayMetric === "pesos" ? w.total_sales_amount : w.total_sales) ?? 0,
-      ]),
+      completedWeeks.map((w, i) => [i, w.total_sales_amount ?? 0]),
     ),
   );
 
   const line2 = ss.linearRegressionLine(
     ss.linearRegression(
-      completedWeeks.map((w, i) => [
-        i,
-        (displayMetric === "pesos" ? w.total_bo_amount : w.total_bo) ?? 0,
-      ]),
+      completedWeeks.map((w, i) => [i, w.total_bo_amount ?? 0]),
     ),
   );
 

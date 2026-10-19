@@ -21,14 +21,26 @@ describe("bridgeForecastSeam", () => {
     });
   });
 
-  test("bridges salesUnits/boUnits instead of amounts when displaying pieces", () => {
+  test("bridges salesAmount/boAmount and keeps the units on the seam point", () => {
     const data: DataPoint[] = [
-      { label: "Mon", salesAmount: 1000, salesUnits: 50, boAmount: 200, boUnits: 10 },
-      { label: "Tue", salesAmount: 1200, salesUnits: 60, boAmount: 240, boUnits: 12 },
-      { label: "Wed", forecast: 70 },
+      {
+        label: "Mon",
+        salesAmount: 1000,
+        salesUnits: 50,
+        boAmount: 200,
+        boUnits: 10,
+      },
+      {
+        label: "Tue",
+        salesAmount: 1200,
+        salesUnits: 60,
+        boAmount: 240,
+        boUnits: 12,
+      },
+      { label: "Wed", forecast: 1400 },
     ];
 
-    const bridged = bridgeForecastSeam(data, "pieces");
+    const bridged = bridgeForecastSeam(data);
 
     expect(bridged[1]).toEqual({
       label: "Tue",
@@ -36,8 +48,8 @@ describe("bridgeForecastSeam", () => {
       salesUnits: 60,
       boAmount: 240,
       boUnits: 12,
-      forecast: 60,
-      boForecast: 12,
+      forecast: 1200,
+      boForecast: 240,
       isSeam: true,
     });
   });

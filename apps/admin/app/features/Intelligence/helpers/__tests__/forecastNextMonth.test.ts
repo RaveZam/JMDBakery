@@ -16,7 +16,9 @@ describe("forecastNextMonth", () => {
   });
 
   test("returns no data with fewer than 2 completed weeks of history", () => {
-    const weekly: ForecastData[] = [{ period: "2026-08-01", total_sales_amount: 1000 }];
+    const weekly: ForecastData[] = [
+      { period: "2026-08-01", total_sales_amount: 1000 },
+    ];
 
     const result = forecastNextMonth(weekly);
 
@@ -71,7 +73,10 @@ describe("forecastNextMonth", () => {
     );
 
     // Its sales-so-far still show as an actual, and it is not drawn as a forecast.
-    expect(withCurrent.data).toContainEqual({ label: "Aug W3", salesAmount: 999999 });
+    expect(withCurrent.data).toContainEqual({
+      label: "Aug W3",
+      salesAmount: 999999,
+    });
     const forecastLabels = withCurrent.data
       .filter((d) => d.forecast != null)
       .map((d) => d.label);

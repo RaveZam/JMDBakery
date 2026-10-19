@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { getWeeklySales } from "@/app/server/salesData/getForecastSeries";
 import { forecastNextMonth } from "../helpers/forecastNextMonth";
 import type { ForecastChartData } from "../types";
-import { DisplayMetric } from "../components/ForecastChart/DisplayMetricToggle";
 
 export type ForecastChartState = {
   isLoading: boolean;
@@ -12,9 +11,7 @@ export type ForecastChartState = {
   series: ForecastChartData;
 };
 
-export function useForecastChart(
-  displayMetric: DisplayMetric = "pesos",
-): ForecastChartState {
+export function useForecastChart(): ForecastChartState {
   const { data, isLoading, error } = useQuery({
     queryKey: ["forecast", "weekly"],
     queryFn: () => getWeeklySales(),
@@ -23,6 +20,6 @@ export function useForecastChart(
   return {
     isLoading,
     error: error as Error | null,
-    series: forecastNextMonth(data ?? [], displayMetric),
+    series: forecastNextMonth(data ?? []),
   };
 }

@@ -4,15 +4,10 @@ import { useForecastChart } from "../../hooks/useForecastChart";
 import { bridgeForecastSeam } from "../../helpers/bridgeForecastSeam";
 import { ChartMessage } from "./ChartMessage";
 import { ForecastPlot } from "./ForecastPlot";
-import { DisplayMetric } from "./DisplayMetricToggle";
 
-export function PlotArea({
-  displayMetric,
-}: {
-  displayMetric: DisplayMetric;
-}): React.ReactElement {
-  const forecast = useForecastChart(displayMetric);
-  const data = bridgeForecastSeam(forecast.series.data, displayMetric);
+export function PlotArea(): React.ReactElement {
+  const forecast = useForecastChart();
+  const data = bridgeForecastSeam(forecast.series.data);
 
   if (forecast.isLoading) {
     return (
@@ -28,11 +23,5 @@ export function PlotArea({
       <ChartMessage>Not enough sales history for this forecast.</ChartMessage>
     );
   }
-  return (
-    <ForecastPlot
-      series={forecast.series}
-      data={data}
-      displayMetric={displayMetric}
-    />
-  );
+  return <ForecastPlot series={forecast.series} data={data} />;
 }

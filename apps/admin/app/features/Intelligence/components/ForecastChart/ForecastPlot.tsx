@@ -14,7 +14,6 @@ import {
 } from "recharts";
 import type { ChartPoint, ForecastChartData } from "../../types";
 import { ForecastTooltip } from "./ForecastTooltip";
-import { DisplayMetric } from "./DisplayMetricToggle";
 
 // Sales and backorders each get one hue: a saturated shade for the actual
 // line/area, and a lighter dashed tint of the same hue for its forecast.
@@ -99,11 +98,9 @@ function AreaFillGradient({
 export function ForecastPlot({
   series,
   data,
-  displayMetric,
 }: {
   series: ForecastChartData;
   data: ChartPoint[];
-  displayMetric: DisplayMetric;
 }): React.ReactElement {
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -123,26 +120,15 @@ export function ForecastPlot({
         />
         <XAxis dataKey="label" tick={AXIS_TICK} />
         <YAxis tick={AXIS_TICK} tickFormatter={series.yFormatter} />
-        <Tooltip content={<ForecastTooltip displayMetric={displayMetric} />} />
+        <Tooltip content={<ForecastTooltip />} />
         <Legend formatter={legendLabel} />
         <Area
           type="monotone"
-          dataKey={displayMetric === "pesos" ? "salesAmount" : "salesUnits"}
-          name={
-            displayMetric === "pesos"
-              ? "Sales Peso Amount"
-              : "Sales Pieces Amount"
-          }
+          dataKey="salesAmount"
+          name="Sales"
           {...SALES_STYLE}
         />
-        <Area
-          type="monotone"
-          dataKey={displayMetric === "pesos" ? "boAmount" : "boUnits"}
-          name={
-            displayMetric === "pesos" ? "BO Peso Amount" : "BO Pieces Amount"
-          }
-          {...BO_STYLE}
-        />
+        <Area type="monotone" dataKey="boAmount" name="BO" {...BO_STYLE} />
         <Line
           type="monotone"
           dataKey="forecast"
