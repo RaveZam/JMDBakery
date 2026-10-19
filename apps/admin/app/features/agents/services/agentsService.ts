@@ -2,6 +2,7 @@
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/server";
+import { windowStartDate } from "@/app/server/datasetWindow";
 import type { AgentRow } from "../types/agent-types";
 
 export async function getAgents(): Promise<AgentRow[]> {
@@ -10,13 +11,20 @@ export async function getAgents(): Promise<AgentRow[]> {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   );
   const supabase = await createClient();
+  const windowStart = windowStartDate();
 
   const [usersResult, sessResult, ssResult] = await Promise.all([
     supabaseAdmin.auth.admin.listUsers(),
-    supabase.from("route_sessions").select("id, conducted_by, status"),
+    supabase
+      .from("route_sessions")
+      .select("id, conducted_by, status")
+      .gte("session_date", windowStart),
     supabase
       .from("session_stores")
-      .select("route_session_id, visited"),
+      .select(
+        "route_session_id, visited, sales(quantity_sold, quantity_bo), route_sessions!inner(session_date)",
+      )
+      .gte("route_sessions.session_date", windowStart),
   ]);
 
   if (usersResult.error) throw new Error(usersResult.error.message);
@@ -47,22 +55,29 @@ export async function getAgents(): Promise<AgentRow[]> {
     }
   }
 
-  // Store visit stats per agent
+  // Store visit and bad order stats per agent
   const storeStatsByAgent = new Map<
     string,
-    { planned: number; visited: number }
+    { planned: number; visited: number; sold: number; badOrdered: number }
   >();
   for (const ss of ssResult.data ?? []) {
     const agentId = sessionToAgent.get(ss.route_session_id);
     if (!agentId) continue;
+    const sales = ss.sales ?? [];
+    const sold = sales.reduce((sum, s) => sum + (s.quantity_sold ?? 0), 0);
+    const badOrdered = sales.reduce((sum, s) => sum + (s.quantity_bo ?? 0), 0);
     const existing = storeStatsByAgent.get(agentId);
     if (existing) {
       existing.planned += 1;
       if (ss.visited) existing.visited += 1;
+      existing.sold += sold;
+      existing.badOrdered += badOrdered;
     } else {
       storeStatsByAgent.set(agentId, {
         planned: 1,
         visited: ss.visited ? 1 : 0,
+        sold,
+        badOrdered,
       });
     }
   }
@@ -72,6 +87,8 @@ export async function getAgents(): Promise<AgentRow[]> {
     const stores = storeStatsByAgent.get(a.id) ?? {
       planned: 0,
       visited: 0,
+      sold: 0,
+      badOrdered: 0,
     };
     return {
       id: a.id,
@@ -83,6 +100,8 @@ export async function getAgents(): Promise<AgentRow[]> {
       completedSessions: sess.completed,
       totalStoresVisited: stores.visited,
       totalStoresPlanned: stores.planned,
+      totalSold: stores.sold,
+      totalBadOrdered: stores.badOrdered,
     };
   });
 }

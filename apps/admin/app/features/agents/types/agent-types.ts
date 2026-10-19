@@ -7,4 +7,6 @@ export type AgentRow = {
   completedSessions: number;
   totalStoresVisited: number;
   totalStoresPlanned: number;
+  totalSold: number;
+  totalBadOrdered: number;
 };

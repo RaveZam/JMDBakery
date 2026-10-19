@@ -2,7 +2,6 @@ import type { ReactElement } from "react";
 import { CalendarDays, Store, Trash2, TrendingUp } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { AgentRow } from "../types/agent-types";
 
@@ -35,6 +34,12 @@ function visitRate(visited: number, planned: number): string {
   return `${Math.round((visited / planned) * 100)}%`;
 }
 
+// Same formula as the Intelligence BO ranking: bad orders out of all pieces handed out.
+function badOrderRate(sold: number, badOrdered: number): string {
+  if (sold + badOrdered === 0) return "0%";
+  return `${Math.round((badOrdered / (sold + badOrdered)) * 100)}%`;
+}
+
 export function AgentCard({
   agent,
   onDelete,
@@ -43,7 +48,7 @@ export function AgentCard({
   onDelete: (id: string) => void;
 }): ReactElement {
   const rate = visitRate(agent.totalStoresVisited, agent.totalStoresPlanned);
-  const isActive = agent.totalSessions > 0;
+  const boRate = badOrderRate(agent.totalSold, agent.totalBadOrdered);
 
   return (
     <Card className="shadow-soft">
@@ -63,9 +68,6 @@ export function AgentCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={isActive ? "success" : "pending"}>
-              {isActive ? "Active" : "Inactive"}
-            </Badge>
             <Button
               type="button"
               variant="ghost"
@@ -107,15 +109,9 @@ export function AgentCard({
           </div>
         </div>
 
-        {/* BO Rate — to be implemented */}
         <div className="mt-3 flex items-center justify-between rounded-md bg-muted/50 px-3 py-2">
           <p className="text-xs text-muted-foreground">BO Rate</p>
-          <div className="flex items-center gap-1.5">
-            <p className="text-sm font-semibold tabular-nums">0%</p>
-            <span className="text-[10px] text-muted-foreground italic">
-              (coming soon)
-            </span>
-          </div>
+          <p className="text-sm font-semibold tabular-nums">{boRate}</p>
         </div>
       </CardContent>
     </Card>

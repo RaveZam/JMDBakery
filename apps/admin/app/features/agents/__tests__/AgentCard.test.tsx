@@ -13,6 +13,8 @@ function makeAgent(overrides: Partial<AgentRow> = {}): AgentRow {
     completedSessions: 3,
     totalStoresVisited: 15,
     totalStoresPlanned: 20,
+    totalSold: 90,
+    totalBadOrdered: 10,
     ...overrides,
   };
 }
@@ -41,18 +43,18 @@ describe("AgentCard", () => {
     expect(screen.getAllByText("0%").length).toBeGreaterThan(0);
   });
 
-  test("marks an agent with sessions as active", () => {
-    render(<AgentCard agent={makeAgent({ totalSessions: 4 })} onDelete={vi.fn()} />);
+  test("shows the bad order rate out of sold plus bad ordered pieces", () => {
+    render(<AgentCard agent={makeAgent()} onDelete={vi.fn()} />);
 
-    expect(screen.getByText("Active")).toBeTruthy();
-    expect(screen.queryByText("Inactive")).toBeNull();
+    expect(screen.getByText("10%")).toBeTruthy();
   });
 
-  test("marks an agent with no sessions as inactive", () => {
-    render(<AgentCard agent={makeAgent({ totalSessions: 0 })} onDelete={vi.fn()} />);
+  test("shows a 0% BO rate when nothing was sold or bad ordered", () => {
+    const agent = makeAgent({ totalSold: 0, totalBadOrdered: 0 });
 
-    expect(screen.getByText("Inactive")).toBeTruthy();
-    expect(screen.queryByText("Active")).toBeNull();
+    render(<AgentCard agent={agent} onDelete={vi.fn()} />);
+
+    expect(screen.getByText("BO Rate").nextSibling?.textContent).toBe("0%");
   });
 
   test("calls onDelete with the agent id when delete is pressed", () => {
