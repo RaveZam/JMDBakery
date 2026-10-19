@@ -1,6 +1,7 @@
-import { TrendingUp, TrendingDown, PackageX, Banknote } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { KpiCard } from "@/app/features/dashboard/components/KpiCard";
 import type { IntelligenceKpis } from "../../types";
+import { BadOrderRiskCard } from "./BadOrderRiskCard";
 
 export function KpiSection({ kpis }: { kpis: IntelligenceKpis }) {
   const isUp = kpis.revenueChangePct >= 0;
@@ -15,26 +16,23 @@ export function KpiSection({ kpis }: { kpis: IntelligenceKpis }) {
           secondary={`Today ₱${kpis.revenueToday.toLocaleString()} vs Yesterday ₱${kpis.revenueYesterday.toLocaleString()}`}
           tone="primary"
           icon={isUp ? TrendingUp : TrendingDown}
+          iconBesideValue
         />
         <KpiCard
           title="Revenue this month"
           primary={"₱" + kpis.revenueThisMonth.toLocaleString()}
-          tone="primary"
-          icon={Banknote}
+          secondary="Cash sales plus credit collected"
+          tone="mint"
         />
         <KpiCard
           title="Bad orders this month"
           primary={"₱" + kpis.totalBadOrderAmount.toLocaleString()}
           secondary={`${kpis.totalBadOrderQty.toLocaleString()} pcs`}
-          tone="critical"
-          icon={PackageX}
+          tone="rose"
         />
-        <KpiCard
-          title="Bad order risk level this month"
-          primary={kpis.badOrderRisk.label}
-          secondary={`Bad order rate ${kpis.badOrderRatePct.toFixed(1)}% this month`}
-          tone={kpis.badOrderRisk.tone}
-          icon={kpis.badOrderRisk.icon}
+        <BadOrderRiskCard
+          risk={kpis.badOrderRisk}
+          ratePct={kpis.badOrderRatePct}
         />
       </div>
     </section>
