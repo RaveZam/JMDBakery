@@ -38,6 +38,7 @@ describe("computeAgentBoRate", () => {
       key: "Ana",
       sold: 160,
       bo: 20,
+      boAmount: 200,
       boRatePct: (20 / 180) * 100,
     });
   });

@@ -3,6 +3,7 @@ import type { SalesRecord } from "@/app/server/salesData/getBaseData";
 export type BoReasonRow = {
   reason: string;
   bo: number;
+  boAmount: number;
   sharePct: number;
 };
 
@@ -16,27 +17,30 @@ function normalizeReason(rawReason: string): string {
   return preset ?? trimmed;
 }
 
-/** Ranks bad order reasons by units lost, worst first. */
+/** Ranks every bad order reason by units lost, worst first. */
 export function computeBoReasonRanking(records: SalesRecord[]): BoReasonRow[] {
-  const totals = new Map<string, number>();
+  const totals = new Map<string, { bo: number; boAmount: number }>();
 
   for (const record of records) {
     if (record.boQty <= 0 || !record.boReason?.trim()) continue;
     const reason = normalizeReason(record.boReason);
-    totals.set(reason, (totals.get(reason) ?? 0) + record.boQty);
+    const reasonTotals = totals.get(reason) ?? { bo: 0, boAmount: 0 };
+    reasonTotals.bo += record.boQty;
+    reasonTotals.boAmount += record.boQty * record.unitPrice;
+    totals.set(reason, reasonTotals);
   }
 
   const totalBo = Array.from(totals.values()).reduce(
-    (sum, bo) => sum + bo,
+    (sum, reasonTotals) => sum + reasonTotals.bo,
     0,
   );
 
   return Array.from(totals.entries())
-    .map(([reason, bo]) => ({
+    .map(([reason, { bo, boAmount }]) => ({
       reason,
       bo,
+      boAmount,
       sharePct: totalBo === 0 ? 0 : (bo / totalBo) * 100,
     }))
-    .sort((a, b) => b.bo - a.bo)
-    .slice(0, 5);
+    .sort((a, b) => b.bo - a.bo);
 }

@@ -32,8 +32,8 @@ describe("computeBoReasonRanking", () => {
     const rows = computeBoReasonRanking(records);
 
     expect(rows).toEqual([
-      { reason: "Rotten", bo: 15, sharePct: 75 },
-      { reason: "Damaged", bo: 5, sharePct: 25 },
+      { reason: "Rotten", bo: 15, boAmount: 150, sharePct: 75 },
+      { reason: "Damaged", bo: 5, boAmount: 50, sharePct: 25 },
     ]);
   });
 
@@ -60,7 +60,9 @@ describe("computeBoReasonRanking", () => {
 
     const rows = computeBoReasonRanking(records);
 
-    expect(rows).toEqual([{ reason: "Rotten", bo: 10, sharePct: 100 }]);
+    expect(rows).toEqual([
+      { reason: "Rotten", bo: 10, boAmount: 100, sharePct: 100 },
+    ]);
   });
 
   test("keeps a free-text reason as-is, only trimmed", () => {
@@ -69,7 +71,7 @@ describe("computeBoReasonRanking", () => {
     expect(computeBoReasonRanking(records)[0].reason).toBe("Truck delay");
   });
 
-  test("sorts by units lost, worst first, and caps at 5 reasons", () => {
+  test("sorts by units lost, worst first", () => {
     const reasons = ["A", "B", "C", "D", "E", "F"];
     const records = reasons.map((reason, i) =>
       makeRecord({ boReason: reason, boQty: i + 1 }),
@@ -77,8 +79,8 @@ describe("computeBoReasonRanking", () => {
 
     const rows = computeBoReasonRanking(records);
 
-    expect(rows).toHaveLength(5);
+    expect(rows).toHaveLength(6);
     expect(rows[0].reason).toBe("F");
-    expect(rows.map((r) => r.bo)).toEqual([6, 5, 4, 3, 2]);
+    expect(rows.map((r) => r.bo)).toEqual([6, 5, 4, 3, 2, 1]);
   });
 });

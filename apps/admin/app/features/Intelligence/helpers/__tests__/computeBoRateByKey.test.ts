@@ -33,8 +33,8 @@ describe("computeBoRateByKey", () => {
     const rows = computeBoRateByKey(records, (r) => r.product);
 
     expect(rows).toEqual([
-      { key: "Pandesal", sold: 80, bo: 20, boRatePct: 20 },
-      { key: "Ensaymada", sold: 90, bo: 10, boRatePct: 10 },
+      { key: "Pandesal", sold: 80, bo: 20, boAmount: 200, boRatePct: 20 },
+      { key: "Ensaymada", sold: 90, bo: 10, boAmount: 100, boRatePct: 10 },
     ]);
   });
 
@@ -56,12 +56,12 @@ describe("computeBoRateByKey", () => {
     expect(computeBoRateByKey(records, (r) => r.product)[0].boRatePct).toBe(0);
   });
 
-  test("caps the ranking at 5 rows", () => {
+  test("returns every group, not just the top few", () => {
     const records = Array.from({ length: 8 }, (_, i) =>
       makeRecord({ product: `Product ${i}`, soldQty: 90 - i, boQty: 10 + i }),
     );
 
-    expect(computeBoRateByKey(records, (r) => r.product)).toHaveLength(5);
+    expect(computeBoRateByKey(records, (r) => r.product)).toHaveLength(8);
   });
 
   test("returns an empty list for no records", () => {
