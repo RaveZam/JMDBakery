@@ -8,6 +8,8 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { getPasswordError } from "@/lib/getPasswordError";
+import { PasswordChecklist } from "@/components/PasswordChecklist";
 
 export type NewAgent = { email: string; name: string; password: string };
 
@@ -103,6 +105,11 @@ function RegisterAgentForm({
       setError("Password is required.");
       return;
     }
+    const passwordError = getPasswordError(password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -162,6 +169,7 @@ function RegisterAgentForm({
           className="rounded-2xl"
           autoComplete="new-password"
         />
+        <PasswordChecklist password={password} />
       </div>
       <div className="space-y-2">
         <label htmlFor={confirmId} className="text-sm font-medium">
