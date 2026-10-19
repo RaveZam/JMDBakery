@@ -47,6 +47,14 @@ export type StoreCreditByStore = GroupedStoreRow & Omit<StoreCredit, "storeId">;
 // shows its true standing on the revenue board even in a filtered list.
 export type RankedStore = StoreCreditByStore & { rank: number };
 
+export type StoreSortKey =
+  | "revenue-high"
+  | "revenue-low"
+  | "name-asc"
+  | "name-desc"
+  | "newest"
+  | "oldest";
+
 export type CreditLedgerEntry = {
   id: string;
   entryType: "credit" | "payment";

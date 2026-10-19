@@ -11,6 +11,8 @@ import {
 import { rankStores } from "./helpers/rankStores";
 import { filterStores } from "./helpers/filterStores";
 import { attachCreditToStores } from "./core/attachCreditToStores";
+import { sortStores } from "./core/sortStores";
+import type { StoreSortKey } from "./types/store-types";
 import { StoresBoard } from "./components/StoresBoard";
 import { StoresHeader } from "./components/StoresHeader";
 
@@ -21,6 +23,7 @@ export function StoresPage(): ReactElement {
   const { data, isLoading } = useStoresQuery();
   const credits = useStoreCreditTotalsQuery();
   const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<StoreSortKey>("revenue-high");
 
   const grouped = useMemo(() => groupStoresByLocation(data), [data]);
   const stats = useMemo(() => computeStoreStats(grouped), [grouped]);
@@ -32,8 +35,8 @@ export function StoresPage(): ReactElement {
     [grouped, credits.data],
   );
   const visibleStores = useMemo(
-    () => filterStores(stores, search),
-    [stores, search],
+    () => sortStores(filterStores(stores, search), sortKey),
+    [stores, search, sortKey],
   );
 
   return (
@@ -46,6 +49,8 @@ export function StoresPage(): ReactElement {
         isLoading={isLoading}
         search={search}
         onSearchChange={setSearch}
+        sortKey={sortKey}
+        onSortChange={setSortKey}
       />
     </>
   );

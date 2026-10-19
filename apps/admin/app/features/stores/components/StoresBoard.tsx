@@ -7,7 +7,7 @@ import { StoresBoardSkeleton } from "./StoresBoardSkeleton";
 import { StoresEmptyState } from "./StoresEmptyState";
 import { StoresNoResults } from "./StoresNoResults";
 import { StoresToolbar } from "./StoresToolbar";
-import type { RankedStore } from "../types/store-types";
+import type { RankedStore, StoreSortKey } from "../types/store-types";
 
 // Only the rows scroll. The toolbar above is a sibling of this, so search
 // stays in place no matter how far down the board you are.
@@ -25,6 +25,8 @@ type StoresBoardProps = {
   isLoading: boolean;
   search: string;
   onSearchChange: (value: string) => void;
+  sortKey: StoreSortKey;
+  onSortChange: (sortKey: StoreSortKey) => void;
 };
 
 export function StoresBoard({
@@ -33,6 +35,8 @@ export function StoresBoard({
   isLoading,
   search,
   onSearchChange,
+  sortKey,
+  onSortChange,
 }: StoresBoardProps): ReactElement {
   if (isLoading) {
     return (
@@ -58,6 +62,8 @@ export function StoresBoard({
       <StoresToolbar
         search={search}
         onSearchChange={onSearchChange}
+        sortKey={sortKey}
+        onSortChange={onSortChange}
         visibleCount={visibleStores.length}
         totalCount={stores.length}
       />
