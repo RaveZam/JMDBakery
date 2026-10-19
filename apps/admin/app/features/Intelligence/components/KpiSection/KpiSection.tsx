@@ -23,14 +23,14 @@ export function KpiSection({ kpis }: { kpis: IntelligenceKpis }) {
           icon={Banknote}
         />
         <KpiCard
-          title="Bad orders"
+          title="Bad orders this month"
           primary={"₱" + kpis.totalBadOrderAmount.toLocaleString()}
           secondary={`${kpis.totalBadOrderQty.toLocaleString()} pcs`}
           tone="critical"
           icon={PackageX}
         />
         <KpiCard
-          title="Bad order risk level"
+          title="Bad order risk level this month"
           primary={kpis.badOrderRisk.label}
           secondary={`Bad order rate ${kpis.badOrderRatePct.toFixed(1)}% this month`}
           tone={kpis.badOrderRisk.tone}
