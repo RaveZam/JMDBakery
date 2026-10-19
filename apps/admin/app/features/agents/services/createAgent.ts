@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { requireAdmin } from "@/app/server/auth/requireAdmin";
+import { getPasswordError } from "@/lib/getPasswordError";
 
 type CreateAgentInput = {
   email: string;
@@ -13,6 +14,8 @@ type CreateAgentInput = {
 
 export async function createAgent(input: CreateAgentInput) {
   await requireAdmin();
+  const passwordError = getPasswordError(input.password);
+  if (passwordError) throw new Error(passwordError);
   const supabase = await createClient();
   const supabaseAdmin = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

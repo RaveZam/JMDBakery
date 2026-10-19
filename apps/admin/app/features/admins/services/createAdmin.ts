@@ -2,6 +2,7 @@
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { requireAdmin } from "@/app/server/auth/requireAdmin";
+import { getPasswordError } from "@/lib/getPasswordError";
 
 type CreateAdminInput = {
   email: string;
@@ -12,6 +13,8 @@ type CreateAdminInput = {
 
 export async function createAdmin(input: CreateAdminInput) {
   await requireAdmin();
+  const passwordError = getPasswordError(input.password);
+  if (passwordError) throw new Error(passwordError);
   const supabaseAdmin = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
