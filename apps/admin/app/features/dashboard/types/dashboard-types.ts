@@ -12,7 +12,9 @@ export type KpiCardTone =
   | "healthy"
   | "medium"
   | "warning"
-  | "critical";
+  | "critical"
+  | "mint"
+  | "rose";
 export type KpiCardAccent = "green" | "gold" | "amber" | "red" | "slate";
 
 export type ProductBoRecord = {

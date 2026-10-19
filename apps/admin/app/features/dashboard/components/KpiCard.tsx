@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { type LucideIcon } from "lucide-react";
 import type { KpiCardAccent, KpiCardTone } from "../types/dashboard-types";
+import { KpiIconChip } from "./KpiIconChip";
 
 const accentChip: Record<KpiCardAccent, string> = {
   green: "bg-primary/10 text-primary",
@@ -12,13 +13,48 @@ const accentChip: Record<KpiCardAccent, string> = {
   slate: "bg-muted text-muted-foreground",
 };
 
-const solidTone: Partial<Record<KpiCardTone, string>> = {
-  hero: "bg-primary",
-  primary: "bg-primary",
-  healthy: "bg-primary",
-  medium: "bg-amber-600",
-  warning: "bg-orange-600",
-  critical: "bg-red-800",
+type ToneStyle = {
+  card: string;
+  title: string;
+  value: string;
+  muted: string;
+  chip?: string;
+};
+
+const solid = (background: string): ToneStyle => ({
+  card: `border-transparent text-white ${background}`,
+  title: "text-white/80",
+  value: "",
+  muted: "text-white/70",
+  chip: "bg-white/15 text-white",
+});
+
+const toneStyle: Partial<Record<KpiCardTone, ToneStyle>> = {
+  hero: solid("bg-primary"),
+  primary: solid("bg-primary"),
+  healthy: solid("bg-primary"),
+  medium: solid("bg-amber-600"),
+  warning: solid("bg-orange-600"),
+  critical: solid("bg-red-800"),
+  mint: {
+    card: "border-emerald-100 bg-emerald-50/70 dark:border-primary/20 dark:bg-primary/10",
+    title: "text-primary/70",
+    value: "text-primary",
+    muted: "text-primary/70",
+  },
+  rose: {
+    card: "border-red-100 bg-red-50/60 dark:border-red-500/20 dark:bg-red-500/10",
+    title: "text-red-800/70 dark:text-red-300/80",
+    value: "text-red-800 dark:text-red-400",
+    muted: "text-red-800/60 dark:text-red-300/70",
+  },
+};
+
+const neutralStyle: ToneStyle = {
+  card: "",
+  title: "text-muted-foreground",
+  value: "",
+  muted: "text-muted-foreground",
 };
 
 export function KpiCard({
@@ -29,6 +65,7 @@ export function KpiCard({
   tone = "neutral",
   accent = "green",
   icon: Icon,
+  iconBesideValue = false,
 }: {
   title: string;
   primary: string;
@@ -37,58 +74,52 @@ export function KpiCard({
   tone?: KpiCardTone;
   accent?: KpiCardAccent;
   icon?: LucideIcon;
+  /** Shows the icon as a small circle next to the value instead of in the corner. */
+  iconBesideValue?: boolean;
 }) {
-  const solid = solidTone[tone];
+  const style = toneStyle[tone] ?? neutralStyle;
+  const iconChip = Icon && (
+    <KpiIconChip
+      icon={Icon}
+      colorClass={style.chip ?? accentChip[accent]}
+      round={iconBesideValue}
+    />
+  );
   return (
     <Card
       className={cn(
         "border-border/70 shadow-soft dark:shadow-soft-dark",
-        solid && `border-transparent text-white ${solid}`,
+        style.card,
       )}
     >
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
-          <p
-            className={cn(
-              "text-[13px] font-medium",
-              solid ? "text-white/80" : "text-muted-foreground",
-            )}
-          >
-            {title}
-          </p>
-          {Icon && (
-            <span
-              className={cn(
-                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                solid ? "bg-white/15 text-white" : accentChip[accent],
-              )}
-            >
-              <Icon className="h-[18px] w-[18px]" />
-            </span>
-          )}
+          <p className={cn("text-[13px] font-medium", style.title)}>{title}</p>
+          {!iconBesideValue && iconChip}
         </div>
-        <p className="mt-3 flex items-baseline gap-1.5 text-[28px] font-semibold leading-none tracking-tight tabular-nums">
-          {primary}
-          {unit && (
-            <span
-              className={cn(
-                "text-[13px] font-medium tracking-normal",
-                solid ? "text-white/70" : "text-muted-foreground",
-              )}
-            >
-              {unit}
-            </span>
-          )}
-        </p>
-        {secondary ? (
+        <div className="mt-3 flex items-center gap-2.5">
           <p
             className={cn(
-              "mt-2.5 text-xs",
-              solid ? "text-white/70" : "text-muted-foreground",
+              "flex items-baseline gap-1.5 text-[28px] font-semibold leading-none tracking-tight tabular-nums",
+              style.value,
             )}
           >
-            {secondary}
+            {primary}
+            {unit && (
+              <span
+                className={cn(
+                  "text-[13px] font-medium tracking-normal",
+                  style.muted,
+                )}
+              >
+                {unit}
+              </span>
+            )}
           </p>
+          {iconBesideValue && iconChip}
+        </div>
+        {secondary ? (
+          <p className={cn("mt-2.5 text-xs", style.muted)}>{secondary}</p>
         ) : null}
       </CardContent>
     </Card>
