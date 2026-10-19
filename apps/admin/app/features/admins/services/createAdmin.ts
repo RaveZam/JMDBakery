@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/app/server/auth/requireAdmin";
 
 type CreateAdminInput = {
   email: string;
@@ -10,6 +11,7 @@ type CreateAdminInput = {
 };
 
 export async function createAdmin(input: CreateAdminInput) {
+  await requireAdmin();
   const supabaseAdmin = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -19,6 +21,8 @@ export async function createAdmin(input: CreateAdminInput) {
     email: input.email,
     password: input.password,
     email_confirm: true,
+    // The role we trust. Users can edit user_metadata but not app_metadata.
+    app_metadata: { role: "admin" },
     user_metadata: {
       role: "admin",
       name: input.name,
