@@ -17,7 +17,7 @@ export function StoreSaleRow({
       <button
         type="button"
         onClick={onClick}
-        className="w-full py-2.5 text-left transition-colors hover:bg-muted/50"
+        className="w-full px-3 py-2.5 text-left transition-colors hover:bg-card/70"
       >
         <div className="flex items-baseline justify-between gap-2">
           <span className="truncate text-sm font-medium">{sale.productName}</span>

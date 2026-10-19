@@ -29,7 +29,7 @@ export function StoreSalesLog({ storeIds }: { storeIds: string[] }): ReactElemen
         <p className="text-sm text-muted-foreground">No sales recorded.</p>
       ) : (
         <>
-          <ul className="max-h-80 divide-y overflow-y-auto">
+          <ul className="max-h-80 divide-y divide-border overflow-y-auto rounded-xl border bg-muted">
             {salesLog.sales.map((sale) => (
               <StoreSaleRow key={sale.id} sale={sale} onClick={() => setSelectedSale(sale)} />
             ))}
