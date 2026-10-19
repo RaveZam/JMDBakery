@@ -27,8 +27,8 @@ export function AgentsClient({
 
   const pendingDeleteAgent = agents.find((a) => a.id === pendingDeleteId);
 
-  function handleRegister(agent: NewAgent): void {
-    createAgent({
+  function handleRegister(agent: NewAgent): Promise<void> {
+    return createAgent({
       email: agent.email,
       name: agent.name,
       password: agent.password,

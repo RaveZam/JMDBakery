@@ -3,7 +3,7 @@
 import type { FormEvent, ReactElement, ReactNode } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ export type NewAgent = { email: string; name: string; password: string };
 
 type RegisterAgentModalProps = {
   onClose: () => void;
-  onRegister: (agent: NewAgent) => void;
+  onRegister: (agent: NewAgent) => Promise<void>;
 };
 
 function ModalOverlay({ onClose }: { onClose: () => void }): ReactElement {
@@ -80,13 +80,14 @@ function RegisterAgentForm({
   confirmId: string;
   emailRef: React.RefObject<HTMLInputElement | null>;
   onClose: () => void;
-  onRegister: (agent: NewAgent) => void;
+  onRegister: (agent: NewAgent) => Promise<void>;
 }): ReactElement {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   function submit(e: FormEvent<HTMLFormElement>): void {
     e.preventDefault();
@@ -114,8 +115,15 @@ function RegisterAgentForm({
       setError("Passwords do not match.");
       return;
     }
-    onRegister({ email: trimmedEmail, name: trimmedName, password });
-    onClose();
+    setSubmitting(true);
+    onRegister({ email: trimmedEmail, name: trimmedName, password })
+      .then(onClose)
+      .catch((err: unknown) => {
+        setError(
+          err instanceof Error ? err.message : "Could not register agent.",
+        );
+        setSubmitting(false);
+      });
   }
 
   return (
@@ -141,6 +149,7 @@ function RegisterAgentForm({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Agent email"
           className="rounded-2xl"
+          disabled={submitting}
           autoComplete="email"
         />
       </div>
@@ -154,6 +163,7 @@ function RegisterAgentForm({
           onChange={(e) => setName(e.target.value)}
           placeholder="Agent name"
           className="rounded-2xl"
+          disabled={submitting}
           autoComplete="name"
         />
       </div>
@@ -167,6 +177,7 @@ function RegisterAgentForm({
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
           className="rounded-2xl"
+          disabled={submitting}
           autoComplete="new-password"
         />
         <PasswordChecklist password={password} />
@@ -181,6 +192,7 @@ function RegisterAgentForm({
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="••••••••"
           className="rounded-2xl"
+          disabled={submitting}
           autoComplete="new-password"
         />
       </div>
@@ -189,12 +201,23 @@ function RegisterAgentForm({
           type="button"
           variant="outline"
           className="rounded-2xl"
+          disabled={submitting}
           onClick={onClose}
         >
           Cancel
         </Button>
-        <Button type="submit" className="rounded-2xl">
-          Register
+        <Button type="submit" className="rounded-2xl" disabled={submitting}>
+          {submitting ? (
+            <>
+              <Loader2
+                className="h-4 w-4 animate-spin motion-reduce:animate-none"
+                aria-hidden="true"
+              />
+              Registering…
+            </>
+          ) : (
+            "Register"
+          )}
         </Button>
       </div>
     </form>
@@ -218,7 +241,7 @@ function RegisterAgentPortal({
   confirmId: string;
   emailRef: React.RefObject<HTMLInputElement | null>;
   onClose: () => void;
-  onRegister: (agent: NewAgent) => void;
+  onRegister: (agent: NewAgent) => Promise<void>;
 }): ReactElement {
   return createPortal(
     <div

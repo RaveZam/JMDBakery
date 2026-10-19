@@ -27,8 +27,8 @@ export function AdminsClient({
 
   const pendingDeleteAdmin = admins.find((a) => a.id === pendingDeleteId);
 
-  function handleRegister(admin: NewAdmin): void {
-    createAdmin({
+  function handleRegister(admin: NewAdmin): Promise<void> {
+    return createAdmin({
       email: admin.email,
       name: admin.name,
       password: admin.password,
