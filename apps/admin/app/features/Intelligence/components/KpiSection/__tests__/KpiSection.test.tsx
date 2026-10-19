@@ -9,11 +9,11 @@ function makeKpis(overrides: Partial<IntelligenceKpis> = {}): IntelligenceKpis {
     revenueToday: 1000,
     revenueYesterday: 800,
     revenueChangePct: 25,
-    tomorrowWeekday: 3,
-    predictedRevenueTomorrow: 900,
-    projectedRevenueNext7Days: 6000,
+    revenueThisMonth: 25000,
     badOrderRatePct: 4.2,
     badOrderRisk: { tone: "healthy", label: "Healthy", icon: ShieldCheck },
+    totalBadOrderQty: 30,
+    totalBadOrderAmount: 450,
     ...overrides,
   };
 }
@@ -32,10 +32,10 @@ describe("KpiSection", () => {
     expect(screen.queryByText("+-10.0%")).toBeNull();
   });
 
-  test("names tomorrow's weekday from its numeric index", () => {
-    render(<KpiSection kpis={makeKpis({ tomorrowWeekday: 0 })} />);
+  test("shows today's and yesterday's revenue under the trend", () => {
+    render(<KpiSection kpis={makeKpis()} />);
 
-    expect(screen.getByText("Your typical sales on Sunday")).toBeTruthy();
+    expect(screen.getByText("Today ₱1,000 vs Yesterday ₱800")).toBeTruthy();
   });
 
   test("shows the bad order risk label and rate", () => {
@@ -56,17 +56,20 @@ describe("KpiSection", () => {
     expect(screen.getByText("Bad order rate 16.0% this month")).toBeTruthy();
   });
 
-  test("rounds the predicted and projected revenue figures", () => {
+  test("shows the month's revenue", () => {
+    render(<KpiSection kpis={makeKpis({ revenueThisMonth: 25000 })} />);
+
+    expect(screen.getByText("₱25,000")).toBeTruthy();
+  });
+
+  test("shows the bad order amount and piece count for the month", () => {
     render(
       <KpiSection
-        kpis={makeKpis({
-          predictedRevenueTomorrow: 900.6,
-          projectedRevenueNext7Days: 5999.4,
-        })}
+        kpis={makeKpis({ totalBadOrderAmount: 1250, totalBadOrderQty: 1200 })}
       />,
     );
 
-    expect(screen.getByText("₱901")).toBeTruthy();
-    expect(screen.getByText("₱5,999")).toBeTruthy();
+    expect(screen.getByText("₱1,250")).toBeTruthy();
+    expect(screen.getByText("1,200 pcs")).toBeTruthy();
   });
 });

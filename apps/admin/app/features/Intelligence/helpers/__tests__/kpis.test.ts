@@ -84,25 +84,27 @@ describe("computeIntelligenceKpis", () => {
     expect(computeIntelligenceKpis(records).revenueChangePct).toBe(0);
   });
 
-  test("predicts tomorrow's revenue from the matching weekday and projects the next 7 days", () => {
-    const now = nowInManila();
-    // 7 distinct days, one per weekday, each with a unique revenue -- so
-    // every weekday's average collapses to that single day's value.
-    const records = Array.from({ length: 7 }, (_, i) =>
-      makeRecord({ date: toDateKey(addDays(now, -i - 1)), total: (i + 1) * 10 }),
-    );
+  test("sums cash revenue and collected credit across the whole window as this month's revenue", () => {
+    const records = [
+      makeRecord({ date: "2026-08-01", total: 100, paymentType: "cash" }),
+      makeRecord({ date: "2026-08-10", total: 200, paymentType: "cash" }),
+      makeRecord({ date: "2026-08-10", total: 500, paymentType: "credit" }),
+    ];
+    const payments = [makePayment({ date: "2026-08-12", amount: 40 })];
+
+    expect(computeIntelligenceKpis(records, payments).revenueThisMonth).toBe(340);
+  });
+
+  test("totals bad order pieces and their peso value from every row", () => {
+    const records = [
+      makeRecord({ boQty: 2, unitPrice: 10, paymentType: "cash" }),
+      makeRecord({ boQty: 3, unitPrice: 20, paymentType: "credit" }),
+    ];
 
     const kpis = computeIntelligenceKpis(records);
 
-    const tomorrowWeekday = addDays(now, 1).getDay();
-    const matchingRecord = records.find(
-      (r) => new Date(r.date).getDay() === tomorrowWeekday,
-    );
-    expect(kpis.tomorrowWeekday).toBe(tomorrowWeekday);
-    expect(kpis.predictedRevenueTomorrow).toBe(matchingRecord?.total ?? 0);
-
-    const totalRevenue = records.reduce((sum, r) => sum + r.total, 0);
-    expect(kpis.projectedRevenueNext7Days).toBe(totalRevenue);
+    expect(kpis.totalBadOrderQty).toBe(5);
+    expect(kpis.totalBadOrderAmount).toBe(80);
   });
 
   test("computes the bad order rate as bo / sold", () => {
@@ -142,8 +144,9 @@ describe("computeIntelligenceKpis", () => {
 
     expect(kpis.revenueToday).toBe(0);
     expect(kpis.revenueChangePct).toBe(0);
-    expect(kpis.predictedRevenueTomorrow).toBe(0);
-    expect(kpis.projectedRevenueNext7Days).toBe(0);
+    expect(kpis.revenueThisMonth).toBe(0);
+    expect(kpis.totalBadOrderQty).toBe(0);
+    expect(kpis.totalBadOrderAmount).toBe(0);
     expect(kpis.badOrderRatePct).toBe(0);
     expect(kpis.badOrderRisk.tone).toBe("healthy");
   });

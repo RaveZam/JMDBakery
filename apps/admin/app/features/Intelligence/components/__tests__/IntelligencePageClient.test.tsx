@@ -11,16 +11,16 @@ vi.mock("@/app/server/creditPayments/useCreditPaymentsQuery", () => ({
   useCreditPaymentsQuery: () => useCreditPaymentsQuery(),
 }));
 
-vi.mock("../KpiSection", () => ({
+vi.mock("../KpiSection/KpiSection", () => ({
   KpiSection: () => <div data-testid="kpi-section" />,
 }));
-vi.mock("../PerformanceRankings", () => ({
+vi.mock("../PerformanceRankings/PerformanceRankings", () => ({
   PerformanceRankings: () => <div data-testid="performance-rankings" />,
 }));
-vi.mock("../ProductionRecommendations", () => ({
+vi.mock("../ProductionRecommendations/ProductionRecommendations", () => ({
   ProductionRecommendations: () => <div data-testid="production-recommendations" />,
 }));
-vi.mock("../ForecastChart", () => ({
+vi.mock("../ForecastChart/ForecastChart", () => ({
   ForecastChart: () => <div data-testid="forecast-chart" />,
 }));
 
