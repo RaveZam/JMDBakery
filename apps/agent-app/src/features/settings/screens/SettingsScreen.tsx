@@ -4,7 +4,6 @@ import {
   View,
   TouchableOpacity,
   Text,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,7 +14,6 @@ import { supabase } from "@/src/lib/supabase";
 import { Colors } from "@/src/shared/constants/Colors";
 import { useDownloadSync } from "@/src/features/settings/useDownloadSync";
 import { useSignOut } from "@/src/features/settings/hooks/useSignOut";
-import { clearSessionData } from "@/src/features/settings/services/clearSessionData";
 import type { Session } from "@supabase/supabase-js";
 
 export default function SettingsScreen() {
@@ -26,24 +24,6 @@ export default function SettingsScreen() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
   }, []);
-
-  const handleClearSessionData = () => {
-    Alert.alert(
-      "Clear Session Data",
-      "This will delete all local data — routes, provinces, stores, sessions, sales, inventory, products, and unsynced outbox records. You stay signed in. Continue?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear",
-          style: "destructive",
-          onPress: () => {
-            clearSessionData();
-            Alert.alert("Done", "Session data cleared.");
-          },
-        },
-      ],
-    );
-  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
@@ -134,18 +114,6 @@ export default function SettingsScreen() {
               <Text style={styles.downloadText}>Download Data</Text>
             </>
           )}
-        </TouchableOpacity>
-
-        {/* DEV ONLY */}
-        <TouchableOpacity
-          style={styles.clearSessionButton}
-          activeOpacity={0.8}
-          onPress={handleClearSessionData}
-          disabled={loading}
-        >
-          <Text style={styles.clearSessionText}>
-            [DEV] Clear Session Data
-          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -275,20 +243,6 @@ const styles = StyleSheet.create({
   },
   downloadText: {
     color: Colors.light.tint,
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  clearSessionButton: {
-    height: 48,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#F97316",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
-  clearSessionText: {
-    color: "#F97316",
     fontWeight: "600",
     fontSize: 14,
   },
